@@ -1,0 +1,1019 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+\titleformat{\section}{\Large\bfseries\color{acc1}}{第\,\thesection\,题}{0.6em}{}
+\fancyhead[L]{\small 信息论基础\ \textbar\ 第五次作业（第 5 章）}
+\linespread{1.0}   % 作业篇幅偏长，行距与段距略微收紧（不影响可读性）
+\setlength{\parskip}{1.2pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 信息论基础\ \ 第五次作业（第 5 章）超详细解答}\\[8pt]
+{\large —— 每一步都在“干什么”都写出来了，一节课没听也能抄懂}\\[8pt]
+{\small 教材：石峰、莫忠息《信息论基础》（第三版），第 5 章习题 P142--P144\quad
+对数底为 2，单位 bit}
+\end{center}
+
+\begin{idea}{动手之前：本份作业只用到四样东西}
+\begin{enumerate}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{信道容量的定义} $C=\max_{p(x)}\I{X;Y}$：在“发各符号的概率”这个旋钮上
+        挑一个最划算的，传过去的互信息最大值就是容量；
+  \item \textbf{联合概率} $\p{x_i,y_j}=p(x_i)\,q(y_j|x_i)$：把“输入概率”乘上“这一格的概率”；
+  \item 两个译码准则：\textbf{最佳译码}比 $\p{x_i,y_j}$（要乘 $p(x_i)$），
+        \textbf{极大似然译码}比 $q(y_j|x_i)$（\textbf{不乘} $p(x_i)$）；
+  \item \textbf{异或} $\oplus$：两个 bit 相同得 $0$、不同得 $1$，用来写汉明码的偶校验方程。
+\end{enumerate}
+\textbf{整份作业的套路只有一个}：\textbf{先把概率表算出来 $\to$ 再套上面这几个公式
+$\to$ 最后检查概率和是否为 $1$、校验方程是否都满足。}
+\end{idea}
+
+%====================== 5.3 ======================
+\section{5.3\quad 计算离散无记忆信道的容量}
+
+\begin{defbox}{题目（教材 P142--P143）}
+计算如下所示离散无记忆信道的容量：(1)\quad(2)\quad(3)\quad(4)。
+
+四个信道各用一个\textbf{转移矩阵}给出，矩阵写成
+\[
+P=\bigl(q(y_j|x_i)\bigr)=
+\begin{pmatrix}
+q(y_1|x_1)&q(y_2|x_1)&\cdots\\
+q(y_1|x_2)&q(y_2|x_2)&\cdots\\
+\vdots&\vdots&\ddots
+\end{pmatrix},
+\]
+即\textbf{第 $i$ 行第 $j$ 列的元素是“输入 $x_i$、输出 $y_j$”的概率}。
+\end{defbox}
+
+\begin{qa}{先说清楚：这道题的四个矩阵数值我这里不替你抄}
+教材原图里这四个矩阵是\textbf{竖排的小分式}，扫描件上 OCR 认不准。
+凡是我认不准的数字，我\textbf{一个都不编}——编出来的数字会把你带进沟里。
+
+所以本节的安排是：\textbf{把“拿到任意一个信道矩阵后怎么一步步算容量”的完整路线图给你}，
+然后用\textbf{两个（外加一个）我自己构造的、数字验算过的例子}把路线图跑一遍。
+你把书上四个矩阵的数值抄进来，照着一格一格代，就是标准答案。
+（本节最后还有一个“填空表”和一个显眼提示框，专门提醒这件事。）
+\end{qa}
+
+\subsection{第一件事：把“信道容量”四个字翻译成大白话}
+
+\begin{defbox}{信道容量（第 5 章唯一的定义）}
+\[
+C=\max_{p(x)}\ \I{X;Y}
+\]
+人话：\textbf{这条线（这个转移矩阵）本身的好坏是一个固定的数；我要做的只是在“发各符号的
+概率”这个旋钮上转一圈，找到让“传过去的信息量”最大的那个位置，那个最大值就是容量 $C$。}
+\end{defbox}
+
+三个必须分清的点和一句必背的估计：
+\begin{enumerate}[leftmargin=1.8em,itemsep=2pt]
+  \item \textbf{我能改的只有 $p(x)$。}转移矩阵 $q(y|x)$ 是线自己的性质，改不了（要改就换线）。
+  \item \textbf{$C$ 是线的属性。}同一条线，发得聪明就接近 $C$、发得笨就传得少，但 $C$ 不变
+        ——像公路的“最高时速”是路的能力，不取决于你今天开多快。
+  \item \textbf{但求 $C$ 的算法确实是对 $p(x)$ 求最大。}两句不矛盾，考试最爱在这儿挖坑。
+  \item \textbf{天花板}：$\I{X;Y}\le\Hx{X}\le\lb|X|$，所以
+        \[
+        \boxed{\,C\le\lb|X|\,}
+        \qquad\text{人话：一格最多传 $\lb|X|$ bit。}
+        \]
+        $|X|=2$ 时是 $\lb2=1\bit$；$|X|=3$ 时是 $\lb3=1.585\bit$。
+        \textbf{算完先拿天花板卡一下}，超了必是算错。
+\end{enumerate}
+
+\begin{idea}{算容量的通用套路：$C=\Hx{Y}-\Hx{Y|X}$，然后看两块能不能分别“顶格”}
+因为 $\I{X;Y}=\Hx{Y}-\Hx{Y|X}$：
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item $\Hx{Y|X}=\sum_i p(x_i)\Hx{\text{第 }i\text{ 行}}$ 是“每行自己那点糊涂”的加权平均；
+        如果\textbf{每行都是同一组数的重排}，那各行熵相等，这个加权平均就等于
+        $\Hx{\text{一行}}$，\textbf{与 $p(x)$ 无关}（这是好消息：减数固定了）。
+  \item $\Hx{Y}$ 取决于输出分布 $p(y_j)=\sum_i p(x_i)q(y_j|x_i)$，它随 $p(x)$ 变；
+        它的天花板是 $\lb|Y|$，\textbf{输入等概且列和相等时顶到天花板}。
+\end{itemize}
+所以“对称”类信道的容量就是\textbf{天花板减掉一行的熵}；不对称的就得老老实实求最大。
+\end{idea}
+
+\subsection{第二件事：三个概念一张表（判对称性就靠它）}
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.4cm}
+                     >{\raggedright\arraybackslash}p{7.0cm}
+                     >{\raggedright\arraybackslash}p{5.4cm}@{}}
+\toprule
+类别 & 判别条件（两个都要看） & 容量公式 \\
+\midrule
+\textbf{强对称}\newline（对称） &
+① 每行都是\textbf{同一组数的重新排列}（称“行可排列”）；\newline
+② 每\textbf{列}元素之和\textbf{相等} &
+$C=\lb|X|-\Hx{\text{一行}}$，最佳输入为等概 \\[4pt]
+\textbf{准对称} &
+① 行可排列；\newline
+② 但列和不全相等（输出符号能分成几组 $B_1,\dots,B_S$，
+每组对应的列组成的子矩阵仍对称） &
+$C=\displaystyle\sum_{s=1}^{S}N_s\lb\frac{|B_s|}{N_s}-\Hx{\text{一行}}$，
+$N_s$ 为一行里落进第 $s$ 组的概率和；最佳输入仍等概 \\[4pt]
+\textbf{都不满足} &
+连“行可排列”都不成立（行与行连元素集合都不同） &
+公式全不能用，见下文“第三步之外的第五条路”（解方程/直接求最大） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{判行的诀窍}：把每行的元素\textbf{从小到大排个序}再比。排序后两行一模一样
+$\Rightarrow$ 行可排列；有一处不一样 $\Rightarrow$ 立刻放弃公式。
+
+\subsection{路线图：拿到矩阵后的五步}
+
+\subsubsection{第 1 步：抄矩阵，检查“每行和为 1”}
+
+\textbf{干什么}：把书上矩阵抄成 $P$，然后\textbf{逐行把元素加起来}，必须等于 $1$。
+人话：\textbf{“发出一个符号，总得收到某个符号”，所以每一行是一份完整的概率分布，
+加起来必然是 $100\%$。} 这一步既是抄题检查（抄错数字立刻暴露），也是写卷面必须有的第一句。
+
+顺便把\textbf{列和}也算出来写在旁边——第 2 步判对称性立刻要用。
+
+\subsubsection{第 2 步：判对称性（决定用哪个公式）}
+
+按顺序问三个问题，问到哪个就停：
+\begin{enumerate}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item 每行是不是\textbf{同一组数的重排}？（各行的熵是否相等？）不是 $\to$ 跳到第 5 步。
+  \item 每行 $|X|$ 个元素是不是\textbf{每个位置都“猜中一次”}（对角线大、其余小、其余位置彼此相等）
+        且列和相等？是 $\to$ \textbf{强对称}，用第 3 步。
+  \item 行可排列但列和不等 $\to$ \textbf{准对称}，用第 4 步。
+\end{enumerate}
+
+\subsubsection{第 3 步：强对称信道，直接套公式}
+
+\[
+\boxed{\ C=\lb|X|-\Hx{\text{一行}},\qquad\text{最佳输入分布 }p(x_i)=\frac{1}{|X|}\ }
+\]
+\textbf{为什么长这样}（两句话，抄到卷面上就是“说明理由”）：
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item 行可排列 $\Rightarrow$ 各行熵相同 $\Rightarrow$
+        $\Hx{Y|X}=\sum_i p(x_i)\Hx{\text{第 }i\text{ 行}}=\Hx{\text{一行}}$（与 $p(x)$ 无关，减数固定）；
+  \item 列和相等 $+$ 输入等概 $\Rightarrow$ $p(y_j)=\frac1{|X|}\sum_i q(y_j|x_i)$ 对每个 $j$ 都相同
+        $=\frac{1}{|Y|}$ $\Rightarrow$ $\Hx{Y}$ 顶到天花板 $\lb|Y|=\lb|X|$（这类信道输入输出符号数相同）。
+\end{itemize}
+于是 $C=\lb|X|-\Hx{\text{一行}}$。人话：\textbf{容量 = 输入的“最大疑问”减掉“线自己添的乱”}。
+\textbf{重要提醒}：$\Hx{\text{一行}}$ 只是被减掉的那一项，\textbf{它本身不是容量}。
+
+\subsubsection{第 4 步：准对称信道，按“分组”套公式}
+
+\[
+C=\sum_{s=1}^{S}N_s\lb\frac{|B_s|}{N_s}-\Hx{\text{一行}},
+\qquad N_s=\text{一行里落进第 }s\text{ 组的概率之和（对所有行都一样）}.
+\]
+人话：\textbf{把输出符号分成几个“小组”，每组里“能区分几个符号”与“这组被用到的概率”之比
+取对数、加权，再把一行的糊涂减掉}。最佳输入仍是等概分布。
+
+\textbf{怎么分组}：让“同一小组内的列”在一行里对应的概率\textbf{全都相等}，
+且不同行之间只是组内互换。分组不唯一时按“组越小公式越准”的直觉试，
+\textbf{最后一定用等概输入直接算一遍 $\Hx{Y}-\Hx{Y|X}$ 验算}——对上了才算对。
+
+\subsubsection{第 5 步：都不对称怎么办（两条路）}
+
+\textbf{路 A：写 $I(X;Y)$ 成一个变量的函数，直接求最大}（最稳，考场上最不容易错）。
+设 $|X|=2$、$p(x_1)=p$、$p(x_2)=1-p$，则
+\[
+\I{X;Y}=\Hx{Y}-\bigl[p\,\Hx{\text{行}1}+(1-p)\Hx{\text{行}2}\bigr],
+\qquad p(y_j)=p\,q(y_j|x_1)+(1-p)\,q(y_j|x_2),
+\]
+人话：\textbf{一行一个熵（常数），输出分布随 $p$ 变}，于是整条式子只剩一个自变量 $p$；
+对 $p$ 求导令其为 $0$（或扫描几组 $p$ 看趋势）即可。
+
+\textbf{路 B：用“最佳输入分布的判别条件”（K--T 条件，教材 5.1 节的定理）}。
+设 $p^*(x)$ 是最佳输入、$p^*(y_j)$ 是它对应的输出分布，则对每个被用到的输入符号 $x_k$
+（即 $p^*(x_k)>0$）都有
+\[
+\sum_{j}q(y_j|x_k)\,\lb\frac{q(y_j|x_k)}{p^*(y_j)}=C,
+\qquad\text{而 }p^*(x_k)=0\text{ 的符号左边}\le C .
+\]
+人话：\textbf{最佳方案让“每个被用到的符号都同样划算”，每格的划算程度都恰好等于容量 $C$}；
+把 $|X|$ 个这样的方程加上 $\sum_k p^*(x_k)=1$ 联立解出来即可。
+（有些书把 $p^*(y_j)$ 记作 $2^{-\beta_j}$ 再解方程组，写的是同一个东西。）
+注意这条路\textbf{只在前面四个公式确实不适用时}才走，能用对称公式就别硬解。
+
+\subsection{例子 A：三符号强对称信道（把第 1--3 步跑完）}
+
+\begin{calc}{题目（自构例题，数字全部可验算）}
+某离散无记忆信道的转移矩阵与输入符号集为
+\[
+P=\begin{pmatrix}
+0.5&0.25&0.25\\
+0.25&0.5&0.25\\
+0.25&0.25&0.5
+\end{pmatrix},
+\qquad |X|=|Y|=3 .
+\]
+求信道容量与最佳输入分布。
+\end{calc}
+
+\textbf{第 1 步：检查行和。} 三行都是同一个加法：
+\[
+0.5+0.25+0.25=1.0\ \checkmark
+\]
+所以每一行都是合法的概率分布，矩阵抄写无误。
+
+\textbf{第 2 步：判对称性。}
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item 第 1 行 $(0.5,\,0.25,\,0.25)$，第 2 行 $(0.25,\,0.5,\,0.25)$，
+        第 3 行 $(0.25,\,0.25,\,0.5)$——\textbf{三行是同一组数的重排}
+        （只是把 $0.5$ 换了个位置）$\Rightarrow$ 行可排列 $\checkmark$
+  \item 列和：第 1 列 $0.5+0.25+0.25=1$；第 2 列 $0.25+0.5+0.25=1$；第 3 列 $=1$。
+        \textbf{三列之和全相等} $\checkmark$
+\end{itemize}
+两条都满足 $\Rightarrow$ \textbf{强对称信道}，可以用 $C=\lb|X|-\Hx{\text{一行}}$。
+
+\textbf{第 3 步：算一行的熵。} 取第 1 行 $(0.5,\,0.25,\,0.25)$，逐项算（$\lb0.5=-1$、$\lb0.25=-2$）：
+\begin{align*}
+\Hx{\text{一行}}
+&=-\bigl[0.5\lb0.5+0.25\lb0.25+0.25\lb0.25\bigr]\\
+&=-\bigl[0.5\times(-1)+0.25\times(-2)+0.25\times(-2)\bigr]\\
+&=-\bigl[-0.5-0.5-0.5\bigr]=1.5\bit .
+\end{align*}
+人话：\textbf{这一行本身的“糊涂程度”是 $1.5$ bit}（三个符号里，“猜中”只有一半机会，
+另外两个各四分之一，所以比“完全猜不到”的 $\lb3=1.585$ 只差一点点）。
+
+\textbf{第 4 步：套公式。} $\lb3=1.58496\approx1.5850$，故
+\[
+C=\lb3-\Hx{0.5,0.25,0.25}=1.5850-1.5000=\boxed{0.0850\bit}\approx0.085\bit .
+\]
+实测精算 $1.58496-1.5=0.08496$，取 $0.085\bit$ 即可。
+
+\textbf{最佳输入分布}：$\displaystyle p(x_1)=p(x_2)=p(x_3)=\frac13$（等概）。
+
+\textbf{验算（考试写完必加，一句话就是分）}：输入等概、列和相等，
+故 $p(y_1)=p(y_2)=p(y_3)=\frac{0.5+0.25+0.25}{3}=\frac13$，于是
+\[
+\Hx{Y}=\lb3=1.5850\bit,\qquad
+\I{X;Y}=\Hx{Y}-\Hx{Y|X}=1.5850-1.5000=0.0850\bit,
+\]
+与公式结果\textbf{完全一致} $\checkmark$
+\textbf{注意 $1.5$ 是 $\Hx{Y|X}$、不是容量}（容量 $\le\lb|X|=1.585$）：
+“每行只有 $50\%$ 猜中”的线，传过去的还不到 $0.1$ bit。
+
+\subsection{例子 B：二元对称信道 BSC（第 1--3 步，带数值）}
+
+\begin{calc}{题目}
+\[
+P=\begin{pmatrix}1-\varepsilon&\varepsilon\\[1pt] \varepsilon&1-\varepsilon\end{pmatrix},
+\qquad |X|=|Y|=2 ,
+\]
+求容量，并代入 $\varepsilon=0.1$ 得数值。
+\end{calc}
+
+\textbf{第 1 步}：每行 $1-\varepsilon+\varepsilon=1$ $\checkmark$
+
+\textbf{第 2 步}：第 2 行 $(1-\varepsilon,\varepsilon)$ 是第 1 行 $(\varepsilon,1-\varepsilon)$ 的重新排列
+（交换两列）$\Rightarrow$ 行可排列；两列之和都是 $(1-\varepsilon)+\varepsilon=1$，相等
+$\Rightarrow$ \textbf{强对称}。
+
+\textbf{第 3 步}：一行是 $(1-\varepsilon,\ \varepsilon)$，其熵记作 $\Hx{\varepsilon}$（二元熵，约定写法）：
+\[
+\Hx{\varepsilon}=-(1-\varepsilon)\lb(1-\varepsilon)-\varepsilon\lb\varepsilon .
+\]
+\textbf{第 4 步}：$|X|=2$，$\lb2=1$，故
+\[
+\boxed{\,C=1-\Hx{\varepsilon}\,}
+\qquad\text{人话：每格 $1$ bit 的机会，减去线自己搅乱的那 $\Hx{\varepsilon}$ bit。}
+\]
+
+\textbf{代 $\varepsilon=0.1$}：$\lb0.1=-3.32193$、$\lb0.9=-0.15200$，
+\begin{align*}
+\Hx{0.1}&=-(0.9)\lb0.9-(0.1)\lb0.1\\
+&=-\bigl[0.9\times(-0.15200)+0.1\times(-3.32193)\bigr]\\
+&=0.13680+0.33219=0.46899\approx0.4690\bit,\\
+C&=1-0.46899=0.53101\approx\boxed{0.531\bit}.
+\end{align*}
+\textbf{最佳输入}：$p(x_1)=p(x_2)=0.5$。
+
+两个端点顺便记住：$\varepsilon=0$ 时 $\Hx{0.1}$ 换成 $\Hx{0}=0$，$C=1$（无噪，满格）；
+$\varepsilon=0.5$ 时 $\Hx{0.5}=1$，$C=0$（收到的和发的完全无关，线白给）。
+
+\subsection{例子 C：准对称信道（把第 4 步也跑一遍）}
+
+\begin{calc}{题目（二元输入、三元输出的准对称信道）}
+\[
+P=\begin{pmatrix}0.9&0.1&0\\[1pt] 0.9&0&0.1\end{pmatrix},
+\qquad |X|=2,\ |Y|=3,\qquad \text{取 } \varepsilon=0.1 .
+\]
+\end{calc}
+
+\textbf{第 1 步}：第 1 行 $0.9+0.1+0=1$ $\checkmark$；第 2 行 $0.9+0+0.1=1$ $\checkmark$
+
+\textbf{第 2 步}：第 2 行 $(0.9,0,0.1)$ 是第 1 行 $(0.9,0.1,0)$ 的后两位互换
+$\Rightarrow$ 行可排列 $\checkmark$；但列和为 $(1.8,\ 0.1,\ 0.1)$，\textbf{不全相等}
+$\Rightarrow$ \textbf{准对称，不能用第 3 步的公式}。
+
+\textbf{第 3 步（分组）}：
+\[
+B_1=\{y_1\}:\ \text{两行都是 }0.9;\qquad
+B_2=\{y_2,y_3\}:\ \text{子矩阵}\begin{pmatrix}0.1&0\\0&0.1\end{pmatrix}\text{对称}.
+\]
+$N_1=0.9+0=0.9$（一行里落进 $B_1$ 的概率和），$N_2=0.1+0=0.1$，且 $N_1+N_2=1$ $\checkmark$
+
+\textbf{第 4 步（套公式）}：一行的熵 $\Hx{0.9,0.1,0}=\Hx{0.1}=0.4690\bit$（前面例 B 算过），
+$\lb\dfrac{|B_1|}{N_1}=\lb\dfrac{1}{0.9}=\lb1.1111=0.15200$、
+$\lb\dfrac{|B_2|}{N_2}=\lb\dfrac{2}{0.1}=\lb20=4.32193$：
+\begin{align*}
+C&=N_1\lb\frac{|B_1|}{N_1}+N_2\lb\frac{|B_2|}{N_2}-\Hx{\text{一行}}\\
+&=0.9\times0.15200+0.1\times4.32193-0.4690\\
+&=0.13680+0.43219-0.46900=\boxed{0.1000\bit}\approx0.1\bit .
+\end{align*}
+
+\textbf{验算（等概输入直接算）}：$p(y_1)=\frac{0.9+0.9}{2}=0.9$、
+$p(y_2)=\frac{0.1+0}{2}=0.05$、$p(y_3)=0.05$，
+\[
+\Hx{Y}=-(0.9\lb0.9+2\times0.05\lb0.05)=0.13680+0.43219=0.56899\bit,
+\]
+$\I{X;Y}=0.56899-0.46900=0.1000\bit$，与公式结果\textbf{一模一样} $\checkmark$
+（最佳输入确为等概）。
+
+\begin{exam}{本题（5.3）的卷面写法和四个矩阵的填写表}
+\textbf{每个小题照这五行写，一行一个分：}
+\begin{enumerate}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item 抄出矩阵，写“各行之和为 $1$”（逐行写加法）；
+  \item 写“各行是同一组元素的重排，列和为 $\square$（相等/不全相等）”，由此判定属于
+        强对称 / 准对称 / 都不是；
+  \item 写出所选公式（强对称写 $C=\lb|X|-\Hx{\text{一行}}$，准对称写分组公式；都不是就写
+        $I(X;Y)=\Hx{Y}-\Hx{Y|X}$ 并说明怎么求最大）；
+  \item 把一行的熵\textbf{逐项}算出来（写出 $\lb$ 的数值），再代入求 $C$，\textbf{标单位 bit}；
+  \item 补一句“最佳输入分布为等概分布 $p(x_i)=1/|X|$”，并\textbf{用天花板 $C\le\lb|X|$ 卡一下}。
+\end{enumerate}
+
+\medskip
+\textbf{填空表（把书上 P142--P143 的四个矩阵抄进来，照着上面的路线图走）}
+
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}c|c|c|c|c@{}}
+\toprule
+小题 & 矩阵阶数 & 行和是否都为 $1$ & 列和是否相等 & 判定（强对称/准对称/都不是）\\
+\midrule
+(1) & & & & \\[6pt]
+(2) & & & & \\[6pt]
+(3) & & & & \\[6pt]
+(4) & & & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{\color{acc1}本题四个矩阵的具体数值请对照教材 P142--P143 原图抄入，代入上面的路线图即可。}
+（我这边扫描件的竖排小分式 OCR 认不准，所以绝不编数字。）
+按能辨认的痕迹：第 (1)(2) 小题含 $0.5$、$0.25$ 一类元素，多半是三元对称型，套
+$C=\lb|X|-\Hx{\text{一行}}$；第 (3)(4) 小题含 $1-\varepsilon$ 型元素，若“对角线 $1-\varepsilon$、
+其余均分”就是 $m$ 元对称信道，$C=\lb m-\Hx{1-\varepsilon,\ \tfrac{\varepsilon}{m-1},\dots}$。
+第 (4) 题注“所有 $q(y|x)$ 相同”，这是强对称的极端情形：每行都是 $1/|Y|$ 的排列、列和也相等，
+套公式得 $C=\lb m-\lb m=0$——\textbf{容量为 $0$ 的信道：收到什么都不告诉你发的是什么}。
+\end{exam}
+
+\begin{exam}{本节三个易错点}
+\textbf{1. 把“一行熵”当成容量。} $\Hx{\text{一行}}$ 只是被减数，忘了减它就是错
+（例 A 会答成 $1.5$ 而不是 $0.085$）。
+
+\textbf{2. 不判对称性就套公式。} 只要有一行不是另一行的重排，$\Hx{Y|X}$ 就\textbf{随 $p(x)$ 变}，
+$\lb|X|-\Hx{\text{一行}}$ 这个式子连“减数是常数”都不成立，代进去必错。
+\textbf{动手前先排序比两行。}
+
+\textbf{3. 忘了写“最佳输入分布”和单位。} 题目问“容量”时顺手写等概分布、写 bit，
+不写不扣分但写了是给分点；单位漏写是常见小幅扣分。
+\end{exam}
+
+%====================== 5.11 ======================
+\section{5.11\quad 最佳译码与极大似然译码（本份重点，要算到底）}
+
+\begin{defbox}{题目（教材 P144）}
+设有一离散无记忆信道，其转移矩阵为
+\[
+P=\bigl(q(y_j|x_i)\bigr)=
+\begin{pmatrix}
+\dfrac12&\dfrac13&\dfrac16\\[2mm]
+\dfrac16&\dfrac12&\dfrac13\\[2mm]
+\dfrac13&\dfrac16&\dfrac12
+\end{pmatrix},
+\]
+若信道输入概率为 $p(x)=\bigl(0.5,\ 0.25,\ 0.25\bigr)$，
+试确定\textbf{最佳译码规则}和\textbf{极大似然译码规则}，并计算相应的\textbf{平均差错率}。
+\end{defbox}
+
+\begin{idea}{先把矩阵读顺（这一步很多人省掉，结果整个方向都错）}
+\textbf{行是“发”的，列是“收”的。} 第 $i$ 行第 $j$ 列那个分数，意思是
+“\textbf{发了 $x_i$、收到的是 $y_j$}”的概率，记作 $q(y_j|x_i)$。
+
+\textbf{逐行加起来必须为 1}：
+\[
+\tfrac12+\tfrac13+\tfrac16=\tfrac{3}{6}+\tfrac{2}{6}+\tfrac{1}{6}=1\ \checkmark\quad\text{（三行同理）}
+\]
+人话：\textbf{发出一个符号，总会收到某个符号，三种可能合起来是 $100\%$。}
+
+\textbf{注意它不对称}：$q(y_2|x_1)=\frac13$，但 $q(y_1|x_2)=\frac16$。
+\textbf{行换成列不是同一个数，所以这是一条“有方向偏好”的线}，不能套对称信道的任何结论。
+
+\textbf{再读输入概率}：$p(x_1)=0.5$、$p(x_2)=0.25$、$p(x_3)=0.25$，
+加起来 $0.5+0.25+0.25=1$ $\checkmark$
+人话：\textbf{发送方本来就偏爱发 $x_1$（一半的时机），$x_2,x_3$ 各占四分之一}。
+这个“本来就偏爱”就是后面两种译码规则分出胜负的根源。
+\end{idea}
+
+\subsection{两种译码准则到底差在哪（一句话记住）}
+
+先立两个符号，后面天天用：
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{译码规则} $g$：一条“收到 $y_j$ 就猜发的是谁”的对照表，写成 $g(y_j)=x_i$。
+        $|Y|=3$，所以一共只要填三个格子。
+  \item \textbf{译对概率} $P_C$：猜对的概率；\textbf{平均差错率} $P_e=1-P_C$。
+        人话：\textbf{不用一格格加“猜错”的概率，直接 $1$ 减“猜对”的，又快又不会漏项。}
+\end{itemize}
+
+\begin{defbox}{最佳译码 = 最大后验概率（MAP）译码}
+规则：对每个收到的 $y_j$，在 $x_1,x_2,x_3$ 里挑\textbf{事后概率最大}的那个：
+\[
+g_{\mathrm{MAP}}(y_j)=\arg\max_{x_i}\ \p{x_i|y_j},
+\qquad\text{等价地用联合概率比：}\ \arg\max_{x_i}\ \p{x_i,y_j}.
+\]
+人话：\textbf{“现在手里拿到了 $y_j$，回头看是谁发的可能性最大，就判成谁”。}
+\textbf{等价的原因}：$\p{x_i|y_j}=\dfrac{\p{x_i,y_j}}{p(y_j)}$，分母 $p(y_j)$ 对同一次收到的
+$y_j$ 是\textbf{同一个数}，比大小的时候约掉了，所以只比分子 $\p{x_i,y_j}=p(x_i)q(y_j|x_i)$。
+
+\textbf{这是使 $P_e$ 最小的规则}（逐列取最大，等价于让 $P_C$ 的每一项都取最大），
+所以叫“最佳”，也是“最小错误概率译码”。
+\end{defbox}
+
+\begin{defbox}{极大似然译码（ML）}
+规则：对每个收到的 $y_j$，只挑\textbf{这一列的转移概率最大}的那个：
+\[
+g_{\mathrm{ML}}(y_j)=\arg\max_{x_i}\ q(y_j|x_i).
+\]
+人话：\textbf{“哪种发法最容易产生我收到的这个东西，就判成哪种”}——只问线路本身像谁，
+\textbf{完全不管各路消息本来出现的多少}。
+
+\textbf{与最佳译码的关系（必写一句）}：$\p{x_i,y_j}=p(x_i)\,q(y_j|x_i)$，
+所以\textbf{当 $p(x_i)$ 全都相等（等概）时}，乘的那个同一个常数不影响比大小，
+两个准则给出\textbf{同一张译码表}。人话：\textbf{极大似然是“先验等概”这一特例下的最佳译码}；
+先验不等概时，极大似然一般\textbf{不如}最佳译码，$P_e$ 更大。
+\end{defbox}
+
+\begin{qa}{“乘不乘 $p(x)$” 这一句，为什么是本题的生死线}
+因为 $p(x)=(0.5,0.25,0.25)$ \textbf{不等概}，乘与不乘会给出\textbf{不同的译码表}：
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{乘了} $\Rightarrow$ 算的是最佳（最大后验）译码；
+  \item \textbf{没乘} $\Rightarrow$ 算的是极大似然译码。
+\end{itemize}
+\textbf{两个都要算、都要写，各配一个 $P_e$。} 老师讲评的原话就是
+“\textbf{5.11 极大似然概率乘错}”——很多人在算极大似然时顺手乘上了 $p(x)$，
+于是两个规则算成了同一个，白丢一半分。
+\end{qa}
+
+\subsection{第一张表：联合概率与输出分布}
+
+\begin{calc}{怎么算（一行一行乘）}
+对每个格子做乘法 $\p{x_i,y_j}=p(x_i)\,q(y_j|x_i)$，\textbf{同乘一个 $p(x_i)$}。
+
+\textbf{第 1 行}（乘 $p(x_1)=0.5$）：
+\[
+\tfrac12\!\times\!\tfrac12=\tfrac14=0.250,\quad
+\tfrac12\!\times\!\tfrac13=\tfrac16\approx0.1667,\quad
+\tfrac12\!\times\!\tfrac16=\tfrac1{12}\approx0.0833 .
+\]
+\textbf{第 2 行}（乘 $p(x_2)=0.25=\frac14$）：
+\[
+\tfrac14\!\times\!\tfrac16=\tfrac1{24}\approx0.0417,\quad
+\tfrac14\!\times\!\tfrac12=\tfrac18\approx0.125,\quad
+\tfrac14\!\times\!\tfrac13=\tfrac1{12}\approx0.0833 .
+\]
+\textbf{第 3 行}（乘 $p(x_3)=0.25=\frac14$，与第 2 行同一个乘数）：
+\[
+\tfrac14\!\times\!\tfrac13=\tfrac1{12}\approx0.0833,\quad
+\tfrac14\!\times\!\tfrac16=\tfrac1{24}\approx0.0417,\quad
+\tfrac14\!\times\!\tfrac12=\tfrac18\approx0.125 .
+\]
+\end{calc}
+
+\textbf{整理成表}（行的右边是行和 $=p(x_i)$，列的下方是列和 $=p(y_j)$）：
+
+\begin{center}\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}c|c|c|c|c@{}}
+\toprule
+$\p{x_i,y_j}$ & $y_1$ & $y_2$ & $y_3$ & 行和 $=p(x_i)$\\
+\midrule
+$x_1$ & $\tfrac14=0.2500$ & $\tfrac16\approx0.1667$ & $\tfrac1{12}\approx0.0833$ & $0.5000$\\
+$x_2$ & $\tfrac1{24}\approx0.0417$ & $\tfrac18=0.1250$ & $\tfrac1{12}\approx0.0833$ & $0.2500$\\
+$x_3$ & $\tfrac1{12}\approx0.0833$ & $\tfrac1{24}\approx0.0417$ & $\tfrac18=0.1250$ & $0.2500$\\
+\midrule
+列和 $=p(y_j)$ & $0.3750$ & $0.3333$ & $0.2917$ & $1.0000$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{列和怎么来的}（这里必须写中间值，不然阅卷看不出你会不会）：
+\begin{align*}
+p(y_1)&=\tfrac14+\tfrac1{24}+\tfrac1{12}=\tfrac{6}{24}+\tfrac{1}{24}+\tfrac{2}{24}=\tfrac{9}{24}=0.3750,\\
+p(y_2)&=\tfrac16+\tfrac18+\tfrac1{24}=\tfrac{4}{24}+\tfrac{3}{24}+\tfrac{1}{24}=\tfrac{8}{24}=\tfrac13\approx0.3333,\\
+p(y_3)&=\tfrac1{12}+\tfrac1{12}+\tfrac18=\tfrac{2}{24}+\tfrac{2}{24}+\tfrac{3}{24}=\tfrac{7}{24}\approx0.2917 .
+\end{align*}
+\textbf{检查}：$0.3750+0.3333+0.2917=1.0000$ $\checkmark$
+（即 $\frac{9+8+7}{24}=\frac{24}{24}=1$，说明上面九格没算错。）
+
+人话：\textbf{全部九格加起来是 $1$、每行加起来是 $p(x_i)$、每列加起来是 $p(y_j)$，
+这张表是整个题的地基}——两种译码、两个 $P_e$ 全部从这张表上读。
+\textbf{九格算错一格，四个答案全错，所以算完一定做这个“行和/列和/总和”三重检查。}
+
+\subsection{最佳（最大后验）译码：逐列挑联合概率最大的}
+
+\textbf{规则一句话}：拿到 $y_j$，看这一列三个联合概率，\textbf{谁最大判谁}。
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}c|c|c|c|c@{}}
+\toprule
+收到的 $y$ & $\p{x_1,y}=p(x_1)q(y|x_1)$ & $\p{x_2,y}$ & $\p{x_3,y}$ & 判成 $g_{\mathrm{MAP}}(y)$\\
+\midrule
+$y_1$ & $\tfrac14=0.2500$ \textbf{（最大）} & $\tfrac1{24}\approx0.0417$ & $\tfrac1{12}\approx0.0833$ & $\mathbf{x_1}$\\
+$y_2$ & $\tfrac16\approx0.1667$ \textbf{（最大）} & $\tfrac18=0.1250$ & $\tfrac1{12}\approx0.0833$ & $\mathbf{x_1}$\\
+$y_3$ & $\tfrac1{12}\approx0.0833$ & $\tfrac1{24}\approx0.0417$ & $\tfrac18=0.1250$ \textbf{（最大）} & $\mathbf{x_3}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{逐列说清楚}：
+\begin{itemize}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{收到 $y_1$}：$0.2500$ 对 $0.0417$ 对 $0.0833$，最大是 $0.25$ $\Rightarrow$ 判 $x_1$。
+  \item \textbf{收到 $y_2$}：$0.1667$ 对 $0.1250$ 对 $0.0833$，最大是 $0.1667$ $\Rightarrow$ 判 $x_1$。
+        注意这里\textbf{最大值不在对角线上}：$q(y_2|x_2)=\frac12$ 虽然比 $q(y_2|x_1)=\frac13$ 大，
+        可 $x_1$ 的先验概率是 $x_2$ 的两倍，乘完 $0.1667>0.125$，\textbf{先验把结论掰了过来}。
+  \item \textbf{收到 $y_3$}：$0.0833$ 对 $0.0417$ 对 $0.1250$，最大是 $0.125$ $\Rightarrow$ 判 $x_3$。
+\end{itemize}
+
+\textbf{所以最佳译码规则是}：\fbox{$y_1\to x_1,\quad y_2\to x_1,\quad y_3\to x_3$}
+
+\textbf{平均差错率}：$P_C$ 就是“三个格子里取到的最大值”之和，
+\[
+P_C=0.2500+0.1667+0.1250=0.5417\quad\left(=\tfrac{6+4+3}{24}=\tfrac{13}{24}\right),
+\]
+\begin{align*}
+P_{e,\mathrm{MAP}}&=1-P_C=1-\tfrac{13}{24}=\tfrac{11}{24}\\
+&\approx1-0.5417=\boxed{0.4583}\quad\left(\tfrac{11}{24}=0.45833\cdots\right).
+\end{align*}
+\textbf{人话}：最佳译码下仍有一半多的机会猜错（$45.83\%$），因为这条线本身太吵。
+
+\textbf{换个算法验算（按“发的是谁”分）}：$x_1$ 只在收到 $y_3$ 时判错，
+$0.5\times\frac16=\frac{2}{24}$；$x_2$ \textbf{三种 $y$ 全判给了别人}，$\frac14=\frac{6}{24}$；
+$x_3$ 在收到 $y_1,y_2$ 时判错，$\frac14\bigl(\frac13+\frac16\bigr)=\frac14\times\frac12=\frac{3}{24}$。
+三项相加 $\frac{2+6+3}{24}=\frac{11}{24}$ $\checkmark$ 与 $1-P_C$ 一致。
+
+\subsection{极大似然译码：只比 $q(y|x)$，每列挑最大（\textbf{不乘 $p(x)$}）}
+
+\textbf{规则一句话}：拿到 $y_j$，看转移矩阵这一列三个数，谁最大判谁。
+\textbf{这一列里不许出现 $p(x)$。}
+
+\begin{center}\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}c|c|c|c|c@{}}
+\toprule
+收到的 $y$ & $q(y|x_1)$ & $q(y|x_2)$ & $q(y|x_3)$ & 判成 $g_{\mathrm{ML}}(y)$\\
+\midrule
+$y_1$ & $\mathbf{\tfrac12=0.5}$（最大） & $\tfrac16\approx0.167$ & $\tfrac13\approx0.333$ & $\mathbf{x_1}$\\
+$y_2$ & $\tfrac13\approx0.333$ & $\mathbf{\tfrac12=0.5}$（最大） & $\tfrac16\approx0.167$ & $\mathbf{x_2}$\\
+$y_3$ & $\tfrac16\approx0.167$ & $\tfrac13\approx0.333$ & $\mathbf{\tfrac12=0.5}$（最大） & $\mathbf{x_3}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{逐列说清楚}：三列的最大值\textbf{都恰好是 $\frac12$}，而且都落在\textbf{对角线上}
+（收到的和发的同一个符号）$\Rightarrow$ \textbf{“收到什么就判成什么”}：
+\[
+\fbox{$y_1\to x_1,\quad y_2\to x_2,\quad y_3\to x_3$}
+\]
+
+\textbf{平均差错率}：译对概率是“每个收到值 $\times$ 该列最大值”之和
+\[
+P_C=\sum_{j}p(y_j)\cdot\max_i q(y_j|x_i)
+=0.3750\times\tfrac12+0.3333\times\tfrac12+0.2917\times\tfrac12 .
+\]
+把 $\frac12$ 提出来：
+\begin{align*}
+P_C&=\tfrac12\bigl(0.3750+0.3333+0.2917\bigr)=\tfrac12\times1.0000=0.5000,\\
+P_{e,\mathrm{ML}}&=1-P_C=1-0.5=\boxed{0.5}.
+\end{align*}
+（用分数看更清楚：$\frac12\bigl(\frac{9}{24}+\frac{8}{24}+\frac{7}{24}\bigr)=\frac12\times1=\frac12$。）
+
+\textbf{换个算法验算}（按发送方分，逐行算）：
+$x_1$ 收到 $y_2,y_3$ 判错：$\frac12(\frac13+\frac16)=\frac12\times\frac12=\frac14$；
+$x_2$ 收到 $y_1,y_3$ 判错：$\frac14(\frac16+\frac13)=\frac14\times\frac12=\frac18$；
+$x_3$ 收到 $y_1,y_2$ 判错：$\frac14(\frac13+\frac16)=\frac18$。
+相加 $\frac14+\frac18+\frac18=\frac12$ $\checkmark$
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}p{3.0cm}c|c|c@{}}
+\toprule
+& 判成谁 & 译对概率 $P_C$ & 平均差错率 $P_e$\\
+\midrule
+\textbf{最佳（最大后验）} & $y_1,y_2\to x_1$；$y_3\to x_3$ & $\frac{13}{24}\approx0.5417$ & $\frac{11}{24}\approx0.4583$\\[2pt]
+\textbf{极大似然} & $y_1\to x_1$，$y_2\to x_2$，$y_3\to x_3$ & $0.5$ & $0.5$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{对照看结论}：$0.4583<0.5$，\textbf{最佳译码确实比极大似然好}（错误率更低）。
+差就差在 $y_2$ 那一个格子——先验概率把判决掰回了 $x_1$。
+
+\begin{exam}{讲评点名的那句话：极大似然别乘 $p(x)$}
+\begin{itemize}[leftmargin=1.8em,itemsep=2pt,topsep=2pt]
+  \item \textbf{极大似然}：只看转移矩阵那一列的 $q(y|x)$，\textbf{每列挑最大}，
+        心里默认“各路消息等可能出现”。\textbf{乘了 $p(x)$ 就不是极大似然了。}
+  \item \textbf{最佳（最大后验）}：比 $p(x)q(y|x)$，把“谁本来就更容易出现”算进去。
+  \item \textbf{两者何时一致}：\textbf{当且仅当 $p(x)$ 等概}。
+  \item \textbf{本题 $p(x)=(0.5,0.25,0.25)$ 不等概}，所以两张译码表不一样、
+        两个 $P_e$ 也不一样（$\frac{11}{24}$ 与 $\frac12$）。
+        若有人两个规则算出同一张表，几乎一定是\textbf{极大似然那边乘了 $p(x)$}。
+\end{itemize}
+\end{exam}
+
+\begin{exam}{5.11 这类题的答题模板（照着填，分步给分）}
+\begin{enumerate}[leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{读矩阵}：写“行是输入、列是输出，各行之和为 $1$”，并指出是否对称。
+  \item \textbf{算联合概率表} $\p{x_i,y_j}=p(x_i)q(y_j|x_i)$，附\textbf{行和 $=p(x_i)$、
+        列和 $=p(y_j)$、总和 $=1$} 三重检查。
+  \item \textbf{最佳（MAP）译码}：逐列比 $\p{x_i,y_j}$，把每列\textbf{加粗的最大值}标出来，
+        写 $g_{\mathrm{MAP}}$，再写 $P_C=\sum_j\max_i\p{x_i,y_j}$、$P_e=1-P_C$。
+  \item \textbf{极大似然译码}：逐列比 $q(y_j|x_i)$（\textbf{强调没乘 $p(x)$}），
+        写 $g_{\mathrm{ML}}$，再写 $P_C=\sum_j p(y_j)\max_i q(y_j|x_i)$、$P_e=1-P_C$。
+  \item \textbf{补一句结论}：最佳译码的 $P_e$ 一定 $\le$ 极大似然的 $P_e$；
+        不等概时严格小于，一致时两者给出同一张表。
+\end{enumerate}
+\textbf{易错点}：① 极大似然乘了 $p(x)$；② $P_e$ 忘了用 $1-P_C$ 而是去加“猜错”的项，漏项；
+③ 只写译码表不算 $P_e$（本题一半的分在 $P_e$ 上）；④ 忘记说明“最佳译码 = 最大后验 = 最小错误概率”。
+\end{exam}
+
+\textbf{顺带一句（先验等概时会怎样）}：若 $p=\bigl(\frac13,\frac13,\frac13\bigr)$，两个准则
+\textbf{完全重合}、都变成“收到什么判成什么”，且 $P_C=\frac13\cdot\frac12\times3=\frac12$、
+$P_e=\frac12$。人话：\textbf{等概时最大后验退化成极大似然，两个答案并成一个 $0.5$}；
+正因本题先验不等概（$x_1$ 占一半），最大后验才靠“先验优势”把 $P_e$ 从 $0.5$ 压到 $\frac{11}{24}$。
+
+%====================== 汉明码补充题 ======================
+\section{5.补充题\quad 8 位码的偶校验汉明码构造（第二个重点）}
+
+\begin{defbox}{题目（课堂补充）}
+某信源编码后的 $8$ 位二进制码为：\texttt{10011100}（最高位为 $1$），
+采用\textbf{偶校验}方式，为该码构造汉明码。
+\end{defbox}
+
+\begin{idea}{汉明码到底在干什么（一句话）}
+线会翻错 bit：发 \texttt{1} 收成 \texttt{0}，收方\textbf{光看收到的串根本看不出错了}。
+汉明码的办法是\textbf{加几个“校验位”}：让它们各自“监视一片位置”的奇偶性，
+再把几个监视结果按二进制拼起来——\textbf{拼出来的数直接就是“错在第几位”的门牌号}。
+于是 $4$ 位校验就能罩住 $12$ 个位置，而不是像“抄三遍”那样花 $3$ 倍代价才纠 $1$ 位错。
+\end{idea}
+
+\begin{defbox}{异或 $\oplus$ 与偶校验（不认这两个符号就没法做题）}
+\textbf{异或}：两个 bit 做运算，\textbf{相同得 $0$、不同得 $1$}：
+\[
+0\oplus0=0,\qquad 0\oplus1=1,\qquad 1\oplus0=1,\qquad 1\oplus1=0 .
+\]
+\textbf{偶校验}：要求“一组 bit 里 $1$ 的个数是\textbf{偶数}”，写成异或就是
+“这组 bit 异或起来 $=0$”。（奇校验则要求 $1$ 的个数为奇数，方程右端写 $=1$，
+其余步骤一字不改。）
+
+\textbf{一条常用的变形}：$x\oplus y=0\iff x=y$。
+所以“$C\oplus(\text{一堆}) =0$”可以\textbf{把 $C$ 单独解出来}：
+\[
+C=\text{那一堆异或的结果}.
+\]
+人话：\textbf{校验位的任务就是“补差”——组里信息位已经有奇数个 $1$，$C$ 就取 $1$ 凑成偶数；
+已有偶数个 $1$，$C$ 就取 $0$。}
+\end{defbox}
+
+\subsection{四步法总览（这套流程背下来，任何“$k$ 位信息、偶校验、构汉明码”的题都能做）}
+\begin{enumerate}[leftmargin=1.8em,itemsep=2pt,topsep=2pt]
+  \item \textbf{定 $r$}：解不等式 $2^{r}\ge n+1$，其中 $n=k+r$（逐个试）；
+  \item \textbf{定位置}：校验位放第 $1,2,4,8,\dots$ 位（$2$ 的幂次位），信息位塞剩下的位置；
+  \item \textbf{写方程}：按“位置号的二进制地址第几位为 $1$”分成 $r$ 组，每组写一个偶校验方程；
+  \item \textbf{代入求校验位、拼码字、回代验算}。
+\end{enumerate}
+
+\subsection{第一步：定校验位个数 $r$}
+
+\begin{calc}{逐个试}
+$r$ 个校验位最后给出 $r$ 个 $0/1$ 答案，拼起来最多表示 $2^{r}$ 种状况；
+而收方要区分的是 \textbf{$n+1$ 种}：\textbf{“没错”$1$ 种} $+$ \textbf{“第 $1$ 位错”
+$\sim$ “第 $n$ 位错”$n$ 种}。要一一报到，必须 $2^{r}\ge n+1$。把 $n=k+r=8+r$ 代进去试：
+
+\begin{center}\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{@{}ccccc l@{}}
+\toprule
+试的 $r$ & $n=8+r$ & 需区分 $n+1$ & 可用 $2^{r}$ & 比较 & 结论\\
+\midrule
+$r=1$ & $9$ & $10$ & $2$ & $2<10$ & 不够\\
+$r=2$ & $10$ & $11$ & $4$ & $4<11$ & 不够\\
+$r=3$ & $11$ & $12$ & $2^{3}=8$ & $8<12$ & \textbf{不够}（差 $4$ 个状态）\\
+$r=4$ & $12$ & $13$ & $2^{4}=16$ & $16\ge13$ & \textbf{可行}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+故 \fbox{$r=4$}，\fbox{$n=k+r=8+4=12$}，这是一个 \textbf{$(12,8)$ 码}，码率 $R=\frac{8}{12}=\frac23$。
+\end{calc}
+
+\textbf{交叉验证}：教材的 $(7,4)$ 汉明码是 $k=4$、$r=3$、$n=7$，$2^{3}=8\ge7+1=8$ 恰好够。
+我们这题 $k=8$ 不是“刚好填满”的值，所以 $2^{4}=16$ 有富余
+（只用到 $13$ 个状态，$13,14,15$ 号地址永远空着，不影响使用）。
+
+\subsection{第二步：排位置表（校验位放第 $1,2,4,8$ 位）}
+
+\begin{defbox}{位置规则（必须背）}
+把码字的 $n$ 个位置\textbf{从 $1$ 开始}编号。\textbf{编号是 $2$ 的整数次幂的位置放校验位}，
+即第 $1,2,4,8,16,\dots$ 位（$2^{0},2^{1},2^{2},2^{3},2^{4},\dots$）放
+$C_1,C_2,C_4,C_8,\dots$；\textbf{其余位置按从小到大}放信息位 $D_1,D_2,\dots,D_k$。
+
+\textbf{校验位的下标就是它所在的位置号}：$C_1$ 在第 $1$ 位、$C_4$ 在第 $4$ 位、$C_8$ 在第 $8$ 位
+——\textbf{名字即地址}，纠错时不会搞混。
+\end{defbox}
+
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l*{12}{c}@{}}
+\toprule
+位置（十进制） & 1&2&3&4&5&6&7&8&9&10&11&12\\
+\midrule
+位置（4 位二进制地址） & 0001&0010&0011&0100&0101&0110&0111&1000&1001&1010&1011&1100\\
+\midrule
+这一位是谁 & $C_1$&$C_2$&$D_1$&$C_4$&$D_2$&$D_3$&$D_4$&$C_8$&$D_5$&$D_6$&$D_7$&$D_8$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{读法}：第 $1,2,4,8$ 位是校验位 $C_1,C_2,C_4,C_8$；
+剩下的第 $3,5,6,7,9,10,11,12$ 位按顺序是信息位 $D_1\sim D_8$：
+\[
+D_1\to3,\ D_2\to5,\ D_3\to6,\ D_4\to7,\ D_5\to9,\ D_6\to10,\ D_7\to11,\ D_8\to12 .
+\]
+
+\textbf{这里最大的坑}（老师讲评专门点名“第 $7$ 位、第 $10$ 位编码错误”）：
+\textbf{第 $8$ 位被 $C_8$ 占了，所以 $D_5$ 不是第 $8$ 位而是第 $9$ 位}，往后全部顺延一位。
+一旦从这里错位，$D_5\sim D_8$ 的位置会全错，整个码字就废了。
+口诀：\textbf{“逢 $2$ 的幂次让给校验位，数据位见空就填”}。
+
+\subsection{第三步：写四组偶校验方程}
+
+\begin{defbox}{分组规矩（一句话）}
+每个位置号写成 $4$ 位二进制地址（因为 $r=4$）。\textbf{地址的第 $1$ 位（从右数、权值 $1$）
+是 $1$ 的进 $G_1$ 组}（由 $C_1$ 管）；\textbf{第 $2$ 位（权值 $2$）是 $1$ 的进 $G_2$ 组}（由 $C_2$ 管）；
+\textbf{第 $3$ 位（权值 $4$）是 $1$ 的进 $G_4$ 组}（由 $C_4$ 管）；
+\textbf{第 $4$ 位（权值 $8$）是 $1$ 的进 $G_8$ 组}（由 $C_8$ 管）。
+人话：\textbf{一个位置属于哪几组，看它的二进制地址哪几位是 $1$}——属于几组就被几个校验位盯着。
+\end{defbox}
+
+照位置表逐位检查，得四组：
+
+\begin{center}\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+组 & 包含的位置 & 成员（按位置顺序）\\
+\midrule
+$G_1$（地址第 $1$ 位为 $1$） & $\{1,3,5,7,9,11\}$ & $C_1,\ D_1,\ D_2,\ D_4,\ D_5,\ D_7$\\
+$G_2$（地址第 $2$ 位为 $1$） & $\{2,3,6,7,10,11\}$ & $C_2,\ D_1,\ D_3,\ D_4,\ D_6,\ D_7$\\
+$G_4$（地址第 $3$ 位为 $1$） & $\{4,5,6,7,12\}$ & $C_4,\ D_2,\ D_3,\ D_4,\ D_8$\\
+$G_8$（地址第 $4$ 位为 $1$） & $\{8,9,10,11,12\}$ & $C_8,\ D_5,\ D_6,\ D_7,\ D_8$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{动手核对（别信脑袋）}：拿 $G_2$ 说——$2=(0010)$、$3=(0011)$、$6=(0110)$、$7=(0111)$、
+$10=(1010)$、$11=(1011)$，第 $2$ 位都是 $1$，全进组；
+而 $1=(0001)$、$4=(0100)$、$5=(0101)$、$8=(1000)$、$9=(1001)$、$12=(1100)$ 第 $2$ 位都是 $0$，全不进。
+一个不多一个不少。
+
+\textbf{偶校验方程}（每组里 $1$ 的个数必须是偶数，即异或起来 $=0$）：
+\begin{align*}
+G_1:\quad & C_1\oplus D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7=0,\\
+G_2:\quad & C_2\oplus D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7=0,\\
+G_4:\quad & C_4\oplus D_2\oplus D_3\oplus D_4\oplus D_8=0,\\
+G_8:\quad & C_8\oplus D_5\oplus D_6\oplus D_7\oplus D_8=0 .
+\end{align*}
+人话：\textbf{每一行是一个“检查组”，组里的位凑在一起，$1$ 的个数必须凑成偶数}。
+由 $x\oplus y=0\iff x=y$ 把 $C$ 单独解出来（异或里“移项”就是两边同时异或同一个东西）：
+\begin{align*}
+C_1&=D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7,\\
+C_2&=D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7,\\
+C_4&=D_2\oplus D_3\oplus D_4\oplus D_8,\\
+C_8&=D_5\oplus D_6\oplus D_7\oplus D_8 .
+\end{align*}
+
+\subsection{第四步：代入 \texttt{10011100}，求四个校验位}
+
+题目给的 $8$ 位信息码 \texttt{10011100}，\textbf{最高位是 $D_1$}，从高到低逐位拆开：
+
+\begin{center}\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+符号 & $D_1$ & $D_2$ & $D_3$ & $D_4$ & $D_5$ & $D_6$ & $D_7$ & $D_8$\\
+\midrule
+取值 & 1 & 0 & 0 & 1 & 1 & 1 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{calc}{手把手求 $C_1,C_2,C_4,C_8$（异或中间结果全部写出）}
+\textbf{求 $C_1$}（$G_1$ 组）：
+\[
+C_1=D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7=1\oplus0\oplus1\oplus1\oplus0 .
+\]
+从左往右一个个吃掉：$1\oplus0=1$；$1\oplus1=0$；$0\oplus1=1$；$1\oplus0=1$。
+故 \fbox{$C_1=1$}（组里 $D_1,D_4,D_5$ 三个 $1$，奇数个，$C_1$ 取 $1$ 凑偶数）。
+
+\textbf{求 $C_2$}（$G_2$ 组）：
+\[
+C_2=D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7=1\oplus0\oplus1\oplus1\oplus0 .
+\]
+又是同一串数，同样四步：$1\oplus0=1$；$1\oplus1=0$；$0\oplus1=1$；$1\oplus0=1$。
+故 \fbox{$C_2=1$}（组里 $D_1,D_4,D_6$ 三个 $1$，奇数个）。
+
+\textbf{求 $C_4$}（$G_4$ 组）：
+\[
+C_4=D_2\oplus D_3\oplus D_4\oplus D_8=0\oplus0\oplus1\oplus0 .
+\]
+$0\oplus0=0$；$0\oplus1=1$；$1\oplus0=1$。故 \fbox{$C_4=1$}（组里只有 $D_4$ 一个 $1$）。
+
+\textbf{求 $C_8$}（$G_8$ 组）：
+\[
+C_8=D_5\oplus D_6\oplus D_7\oplus D_8=1\oplus1\oplus0\oplus0 .
+\]
+$1\oplus1=0$；$0\oplus0=0$；$0\oplus0=0$。故 \fbox{$C_8=0$}
+（组里已有 $D_5,D_6$ 两个 $1$，偶数个，不用再添）。
+
+\textbf{汇总}：$C_1=1$，$C_2=1$，$C_4=1$，$C_8=0$。
+\end{calc}
+
+\textbf{按位置表一位一位填格}：
+
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l*{12}{c}@{}}
+\toprule
+位置 & 1&2&3&4&5&6&7&8&9&10&11&12\\
+\midrule
+身份 & $C_1$&$C_2$&$D_1$&$C_4$&$D_2$&$D_3$&$D_4$&$C_8$&$D_5$&$D_6$&$D_7$&$D_8$\\
+取值 & 1&1&1&1&0&0&1&0&1&1&0&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+从左往右读出来：
+\[
+\boxed{\ \texttt{1111\,0010\,1100}\ }\qquad\text{即}\qquad \fbox{\texttt{111100101100}} .
+\]
+（数一数：$12$ 位 $\checkmark$；后 $8$ 位 \texttt{00101100} 与题目给的 \texttt{10011100}
+在位置上被切开了，不要拿原来的串直接比对，要按上表一位一位填。）
+
+\begin{calc}{回代验算：四组里 $1$ 的个数是不是都为偶数？（不写这步不给分）}
+把校验位\textbf{也算进去}，数每组 $1$ 的个数。
+
+$G_1=\{1,3,5,7,9,11\}$，取 $C_1,D_1,D_2,D_4,D_5,D_7=1,1,0,1,1,0$，
+$1$ 的个数 $=1+1+0+1+1+0=4$，\textbf{偶数} $\checkmark$
+
+$G_2=\{2,3,6,7,10,11\}$，取 $C_2,D_1,D_3,D_4,D_6,D_7=1,1,0,1,1,0$，
+$1$ 的个数 $=4$，\textbf{偶数} $\checkmark$
+
+$G_4=\{4,5,6,7,12\}$，取 $C_4,D_2,D_3,D_4,D_8=1,0,0,1,0$，
+$1$ 的个数 $=1+0+0+1+0=2$，\textbf{偶数} $\checkmark$
+
+$G_8=\{8,9,10,11,12\}$，取 $C_8,D_5,D_6,D_7,D_8=0,1,1,0,0$，
+$1$ 的个数 $=0+1+1+0+0=2$，\textbf{偶数} $\checkmark$
+
+四组分别是 $4/4/2/2$，\textbf{全为偶数，验算通过}。
+\end{calc}
+
+\subsection{反过来用：错了一位，怎么知道是第几位？}
+
+设发送方发出 \texttt{111100101100}，路上\textbf{第 $10$ 位}被咬了一口，$1$ 翻成 $0$：
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l*{12}{c}@{}}
+\toprule
+位置 & 1&2&3&4&5&6&7&8&9&10&11&12\\
+\midrule
+发出 $c$ & 1&1&1&1&0&0&1&0&1&\textbf{1}&0&0\\
+收到 $y$ & 1&1&1&1&0&0&1&0&1&\textbf{0}&0&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+即 $y=\texttt{1111\,0010\,1000}$。
+
+\begin{calc}{手算伴随式（综合征）：反推出错位置}
+收方\textbf{并不知道}原码字，只有 $y$ 和那四条校验方程。做法：拿 $y$ 重新算四个组的奇偶性，
+\textbf{奇数记 $1$、偶数记 $0$}，四个 $0/1$ 合起来叫\textbf{综合征（伴随式）} $(S_1,S_2,S_4,S_8)$。
+
+\textbf{$S_1$（看 $G_1=\{1,3,5,7,9,11\}$）}：取 $y_1,y_3,y_5,y_7,y_9,y_{11}=1,1,0,1,1,0$，
+$1\oplus1=0$，$0\oplus0=0$，$0\oplus1=1$，$1\oplus1=0$，$0\oplus0=0$ $\Rightarrow S_1=0$
+（组内 $4$ 个 $1$，偶数，没被破坏）。
+
+\textbf{$S_2$（看 $G_2=\{2,3,6,7,10,11\}$）}：取 $y_2,y_3,y_6,y_7,y_{10},y_{11}=1,1,0,1,\mathbf{0},0$，
+$1\oplus1=0$，$0\oplus0=0$，$0\oplus1=1$，$1\oplus0=1$，$1\oplus0=1$ $\Rightarrow S_2=1$
+（组内 $3$ 个 $1$，奇数，\textbf{被破坏}）。
+
+\textbf{$S_4$（看 $G_4=\{4,5,6,7,12\}$）}：取 $y_4,y_5,y_6,y_7,y_{12}=1,0,0,1,0$，
+$1\oplus0=1$，$1\oplus0=1$，$1\oplus1=0$，$0\oplus0=0$ $\Rightarrow S_4=0$
+（组内 $2$ 个 $1$，偶数）。
+
+\textbf{$S_8$（看 $G_8=\{8,9,10,11,12\}$）}：取 $y_8,y_9,y_{10},y_{11},y_{12}=0,1,\mathbf{0},0,0$，
+$0\oplus1=1$，$1\oplus0=1$，$1\oplus0=1$，$1\oplus0=1$ $\Rightarrow S_8=1$
+（组内 $1$ 个 $1$，奇数，\textbf{被破坏}）。
+
+\textbf{拼地址}：按权值 $1,2,4,8$ 组装成十进制位置号
+\[
+S_1\cdot1+S_2\cdot2+S_4\cdot4+S_8\cdot8=0\times1+1\times2+0\times4+1\times8=10,
+\]
+写成二进制即 $(S_8S_4S_2S_1)=(1010)_{2}=10$。
+
+\textbf{结论：错在第 $10$ 位。} 把 $y_{10}$ 由 $0$ 翻回 $1$，得 \texttt{111100101100}，
+与原码字一模一样。\textbf{纠错完成，收方不必回问发送方。}
+\end{calc}
+
+\begin{idea}{为什么“综合征”就是门牌号}
+因为\textbf{位置号本身就是它属于哪几组的清单}：第 $10$ 位的地址是 $1010$，说明它
+\textbf{只属于 $G_2$ 和 $G_8$ 两组}。它一翻错，恰好把这两组的奇偶性弄反，于是
+$(S_1,S_2,S_4,S_8)=(0,1,0,1)$，正好读成 $1010=10$。
+\textbf{某一位出错只会弄脏“地址里为 $1$ 的那几组”，所以综合征等于那一列的二进制地址}——
+不用查表、不用试，直接读出来。
+
+两种边界情形要分得清：$(0,0,0,0)$ 说明\textbf{没错}（或者错了至少 $2$ 位、恰好互相抵消，
+汉明码管不了）；综合征指向第 $1,2,4,8$ 位（地址 $0001,0010,0100,1000$）说明
+\textbf{错的是校验位自己}，信息位没坏，翻回来即可。
+\end{idea}
+
+\subsection{对照练习：老师课件那道题（信息码 \texttt{11101100}）}
+
+做法\textbf{一个字都不用改}，只换数据：$D_1\sim D_8$ 依次取 $1,1,1,0,1,1,0,0$。
+\begin{align*}
+C_1&=D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7=1\oplus1\oplus0\oplus1\oplus0=1,\\
+C_2&=D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7=1\oplus1\oplus0\oplus1\oplus0=1,\\
+C_4&=D_2\oplus D_3\oplus D_4\oplus D_8=1\oplus1\oplus0\oplus0=0,\\
+C_8&=D_5\oplus D_6\oplus D_7\oplus D_8=1\oplus1\oplus0\oplus0=0 .
+\end{align*}
+（前两行的中间步：$1\oplus1=0$，$0\oplus0=0$，$0\oplus1=1$，$1\oplus0=1$，得 $1$；
+后两行：$1\oplus1=0$，$0\oplus0=0$，$0\oplus0=0$，得 $0$。）
+故 $C_1=1,\ C_2=1,\ C_4=0,\ C_8=0$，填格：
+
+\begin{center}\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}l*{12}{c}@{}}
+\toprule
+位置 & 1&2&3&4&5&6&7&8&9&10&11&12\\
+\midrule
+身份 & $C_1$&$C_2$&$D_1$&$C_4$&$D_2$&$D_3$&$D_4$&$C_8$&$D_5$&$D_6$&$D_7$&$D_8$\\
+取值 & 1&1&1&0&1&1&0&0&1&1&0&0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+得 \fbox{\texttt{111011001100}}，与课件答案一致。回代验算（逐组数 $1$ 的个数）：
+$G_1,G_2$ 分别取 $1,1,1,0,1,0$ 与 $1,1,1,0,1,0$，各 $4$ 个 $1$（偶）；
+$G_4,G_8$ 分别取 $0,1,1,0,0$ 与 $0,1,1,0,0$，各 $2$ 个（偶）。
+四组全偶 $\checkmark$ 验算通过。
+
+\textbf{与本题对照}：两道题的校验位不一样（$C_4$ 一个是 $1$、一个是 $0$），因为信息位不同；
+\textbf{但“每组 $1$ 的个数为偶数”这个结构完全一样}——要掌握的是\textbf{方法}，不是\textbf{答案}。
+
+\begin{exam}{构造汉明码的答题步骤（照这四个小标题写，分步给分）}
+\textbf{1. 定 $r$ 与 $n$。} 写 $2^{r}\ge n+1$ 且 $n=k+r$，\textbf{把 $r=1,2,3,\dots$ 逐个代进去试}，
+每步写“此时 $n=?$，$2^{r}=?$ 与 $n+1=?$ 谁大”，最后写“故 $r=\square$，$n=\square$”。
+\emph{只写答案不写试算过程会扣分。}
+
+\textbf{2. 列位置表。} 把 $1\sim n$ 位列全，标清哪几位是 $C_1,C_2,C_4,C_8$（$2$ 的幂次位）、
+哪几位是 $D_1\sim D_k$（其余按序）。\emph{这张表是后面所有计算的依据，必须写全。}
+
+\textbf{3. 写校验方程。} 每个位置号写成 $r$ 位二进制地址，按“地址第 $j$ 位为 $1$”分成 $r$ 组，
+写 $r$ 个方程（偶校验 $=0$），再解成 $C_{2^{j}}=\bigoplus(\text{组内信息位})$。
+
+\textbf{4. 代入、拼码字、回代验算。} 逐个算 $C$（写出异或中间步），按位置表拼成 $n$ 位，
+\textbf{最后一定回代 $r$ 个方程、确认每组 $1$ 的个数满足奇偶要求}，写一句“验算通过”。
+
+\medskip
+\textbf{若还要纠错}：多写一步——把收到的 $y$ 代进同样 $r$ 个方程得综合征
+$(S_1,S_2,S_4,S_8)$，按权值 $1,2,4,8$ 组装成十进制位置号，指出第几位错并翻转。
+\end{exam}
+
+\begin{exam}{四个常见扣分点}
+\textbf{1. 校验位位置放错。} 必须放第 $1,2,4,8$ 位。若把校验位全堆在末尾
+（前 $8$ 位数据、后 $4$ 位校验），位置表、分组、地址全部对不上，整题作废。
+\emph{对策：动手算之前先把位置表写给阅卷老师看。}
+
+\textbf{2. 偶校验 / 奇校验混淆。} 偶校验“每组 $1$ 的个数为偶数”、方程写 $=0$；
+奇校验“奇数”、写 $=1$。混了就有一半校验位全反，白算。
+
+\textbf{3. 回代不验算。} 只写最终码字、不代回方程检查，只要有一个位置填错就整题错。
+\emph{对策：算完逐组数 $1$ 的个数，把“$4/4/2/2$，全偶，通过”这行写上去}——既是检查也是给分点。
+
+\textbf{4. 把 $2^{r}\ge n+1$ 写错。} 常见三种：写成 $2^{r}\ge n$（漏掉“没错”这个状态）；
+忘了 $n$ 里含 $r$；不等号写反。\emph{对策：写不等式时旁边注明“$n+1$ 是要区分‘没错’$+n$ 个‘第几位错’”。}
+\end{exam}
+
+\end{document}

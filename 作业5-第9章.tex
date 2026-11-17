@@ -1,0 +1,529 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 信息论基础\ \ 第六次作业（第9章）超详细解答}\\[6pt]
+{\large —— 每一步在“干什么”都写出来了，零基础也能跟着抄懂}\\[6pt]
+{\small 教材：石峰、莫忠息《信息论基础》（第三版），习题 P213\quad
+对数一律以 $2$ 为底，记作 $\lb$，单位 bit}
+\end{center}
+
+%==========================================================
+\section{作业说明与本章一句话地图}
+
+前八章都在跟\textbf{概率分布}打交道（给定 $p(x)$ 算熵、算容量、设计码），第9章换了两个更“野”的问题：
+\textbf{(a)} 一段数据到底有多少“本质信息”？用“最短描述有多长”来度量它——这是 \textbf{Kolmogorov 复杂度}；
+\textbf{(b)} 当我\textbf{根本不知道}数据的统计特性时，还能不能压缩它？——这是 \textbf{Lempel--Ziv 编码}与\textbf{通用编码}。
+
+本章考试基本只出\textbf{简答题}与\textbf{小型计算题}：简答问“$K(n)$ 的定义/性质”“通用编码为什么不要先验知识”；计算最常考 9.2——\textbf{给一串字母做 LZ 分解并数码长}。它不难，但“一步错、后面全错”，所以下文把 11 个短语一格一格拆开写。9.1、9.3 也各写了一段，方便对照。
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{1.2cm}p{6.4cm}p{7.6cm}@{}}
+\toprule
+小节 & 一句话说的是什么 & 本份作业里怎么处理 \\
+\midrule
+9.1 & 用“能打印出这个数的最短程序有多长”衡量对象的复杂度 & 本文 \S\ref{sec:kolmo}（即 9.1）：用 Kraft 不等式证“有无穷多个 $n$ 比自己的名字还难写” \\
+9.2 & LZ 编码：边读边把见过的串登记进词典，只发“词典位置 + 一个新字母” & 本文 \S\ref{sec:lz}（即 9.2）：\textbf{本份重点}，11 个短语、两种码长约定、$40$ 位 \\
+9.3 & LZ 的推广；Kieffer--Yang 证明这类通用编码冗余度趋于 $0$ & 本文 \S\ref{sec:app} 最后两段（简答备用） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{qa}{先把三个记号钉死（后面全程用）}
+$\lb x$ 读作“以 $2$ 为底 $x$ 的对数”，即“$2$ 的几次方等于 $x$”，如 $\lb 8=3$、$\lb 26\approx4.70$。
+$\lceil x\rceil$ 读作“$x$ 向上取整”，即“不小于 $x$ 的最小整数”，如 $\lceil 4.70\rceil=5$、$\lceil 3\rceil=3$。
+\textbf{编码里为什么到处是它}：要用 $b$ 位二进制区分 $M$ 种情况，必须 $2^{b}\ge M$，即 $b\ge\lb M$，取最小整数就是 $\lceil\lb M\rceil$。
+本文把字母和序列一律写成打字机字体（\texttt{a}、\texttt{ababbb...}），免得和数学符号混在一起。
+\end{qa}
+
+\begin{exam}{第9章的考试怎么考}
+\textbf{考法一（简答 5--8 分）}：$K(n)$ 的定义；“$K$ 不可计算”是什么意思；通用编码与 Huffman 的根本区别。
+\textbf{考法二（计算 10--15 分）}：给序列做 LZ 分解 + 算码长（本文 \S\ref{sec:lz}）。
+\textbf{考法三（证明 10 分）}：Kraft + 计数，证“存在 $K(n)>\lb n$ 的 $n$”（本文 \S\ref{sec:kolmo}）。
+\textbf{必背三句}：(i) 长度 $\ell$ 的 $0/1$ 串只有 $2^{\ell}$ 个，长度 $\le L$ 的程序共 $2^{L+1}-1$ 个；
+(ii) 至少 $1-2^{-k}$ 比例的串满足 $K(x)\ge|x|-k$，即\textbf{绝大多数串不可压缩}；
+(iii) LZ 的码长满足 $\frac1n\ell_{\text{LZ}}\to\Hx{X}$，即\textbf{长序列上 LZ 达到熵率}。
+\end{exam}
+
+%==========================================================
+\section{9.2\quad 对给定字母序列做 Lempel--Ziv 编码（本份重点）}
+\label{sec:lz}
+
+\begin{defbox}{题目（教材 P213）}
+试对字母序列
+\[
+\texttt{ababbbabaabababaababbababa}
+\]
+进行 Lempel--Ziv 编码。（教材把 Lempel 印成了 “Lewpel”，是笔误。）
+\end{defbox}
+
+\begin{idea}{先看清这串东西长什么样（别一上来就编码）}
+一共 $26$ 个符号，只有 \texttt a、\texttt b 两个字母。按位置编号列出来，后面查表全靠它：
+\begin{center}
+\small
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{@{}c|*{13}{c}@{}}
+\toprule
+位置 & 1&2&3&4&5&6&7&8&9&10&11&12&13\\
+符号 & \texttt a&\texttt b&\texttt a&\texttt b&\texttt b&\texttt b&\texttt a&\texttt b&\texttt a&\texttt a&\texttt b&\texttt a&\texttt b\\
+\midrule
+位置 & 14&15&16&17&18&19&20&21&22&23&24&25&26\\
+符号 & \texttt a&\texttt b&\texttt a&\texttt a&\texttt b&\texttt a&\texttt b&\texttt b&\texttt a&\texttt b&\texttt a&\texttt b&\texttt a\\
+\bottomrule
+\end{tabular}
+\end{center}
+数一遍：\texttt a 出现 $13$ 次，\texttt b 出现 $13$ 次，$13+13=26$，对上了（后面算熵要用）。
+\end{idea}
+
+\subsection{（1）LZ 到底在干什么：一句话 + 一个类比}
+
+\begin{defbox}{LZ 的核心思想（一句话版）}
+\textbf{边读边建词典}：凡是“以前见过”的串，就不把它的字母一个个重复发出去，只发“它在词典里的\textbf{位置}”$+$“再补\textbf{一个新字母}”。
+\end{defbox}
+
+\begin{idea}{给室友报一本自己编的缩写词典（想通这个类比，LZ 就通了）}
+你要在微信上报这串 \texttt{ababbbaba...}，每打一个字母都要敲一下键盘，很烦。于是你俩约定：
+\textbf{①} 你们\textbf{共同维护一个小本子}（词典），按顺序记“编号 $\to$ 字符串”；
+\textbf{②} 你从头往后读，拼命往前凑，直到“再往前一个字就变成没见过的新串”为止；
+\textbf{③} 这时你说“\textbf{翻到本子第 5 条（那是 \texttt{aba}），再跟一个新字母 \texttt b}”，室友一查就还原出 \texttt{abab}；
+\textbf{④} 说完，你俩\textbf{同时}把 \texttt{abab} 添成第 6 条。规则公开，所以两边的本子\textbf{永远同步}，谁都不必额外发送词典本身。
+\textbf{省钱的道理}：越往后，“见过的串”越长。词典有 $c$ 条时，指第几条只要 $\lceil\lb c\rceil$ 位，而这条短语可能代表 $m$ 个原始符号；只要 $m>\lceil\lb c\rceil+1$ 就赚了。
+\textbf{亏钱的道理}：序列一开头词典是空的，前几个短语“没得指”，指针位白花——所以\textbf{短序列上 LZ 常常比定长编码还长}，本题就是活例子（见 \S\ref{sec:cmp}）。
+\end{idea}
+
+\subsection{（2）LZ78 的三条规则（逐字抠清楚）}
+
+本题用的是 \textbf{LZ78}（词典式）。设“读指针”$i$ 一开始指向第 $1$ 个符号。
+
+\begin{defbox}{三条规则}
+\textbf{规则 ① 找最长的“已在词典中”的前缀}：从位置 $i$ 开始，能凑多长就凑多长，只要凑出来的串还在词典里。停下来时得到最长串 $w$（$w$ 可能是\textbf{空串}，当第一字母就不在词典里时）。
+“最长”两字是最大埋雷点：只要加下一个字母还能在词典里找到，就\textbf{必须}继续加，凑短了就是错。
+
+\textbf{规则 ② 再多取一个字母}：在 $w$ 后面再多吃一个字母 $\sigma$。按规则 ① 已经停了，所以 $w\sigma\notin$ 词典（一定是新串）。$w\sigma$ 就叫\textbf{一个短语}。
+
+\textbf{规则 ③ 登记 + 发码字}：把短语 $w\sigma$ 作为\textbf{新的一条}加进词典（编号往后排），发出码字
+\[
+(p,\ \sigma),\qquad p=w\ \text{在词典中的编号},\qquad \text{若 }w=\text{空串则 }p=0 .
+\]
+\textbf{指针指向的是 $w$（去掉最后一个字母之后的那段），不是 $w\sigma$ 本身}——第 2 大易错点，因为 $w\sigma$ 刚加进去，解码端此刻还不知道它。
+\end{defbox}
+
+\begin{qa}{为什么指针只能指“已存在的前缀”？这是整个 LZ 的灵魂}
+若把指针指成“本短语自己的编号”，解码端要还原这个短语就必须先知道它，而它正是你要告诉对方的东西——\textbf{循环依赖，无法解码}。指向前缀 $w$ 就没事：$w$ 是更早出现过、已经解出来的串，解码端一定查得到。
+\end{qa}
+
+\subsection{（3）逐短语手把手分解（本题核心，11 个短语）}
+
+答案先放这儿，然后一条条走：
+\[
+\texttt{a}\;\big|\;\texttt{b}\;\big|\;\texttt{ab}\;\big|\;\texttt{bb}\;\big|\;\texttt{aba}\;\big|\;\texttt{abab}\;\big|\;\texttt{abaa}\;\big|\;\texttt{ba}\;\big|\;\texttt{bba}\;\big|\;\texttt{bab}\;\big|\;\texttt{a}
+\]
+长度验算：$1+1+2+2+3+4+4+2+3+3+1=26$，正好等于原序列长度（\textbf{必查项}：短语首尾相接必须还原原序列）。
+
+\subsubsection{主表：怎么切、指针指向谁}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{center}
+\begin{tabular}{@{}c c c c c c c@{}}
+\toprule
+序号 $k$ & 短语 $w\sigma$ & 位置 & 最长前缀 $w$ & 指针 $p$ & 新字母 $\sigma$ & 码字 $(p,\sigma)$\\
+\midrule
+1 & \texttt a & 1 & 空串 & 0 & \texttt a & $(0,\texttt a)$\\
+2 & \texttt b & 2 & 空串 & 0 & \texttt b & $(0,\texttt b)$\\
+3 & \texttt{ab} & 3--4 & \texttt a & 1 & \texttt b & $(1,\texttt b)$\\
+4 & \texttt{bb} & 5--6 & \texttt b & 2 & \texttt b & $(2,\texttt b)$\\
+5 & \texttt{aba} & 7--9 & \texttt{ab} & 3 & \texttt a & $(3,\texttt a)$\\
+6 & \texttt{abab} & 10--13 & \texttt{aba} & 5 & \texttt b & $(5,\texttt b)$\\
+7 & \texttt{abaa} & 14--17 & \texttt{aba} & 5 & \texttt a & $(5,\texttt a)$\\
+8 & \texttt{ba} & 18--19 & \texttt b & 2 & \texttt a & $(2,\texttt a)$\\
+9 & \texttt{bba} & 20--22 & \texttt{bb} & 4 & \texttt a & $(4,\texttt a)$\\
+10 & \texttt{bab} & 23--25 & \texttt{ba} & 8 & \texttt b & $(8,\texttt b)$\\
+11 & \texttt a & 26 & 空串 & 0 & \texttt a & $(0,\texttt a)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\endgroup
+
+\subsubsection{副表：词典怎么一格一格长出来}
+
+“编码后新增”那列就是“每加一个短语，词典的变化”。\textbf{草稿纸上请真的这样一行行写}，否则指针一定错。词典\textbf{只增不改}，老词条永远在（下文用 $\cdots$ 省略靠前的老条目）。
+
+\begingroup
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}c p{10.4cm} c@{}}
+\toprule
+$k$ & 编码\textbf{前}词典里已有的词条（编号$:$串） & 编码\textbf{后}新增 \\
+\midrule
+1 & （空，一条都没有） & 1$:$\,\texttt a \\
+2 & 1$:$\,\texttt a & 2$:$\,\texttt b \\
+3 & 1$:$\,\texttt a,\ 2$:$\,\texttt b & 3$:$\,\texttt{ab} \\
+4 & $\cdots$,\ 2$:$\,\texttt b,\ 3$:$\,\texttt{ab} & 4$:$\,\texttt{bb} \\
+5 & $\cdots$,\ 3$:$\,\texttt{ab},\ 4$:$\,\texttt{bb} & 5$:$\,\texttt{aba} \\
+6 & $\cdots$,\ 4$:$\,\texttt{bb},\ 5$:$\,\texttt{aba} & 6$:$\,\texttt{abab} \\
+7 & $\cdots$,\ 5$:$\,\texttt{aba},\ 6$:$\,\texttt{abab} & 7$:$\,\texttt{abaa} \\
+8 & $\cdots$,\ 6$:$\,\texttt{abab},\ 7$:$\,\texttt{abaa} & 8$:$\,\texttt{ba} \\
+9 & $\cdots$,\ 7$:$\,\texttt{abaa},\ 8$:$\,\texttt{ba} & 9$:$\,\texttt{bba} \\
+10 & $\cdots$,\ 8$:$\,\texttt{ba},\ 9$:$\,\texttt{bba} & 10$:$\,\texttt{bab} \\
+11 & 1--10 条（共 $10$ 条） & （不新增，词典停在 $10$ 条） \\
+\bottomrule
+\end{tabular}
+\endgroup
+
+\subsubsection{手把手走前三个短语（把“为什么这么切”掰开）}
+
+\begin{calc}{短语 1、2（词典空着，只能各发一个单字母）}
+\textbf{短语 1}：\textbf{①} 读位置 1 的 \texttt a；词典是空的，最长“已在词典中的前缀”只能是\textbf{空串}（长度 $0$）。\textbf{②} 空串后多取一个字母得 \texttt a，且 \texttt a 不在空词典里，符合“新串”。\textbf{③} 空串没编号 $\Rightarrow p=0$，码字 $(0,\texttt a)$，词典新增 $1{:}\texttt a$。吃了 $1$ 个符号，下一轮位置 2。
+
+\textbf{短语 2}：同样的道理，位置 2 的 \texttt b 不在词典里 $\Rightarrow$ 前缀为空串 $\Rightarrow p=0$，码字 $(0,\texttt b)$，词典新增 $2{:}\texttt b$。吃了 $1$ 个符号，下一轮位置 3。
+
+\textbf{小结}：头两个短语都是单字母，因为无处可指。它们各花 $1$ 位，这是\textbf{词典的启动成本}。
+\end{calc}
+
+\begin{calc}{短语 3（第一个真正“指”起来的短语）}
+\textbf{①} 从位置 3 读：单字 \texttt a \textbf{有}（第 1 条）$\Rightarrow$ 长度 $1$ 可以；再往前加一个，位置 3、4 得 \texttt{ab}，词典里\textbf{没有} $\Rightarrow$ 停。最长前缀 $w=\texttt a$（编号 $1$）。
+\textbf{②} 在 $w$ 后多取位置 4 的 \texttt b，短语 $=\texttt{ab}$（长 $2$），此刻不在词典 $\{$\texttt a,\texttt b$\}$ 里 ✓。
+\textbf{③} 指针指 $w$ 的编号 $\Rightarrow p=1$，$\sigma=\texttt b$，码字 $(1,\texttt b)$，词典新增 $3{:}\texttt{ab}$。吃了 $2$ 个符号，下一轮位置 5。
+\textbf{注意}：指针写 $1$（指向 \texttt a），\textbf{不是} $3$（那是 \texttt{ab} 自己的编号）。写 $3$ 解码端当场卡死。
+\end{calc}
+
+\subsubsection{把最容易错的几个挑出来单独走}
+
+\begin{calc}{短语 6（位置 10--13）：为什么是 \texttt{abab} 而不是 \texttt{aba}}
+此时词典 5 条：$1{:}\texttt a,\ 2{:}\texttt b,\ 3{:}\texttt{ab},\ 4{:}\texttt{bb},\ 5{:}\texttt{aba}$。从位置 10 逐级试：
+\begin{center}
+\small
+\begin{tabular}{@{}c l c@{}}
+\toprule
+试的串 & 读的位置 & 词典里有吗 \\
+\midrule
+\texttt a & 10 & 有（1）\\
+\texttt{ab} & 10--11 & 有（3）\\
+\texttt{aba} & 10--12 & 有（5）\\
+\texttt{abab} & 10--13 & \textbf{没有} $\Rightarrow$ 到此为止 \\
+\bottomrule
+\end{tabular}
+\end{center}
+所以 $w=\texttt{aba}$（编号 $5$），多取位置 13 的 \texttt b，短语 $=\texttt{abab}$，码字 $(5,\texttt b)$，新增 $6{:}\texttt{abab}$。吃了 $4$ 个符号，下一轮位置 14。
+\textbf{若只凑到 \texttt{aba}}（违反“最长”），就会切成“\texttt{aba} 指编号 $5$ 再补一个字母”，是错切法，考试扣分。
+\end{calc}
+
+\begin{calc}{短语 7：指针又是 5；短语 8--11：一路顺下来}
+\textbf{短语 7}（位置 14 起）：\texttt a 有(1) $\to$ \texttt{ab} 有(3) $\to$ \texttt{aba} 有(5) $\to$ \texttt{abaa}（位置 14--17）\textbf{没有} $\Rightarrow$ $w=\texttt{aba}$（\textbf{还是第 5 条}），新字母取位置 17 的 \texttt a，短语 \texttt{abaa}，码字 $(5,\texttt a)$，新增 $7{:}\texttt{abaa}$。
+\textbf{“同一指针用两次”完全正常}：LZ 词典是前缀树，一个父亲可以有很多孩子，\texttt{aba} 的两个孩子是 \texttt{abab}（第 6 条）与 \texttt{abaa}（第 7 条）。看到重复指针别以为抄错。
+\textbf{短语 8}（位置 18 起）：\texttt b 有(2)，\texttt{ba} 没有 $\Rightarrow$ $w=\texttt b$，码字 $(2,\texttt a)$，新增 $8{:}\texttt{ba}$；下一轮位置 20。
+\textbf{短语 9}（位置 20 起）：\texttt b 有(2)，\texttt{bb} 有(4)，\texttt{bba} 没有 $\Rightarrow$ $w=\texttt{bb}$，码字 $(4,\texttt a)$，新增 $9{:}\texttt{bba}$；下一轮位置 23。
+\textbf{短语 10}（位置 23 起）：\texttt b 有(2)，\texttt{ba} 有(8)，\texttt{bab} 没有 $\Rightarrow$ $w=\texttt{ba}$，码字 $(8,\texttt b)$，新增 $10{:}\texttt{bab}$；下一轮位置 26。
+\end{calc}
+
+\begin{calc}{短语 11（位置 26）：只剩一个“残片” \texttt a，怎么办？}
+位置 26 是最后一个符号 \texttt a。规则 ① 里 \texttt a 本来就在词典（第 1 条），可是\textbf{后面没有符号了}，规则 ② 那个“再多取一个字母”取不到东西。这是 LZ 的经典尾巴，两种写法：
+\begin{center}
+\small
+\begin{tabular}{@{}p{5.6cm}p{4.0cm}c@{}}
+\toprule
+约定 & 码字 & 这个码字几位 \\
+\midrule
+\textbf{A（本文采用）}：把 \texttt a 当指针 $0$ + 新字母 \texttt a & $(0,\texttt a)$ & $4+1=5$ \\
+B：指针指向已有的 \texttt a（第 1 条），不补字母 & $(1,\varnothing)$ & $4+0=4$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+两种写法总码长只差 $1$ 位（$40$ 位 vs $39$ 位）。\textbf{考试按老师课上讲的写，并在答案里明写一句“最后一个短语按约定 A 处理”}，这样两种约定都能得分。
+\end{calc}
+
+\subsection{（4）算码长：逐短语紧致约定 $=40$ 位}
+
+\subsubsection{先说清“一个指针要几位二进制”的通用算法}
+
+指针的取值可能是 $0,1,2,\dots,|\mathcal D|$（$|\mathcal D|=$ 词典当前词条数），一共 $|\mathcal D|+1$ 种可能（\textbf{别忘了 $0$ 这个空指针也要占一个码位}）。要用二进制全部区分开，位数就是
+\[
+b=\Big\lceil \lb\big(|\mathcal D|+1\big)\Big\rceil .
+\]
+代入本题：第 $k$ 个短语编码\textbf{之前}，词典正好有 $k-1$ 条（前面每个短语都登记了一条），可选地址数 $=(k-1)+1=k$，于是
+\[
+\text{第 } k \text{ 个短语的指针位数}=\lceil \lb k\rceil ,
+\]
+很好记也很顺眼：$k=1$ 时 $\lceil\lb1\rceil=0$，正好就是“第一个短语没有指针”。字母只有 \texttt a、\texttt b 两种，故字母域固定 $1$ 位（$2^{1}=2$ 种码元够用）。
+逐项验算（用 $2^{b-1}<k\le2^{b}$ 检查，防止取整取错）：
+\begin{center}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}c|ccccccccccc@{}}
+\toprule
+$k$ & 1&2&3&4&5&6&7&8&9&10&11\\
+\midrule
+$\lceil\lb k\rceil$ & 0&1&2&2&3&3&3&3&4&4&4\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{码长明细表（这就是答题要交的那张表）}
+
+\begingroup
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}c c c c c c c c@{}}
+\toprule
+$k$ & 短语 & 编码前 $|\mathcal D|$ & 可选地址数 $|\mathcal D|{+}1$ & 指针位 & 字母位 & 码字总位 & 累计位\\
+\midrule
+1 & \texttt a & 0 & 1 & 0 & 1 & 1 & 1\\
+2 & \texttt b & 1 & 2 & 1 & 1 & 2 & 3\\
+3 & \texttt{ab} & 2 & 3 & 2 & 1 & 3 & 6\\
+4 & \texttt{bb} & 3 & 4 & 2 & 1 & 3 & 9\\
+5 & \texttt{aba} & 4 & 5 & 3 & 1 & 4 & 13\\
+6 & \texttt{abab} & 5 & 6 & 3 & 1 & 4 & 17\\
+7 & \texttt{abaa} & 6 & 7 & 3 & 1 & 4 & 21\\
+8 & \texttt{ba} & 7 & 8 & 3 & 1 & 4 & 25\\
+9 & \texttt{bba} & 8 & 9 & 4 & 1 & 5 & 30\\
+10 & \texttt{bab} & 9 & 10 & 4 & 1 & 5 & 35\\
+11 & \texttt a & 10 & 11 & 4 & 1 & 5 & 40\\
+\midrule
+合计 & 11 个短语 & — & — & $\mathbf{29}$ & $\mathbf{11}$ & $\mathbf{40}$ & \\
+\bottomrule
+\end{tabular}
+\endgroup
+
+求和过程必须写出来：
+\begin{align*}
+\text{指针总位}&=0+1+2+2+3+3+3+3+4+4+4=29,\qquad
+\text{字母总位}=\underbrace{1+\cdots+1}_{11\ \text{项}}=11,\\
+\text{总位数}&=29+11=\mathbf{40}\ \text{位}\quad(\text{按短语查表}\ 1+2+3+3+4+4+4+4+5+5+5=40,\ \text{一致}).
+\end{align*}
+
+\begin{exam}{两种常见“位数约定”，考试按老师讲的写}
+\textbf{约定 I（本文主答案，逐短语紧致）}：每个短语用“当前词典规模”决定的位数，第 $k$ 个短语的指针 $=\lceil\lb k\rceil$ 位，故
+$\ell=\sum_{k=1}^{11}\big(\lceil\lb k\rceil+1\big)=29+11=\mathbf{40}$ 位。
+
+\textbf{约定 II（统一位宽）}：先规定“指针一律 $4$ 位”（$2^4=16\ge11$，足够覆盖最终 $10$ 条词条 $+$ 空指针），字母仍 $1$ 位。则第 1 个短语无指针（$1$ 位），其余 $10$ 个各 $4+1=5$ 位：
+$\ell=1+10\times(4+1)=1+50=\mathbf{51}$ 位。
+
+\textbf{易错提醒}：有人写 “$1+2+10\times4=43$”，那是把“第 1、2 个短语的位数”和“剩下每个 $4$ 位”混在一起了。数清楚：共 $11$ 个短语，去掉第 $1$ 个还剩 $\mathbf{10}$ 个，而每个是 $\mathbf{4+1=5}$ 位（指针 $4$ 位\textbf{加}字母 $1$ 位），不是 $4$ 位。
+\textbf{结论}：约定 I 给 $40$ 位，约定 II 给 $51$ 位，两者都可得满分，关键是\textbf{把约定写在答案第一行}。
+\end{exam}
+
+\subsection{（5）讨论：$40$ 位 vs 定长 $26$ 位，为什么短序列反而压不动}
+\label{sec:cmp}
+
+\textbf{先算理论下限。}按一阶统计：
+\[
+\p{\texttt a}=\frac{13}{26}=\frac12,\quad \p{\texttt b}=\frac{13}{26}=\frac12,
+\qquad
+\Hx{X}=-\frac12\lb\frac12-\frac12\lb\frac12
+=-\frac12\times(-1)-\frac12\times(-1)=1\ \text{bit}.
+\]
+（人话：\texttt a、\texttt b 一样多，“下一个是谁”正好是一枚硬币，$1$ 位就是最省。）于是 $26$ 个符号的理想极限码长是 $n\Hx{X}=26\times1=26$ 位；而\textbf{定长编码}（\texttt a$\to0$、\texttt b$\to1$，每符号 $1$ 位）恰好 $=26$ 位。也就是说这串数据在一阶统计上“完全随机”，定长编码已达一阶熵，没有一阶冗余可挤。
+
+\begin{center}
+\small
+\begin{tabular}{@{}l c c c@{}}
+\toprule
+编码方式 & 码长（位）& 每符号位数 & 相对 $26\Hx{X}=26$ 位 \\
+\midrule
+定长编码（\texttt a$\to0$,\texttt b$\to1$） & $26$ & $1.000$ & $0$（已达一阶熵）\\
+LZ78（约定 I，逐短语紧致） & $40$ & $1.538$ & $+14$ 位，亏 $53.8\%$\\
+LZ78（约定 II，统一 $4$ 位指针） & $51$ & $1.962$ & $+25$ 位，亏 $96.2\%$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{idea}{为什么短序列上 LZ 会输（这段话一定要会说）}
+把 $40$ 位拆两半：\textbf{“干货”}$=11$ 个字母 $\times1$ 位 $=11$ 位（真正在描述“新东西”）；\textbf{“地址”}$=29$ 位（纯粹指路），占 $29/40=72.5\%$。而它带来的复读收益只是把 $26$ 个符号 $26\times1=26$ 位搬完。平均每条短语吃掉
+\[
+\bar L=\frac{26}{11}\approx2.36\ \text{个符号},\qquad\text{而指针平均要}\ \frac{29}{11}\approx2.64\ \text{位},
+\]
+$2.64>2.36$，自然亏本。一句话：\textbf{只有当“一条短语吃掉的符号数”大于“指针位数”时，LZ 才赚}。
+\end{idea}
+
+\textbf{那为什么说“长序列上 LZ 冗余度趋于 0”？}设序列长 $n$、切成 $c$ 条短语，平均短语长 $\bar L=n/c$。第 $k$ 条码长约 $\lb k+1$ 位，$k$ 到 $c$ 为止，故总码长与每符号码长约
+\[
+\ell\approx\sum_{k=1}^{c}(\lb k+1)\approx c(\lb c+1),
+\qquad
+\frac{\ell}{n}\approx\frac{c(\lb c+1)}{n}=\frac{\lb c+1}{\bar L}.
+\]
+于是“LZ 好不好”全看 $\bar L$ 长得快不快：\textbf{短序列}（本题 $n=26$）时 $\bar L\approx2.36$、分子 $\lb c+1\approx4.46$，$\ell/n\approx1.89$，比 $1$ 位/符号还大——亏；\textbf{长序列}时词典涨到 $c$ 条，最长短语能到 $\lb c$ 的量级，于是 $\bar L\asymp\lb n$ 一起长大，$\ell/n\approx\frac{\lb c}{\bar L}\to\Hx{X}$。
+
+\textbf{更本质的一层（用“典型集”讲，考试可直接写）}：源熵率为 $H$ 时，长度 $m$ 的串共有 $2^{m}$ 个，但\textbf{典型的}只有约 $2^{mH}$ 个。LZ 词典里长度 $m$ 的词条就是在这 $2^{mH}$ 个典型串里挑，所以“指到某一条”只需 $\lb2^{mH}=mH$ 位，而这条词条代表 $m$ 个原始符号 $\Rightarrow$ \textbf{每符号只要} $mH/m=H$ 位。指针开销被摊到 $n$ 个符号上，而 $c$ 只有 $n/\lb n$ 量级，摊下来 $c\lb c/n\approx(\lb n)/(\lb n)$ 的常数倍 $\to0$。\textbf{这就是“冗余度趋于 0”：分母 $n$ 越长，词典开销被摊得越薄。}
+
+\begin{qa}{Kieffer--Yang 给了什么具体数字？（简答备用）}
+对 LZ78 这类通用编码可证：码长冗余度
+$\rho_n\overset{\text{def}}{=}\ell_{\text{LZ}}(x^n)/n-\Hx{X}$
+满足 $\rho_n=O\!\left(\frac{\log\log n}{\log n}\right)\to0$。即\textbf{完全不知道源的统计特性}，每符号码长仍收敛到熵率 $H$，速率是 $\log\log n/\log n$（慢，但趋于 $0$）。这就是“通用编码（universal coding）”的严格含义，Kieffer--Yang 的贡献是把“趋于 $0$”定量化成了这个速率。
+\end{qa}
+
+\begin{exam}{9.2 的答题格式与三个易错点}
+\textbf{答题格式（照抄这个骨架就能得分）}：① 第一行写\textbf{约定}（词典编号从 $1$ 起、空指记 $0$、指针位数 $\lceil\lb k\rceil$、字母域 $1$ 位）；② 画\textbf{两张表}（切分表 $+$ 码长表）；③ 写\textbf{验算}（短语长之和 $=26$、总位数 $=40$）；④ 写一句\textbf{讨论}（与定长 $26$ 位比，短序列吃亏、长序列冗余 $\to0$）。
+
+\textbf{易错点 1：不会找“最长”前缀}。第 $3$ 号短语若只凑到空串，就会切成 \texttt{a}|\texttt{b}|\texttt{a}|$\cdots$，全错。自检口诀：\textbf{能加就加，加不进去才停}；停下来时那个“加进去会失败”的字母，正是要发的新字母。
+
+\textbf{易错点 2：指针指错对象}。指针指向\textbf{去掉最后一个字母后的前缀} $w$，\textbf{不是短语 $w\sigma$ 自己}。\texttt{ab} 写成 $(3,\texttt b)$ 是错的（$3$ 是 \texttt{ab} 自己的编号，解码端还没有它），正确是 $(1,\texttt b)$。
+
+\textbf{易错点 3：编号起点与空指针没交代}。词典从 $0$ 编还是从 $1$ 编、空指用 $0$ 还是用 $-$，不同教材不同；\textbf{不写清楚，老师无法判对错}，写了两种约定都算对。
+
+\textbf{加分句}：末尾残片单独说明（本文第 11 个短语 \texttt a 按 $(0,\texttt a)$ 处理，占 $5$ 位；按 $(1,\varnothing)$ 则 $4$ 位，总长 $39$ 位）。
+\end{exam}
+
+%==========================================================
+\section{9.1\quad 用 Kraft 不等式证明存在 $K(n)>\lb n$ 的整数}
+\label{sec:kolmo}
+
+\begin{defbox}{题目（教材 P213）}
+试用 Kraft 不等式证明：存在无穷多个整数 $n$，其 Kolmogorov 复杂性大于 $\lb n$，即有无穷多个 $n$，使得 $K(n)>\lb n$。
+\end{defbox}
+
+\subsection{先把三个概念用大白话说清}
+
+\begin{defbox}{概念一：$K(n)$ 是什么}
+$K(n)$ 读作“\textbf{整数 $n$ 的 Kolmogorov 复杂度}”，意思是
+\[
+K(n)=\min\big\{\ell(p):\ \text{程序 }p\text{ 运行后停机并打印出 }n\big\},
+\]
+人话：\textbf{要让计算机把 $n$ 打印出来，最短的那个程序有多长（多少位）}。例：$n=2^{100}$ 很好写（程序“打印 $2$ 的 $100$ 次方”，长度约 $\lb100$ 位量级），故 $K(2^{100})$ 很小；而随机挑的 $100$ 位整数，除了逐位抄一遍几乎没别的写法，$K(n)$ 约 $100$ 位。\textbf{$K$ 小 $=$ 有规律 $=$ 可压缩}。
+\end{defbox}
+
+\begin{defbox}{概念二、三：程序就是 $0/1$ 串，所以“个数”数得出来；“$\lb$”的意思是“以 $2$ 为底”}
+理论讨论里“程序”就是一条有限 $0/1$ 串（交给固定的通用计算机去跑）。于是：长度恰为 $\ell$ 的串有 $2^{\ell}$ 个（每位两种选择：$\underbrace{2\times\cdots\times2}_{\ell}=2^{\ell}$）；长度 $\le L$ 的串共
+\[
+1+2+4+\cdots+2^{L}=2^{L+1}-1\ \text{个}
+\]
+（等比数列求和 $\sum_{\ell=0}^{L}2^{\ell}=2^{L+1}-1$；验算 $L=3$：$1+2+4+8=15=2^{4}-1$ ✓）。\textbf{为什么重要}：一个程序只打印一个数，所以\textbf{“个数”给了上界}——能被打出来的数不可能比程序还多。
+本题中符号 $\lb$ 表示“以 $2$ 为底取对数”，所以 $\lb n$ 就是“$2$ 的几次方等于 $n$”，也正好是“把 $n$ 用二进制写出来要几位”的量级。题目翻成人话：\textbf{有没有无穷多个整数，它的最短程序比“用二进制抄一遍”还长？}抄一遍约 $\lb n$ 位，而 $K(n)$ 允许更短（有规律时能压）；本题要证明：\textbf{不可能所有 $n$ 都这么幸运，总有无限多个 $n$ 连“抄一遍”都算是最省的，甚至还差一点}。
+\end{defbox}
+
+\subsection{第一步：纯计数能给到什么（Kraft 不等式的离散版）}
+
+设 $L\ge0$，记 $A_L=\{n: K(n)\le L\}$（人话：所有“用 $\le L$ 位的程序就能打印出来”的数）。
+
+\begin{calc}{计数上界}
+\textbf{①} 能当“长度 $\le L$ 的程序”的串共 $2^{L+1}-1$ 个。\textbf{②} 每个这样的串跑起来要么不停机、要么打印某\textbf{一个}数，故\textbf{最多贡献一个}数给 $A_L$。\textbf{③} 把 $A_L$ 按“最短程序多长”分层：$K(n)=0$ 层、$=1$ 层、$\dots$、$=L$ 层，第 $\ell$ 层最多 $2^{\ell}$ 个数（长度恰 $\ell$ 的程序只有 $2^{\ell}$ 个）。\textbf{④} 各层相加：
+\[
+|A_L|\le\sum_{\ell=0}^{L}2^{\ell}=1+2+4+\cdots+2^{L}=2^{L+1}-1 .
+\]
+\end{calc}
+
+\textbf{这就是 Kraft 不等式的离散版本。}对比经典 Kraft 不等式：一组前缀码的码长 $\ell_1,\ell_2,\dots$ 满足 $\sum_i2^{-\ell_i}\le1$（本题取 $\ell_i=K(n)$，即 $\sum_n2^{-K(n)}\le1$）。两边乘以 $2^{L+1}$ 便得“第 $\ell$ 层最多 $2^{\ell}$ 个”。\textbf{所以分层相加与 Kraft 是同一件事的粗版与细版}：粗版只说“总数不超过多少”，细版还能给各层加权。
+
+\begin{qa}{只靠数数，能直接证出 $K(n)>\lb n$ 吗？——不能，正好差一位}
+取 $L=4$：长度 $\le4$ 位的程序共 $1+2+4+8+16=31$ 个，而 $1,\dots,32$ 这 $32$ 个数都满足 $\lb n\le\lb32=5$。假设“$K(n)\le\lb n$ 对所有 $n$ 成立”，这 $32$ 个数都该能用 $\le5$ 位程序打出来，而 $\le5$ 位程序有 $63$ 个，装得下，\textbf{没有矛盾}。退一步只用 $\le4$ 位的 $31$ 个程序：$32>31$，故\textbf{至少有一个 $n\le32$ 使 $K(n)\ge5$}。
+若这个 $n\le31$：$\lb n<5\le K(n)$ ✓ 正是要的；若偏偏只有 $n=32$ 满足：$K(32)\ge5=\lb32$，\textbf{严格大于不成立}，推不下去。
+\textbf{结论}：纯计数只能逼出“$K(n)\ge\lb n-O(1)$”这种带常数的结论，\textbf{差一位就卡住}；要突破这一位必须把 Kraft 的“权重”用足——这就是题目点名要你用 Kraft 的原因。
+\end{qa}
+
+\subsection{第二步：Kraft + 调和级数，一步到位}
+
+\begin{defbox}{Kraft 不等式（本题要用的形式）}
+设 $\{\ell_1,\ell_2,\dots\}$ 是某个\textbf{前缀码}（没有任何码字是另一码字的前缀）的码长，则 $\sum_i2^{-\ell_i}\le1$。人话：长度 $\ell$ 的码字只占“码字空间”的 $2^{-\ell}$ 份额，前缀条件保证这些份额互不重叠，故总份额不超过 $1$（$100\%$）。
+\end{defbox}
+
+\begin{qa}{为什么能把“最短程序”当成前缀码？（这一步不能含糊）}
+对每个 $n$ 取一个最短程序 $p_n$，长度 $=K(n)$。要说明 $\{p_n\}$ 无前缀关系，需要“程序读完自己就停”（\textbf{自定界}）：
+若机器自定界，则“读 $p$ 就停机”与“读 $pq$ 就停机且输出同一结果”不可能同时成立（机器读到 $p$ 末尾就停了，$q$ 那些位根本不会被读）。于是若 $p_n$ 是 $p_m$ 的真前缀，两者必然输出同一个数，即 $n=m$，与“每个 $n$ 只取一个最短程序”矛盾。
+一般机器不是自定界的，但可在每条程序末尾加“结束标记”，长度只增 $O(\lb\ell)$，不影响“$K$ 与 $\lb n$ 谁大”的结论；教材默认按自定界处理。\textbf{答题写一句“不妨设程序集为前缀码（自定界）”即可。}
+\end{qa}
+
+\begin{calc}{证明（反证法，四步）}
+\textbf{假设（反证）}：只有有限多个 $n$ 满足 $K(n)>\lb n$。翻译成“从某项以后全都不超过”：存在整数 $n_0$，使
+\[
+\text{对一切 } n\ge n_0,\qquad K(n)\le\lb n . \tag{$\ast$}
+\]
+\textbf{第 1 步（Kraft 给总量）}：由 Kraft 不等式，$\displaystyle\sum_{n=1}^{\infty}2^{-K(n)}\le1$。\hfill (1)
+
+\textbf{第 2 步（用 $(\ast)$ 把每项换成 $1/n$）}：对 $n\ge n_0$，由 $K(n)\le\lb n$ 及“底 $2>1$ 时 $2^{-x}$ 是减函数”得
+\[
+2^{-K(n)}\ \ge\ 2^{-\lb n}=\frac{1}{2^{\lb n}}=\frac1n .
+\]
+（这一步是整题的核心：\textbf{把“指数比较”变成“倒数比较”，把二进制世界和调和级数接了起来}。）
+
+\textbf{第 3 步（截断求和，制造矛盾）}：对任意 $N>n_0$，只取一段，
+\[
+\sum_{n=n_0}^{N}\frac1n\ \le\ \sum_{n=n_0}^{N}2^{-K(n)}\ \le\ \sum_{n=1}^{\infty}2^{-K(n)}\ \le\ 1 . \tag{2}
+\]
+即：若 $(\ast)$ 成立，则\textbf{任意一段调和级数的和都必须 $\le1$}。
+
+\textbf{第 4 步（调和级数偏偏发散）}：按 $2$ 的幂分块，每组用最小的项做代表压下去（$\frac13+\frac14>\frac14+\frac14=\frac12$，$\frac15+\cdots+\frac18>4\times\frac18=\frac12$，依此类推），对任意 $m\ge1$：
+\begin{align*}
+\sum_{n=1}^{2^{m}}\frac1n
+&\ge 1+\frac12+\underbrace{\frac{2}{4}}_{2\times\frac14}
++\underbrace{\frac{4}{8}}_{4\times\frac18}+\cdots
++\underbrace{\frac{2^{m-1}}{2^{m}}}_{2^{m-1}\times\frac1{2^{m}}}
+=1+\underbrace{\frac12+\cdots+\frac12}_{m\ \text{个}\ \frac12}=1+\frac m2\ \to\infty .
+\end{align*}
+取 $m$ 足够大，使 $1+\frac m2>1+\sum_{n=1}^{n_0-1}\frac1n$，则 $\sum_{n=n_0}^{2^m}\frac1n>1$，与 (2) 的 $\le1$ 直接矛盾。
+
+\textbf{结论}：假设不成立，故\textbf{存在无穷多个 $n$ 使 $K(n)>\lb n$}。$\blacksquare$
+\end{calc}
+
+\begin{idea}{三句话把 9.1 收尾}
+\textbf{①} “能打的程序”数按 $2^{\ell}$ 涨，“要打的数”按 $\lb n$ 涨，两者同阶只差常数——所以“$K(n)\le\lb n$ 对所有 $n$ 成立”在计数上是\textbf{刚好用尽预算、一点不剩}。
+\textbf{②} Kraft 比数数更细：它给的是加权总量 $\sum2^{-K(n)}\le1$，而调和级数 $\sum1/n$ 恰好发散，于是“一点不剩”也站不住，必定\textbf{无穷多次超支}。
+\textbf{③} 直觉：绝大多数整数的 $K(n)$ 约等于 $\lb n$（\textbf{几乎不可压缩}），而 $K(n)>\lb n$ 只在\textbf{无穷多个稀疏位置}上发生。注意结论是“无穷多个”，\textbf{不是“几乎所有”}——这正是纯计数证不出的地方。
+\end{idea}
+
+\begin{exam}{9.1 的考试怎么考}
+\textbf{必写四段}：(i) 程序是 $0/1$ 串，长度 $\le L$ 的共 $2^{L+1}-1$ 个（写出 $1+2+\cdots+2^L=2^{L+1}-1$）；(ii) 反设“存在 $n_0$ 使 $n\ge n_0$ 时 $K(n)\le\lb n$”；(iii) 用 Kraft 得 $\sum_n2^{-K(n)}\le1$，再由 $2^{-K(n)}\ge1/n$ 得 $\sum_{n\ge n_0}1/n\le1$；(iv) 调和级数发散（分组写出 $1+\frac m2\to\infty$），矛盾，故有无穷多个 $n$。
+
+\textbf{易错点 1}：把结论写成“几乎所有 $n$ 满足 $K(n)>\lb n$”。\textbf{错}：绝大多数 $n$ 满足 $K(n)\approx\lb n$，题目只说“有无穷多个”。
+\textbf{易错点 2}：直接用“$\sum_n2^{-\lb n}=\sum_n1/n$ 发散”而\textbf{不写不等式方向}。方向是 $K(n)\le\lb n\Rightarrow2^{-K(n)}\ \boxed{\ge}\ 1/n$，于是“一个有界的东西 $\ge$ 一个发散的东西”才矛盾；写反就废了。
+\textbf{易错点 3}：忘记交代“程序集是前缀码”。不交代，Kraft 根本不能用。加一句“不妨设程序自定界（或末尾加结束标记，长度只增 $O(\lb\ell)$）”。
+\end{exam}
+
+%==========================================================
+\section{附：算法复杂度的直观（简答备用）}
+\label{sec:app}
+
+\subsection{可压缩与不可压缩：两种极端}
+
+\textbf{(a) 高度可压缩}：$x=0101\cdots01$（长 $2m$，正好 $m$ 个“01”）。不必抄 $2m$ 位，只要一个短程序“\textbf{把 01 重复 $m$ 次打出来}”，其长度只跟 $m$ 的写法与固定常数有关：
+\[
+K(x)\le\lb m+c\quad(c\ \text{与}\ m\ \text{无关}),
+\]
+而直接抄要 $2m$ 位。$m=1000$ 时：$K(x)\le\lb1000+c\approx10+c$ 位 vs 抄 $2000$ 位——\textbf{压缩约 $200$ 倍}。原因一句话：\textbf{有规律，规律能被“少量说明”代劳}。
+
+\textbf{(b) 不可压缩}：随机挑一个长 $m$ 的 $0/1$ 串。长 $m$ 的串共 $2^m$ 个，而长度 $<m-k$ 的程序总共只有 $1+2+\cdots+2^{m-k-1}=2^{m-k}-1$ 个；一个程序最多打一个串，故“能用很短程序打出来”的串占全部比例不到 $2^{m-k}/2^{m}=2^{-k}$。反过来说，\textbf{至少 $1-2^{-k}$ 比例的串满足 $K(x)\ge m-k$}，即\textbf{几乎所有串都不可压缩}（与第 \ref{sec:kolmo} 节同一套计数，只是把“整数 $n$”换成“串 $x$”）。取 $k=10$ 即“$99.9\%$ 的串压缩率超不过 $10$ 位”。\textbf{所以压缩软件能把文件压小，从来不是因为文件“本来就能压”，而是因为人类造的文件都很有规律}（文本、图片、程序都有大量重复结构）；真随机的文件任何压缩软件都会压得\textbf{更大}——这正是 9.2 里 $40>26$ 的同一个现象。
+
+\subsection{$K(n)$ 不可计算：为什么“最省”算不出来}
+
+\textbf{结论}：不存在一个程序，输入任意串 $x$ 就输出 $K(x)$。
+
+\begin{qa}{直观证明（Berry 悖论版，考试可直接这么说）}
+反设存在能算 $K(\cdot)$ 的程序 $P$。则可造出程序 $Q$：\textbf{从 $n=1,2,3,\dots$ 往上数，用 $P$ 逐个算 $K(n)$，一旦找到第一个满足 $K(n)>10^{10}$ 的 $n$，就把它打印出来并停机。}
+这个 $n$ 一定存在（第 \ref{sec:kolmo} 节的计数：$K(n)\le10^{10}$ 的整数至多 $2^{10^{10}+1}-1$ 个，用完就没了）。$Q$ 打印出这个 $n$，于是
+\[
+K(n)\le\ell(Q)\approx\lb(10^{10})+c\ \ll\ 10^{10},
+\]
+与“$K(n)>10^{10}$”矛盾，故反设的 $P$ 不存在。\textbf{人话版}：这就像“\textbf{最小的、不能用 $20$ 个汉字以内描述的数}”——一旦你用这句话（十几个字）把它描述出来，它就被描述了，自相矛盾。$K$ 不可计算本质就是这个悖论的严格版本。
+\end{qa}
+
+\textbf{“不可计算”具体意味着什么（别理解成“我们太笨”）}：$K(x)$ 算不出来，但它的\textbf{上界}永远算得出——随便写个能打印 $x$ 的程序，其长度就是上界（\textbf{“给我一个程序，我就给你一个上界”}）；拿不到的是\textbf{下界}，即无法证明“再没有更短的写法”。所以实践中“压到极限”做不到，只能不停换更好的方法；这也解释了 LZ、Huffman 都只是“某种”压缩，而不是“最优压缩”——最优压缩需要一个不可计算的量 $K$ 当裁判。
+
+\subsection{LZ 与 Kieffer--Yang：都属于“通用编码”}
+
+\textbf{“通用”与“专用”相对}。Huffman、算术编码是\textbf{专用}的：必须先知道（或统计出）$p(x)$ 才能编出码表，分布给错压缩效果立刻掉。\textbf{LZ 系列（LZ77/LZ78/LZW）}不需要：面对未知来源的数据\textbf{边看边学}，用“重复出现的串”自动构成词典（本文 9.2 那套规则），随数据统计特性自己调整，这类编码就叫\textbf{通用编码}。Kieffer--Yang 把“通用”从口号变成了定量定理：对平稳遍历源，
+\[
+\frac{1}{n}\ell_{\text{LZ}}\to\Hx{X},
+\qquad
+\rho_n=\frac{\ell_{\text{LZ}}}{n}-\Hx{X}=O\!\left(\frac{\log\log n}{\log n}\right)\to0,
+\]
+即\textbf{不需先验知识也能达到熵率，冗余度有明确速率}，正好补上“香农第一定理要求已知 $p(x)$”这个实践缺口。
+
+\begin{exam}{第9章简答题的“一句话答案”库}
+\textbf{①} $K(n)$：能打印出 $n$ 的最短程序长度（bit）；$K$ 小则有规律、可压缩。
+\textbf{②} 为什么绝大多数串不可压缩：长度 $<m-k$ 的程序只有 $2^{m-k}-1$ 个，不到全部 $2^m$ 个串的 $2^{-k}$。
+\textbf{③} $K$ 不可计算的含义：不存在通用程序算出最短描述长度；上界随时可算，下界无法证明。
+\textbf{④} 通用编码与 Huffman 的区别：后者要先知道 $p(x)$；前者边读边建词典，渐近仍达 $H$，冗余 $O(\log\log n/\log n)\to0$。
+\textbf{⑤} LZ 三步：找最长已在词典中的前缀 $w$ $\to$ 多吃一个字母 $\sigma$ $\to$ 发 $(p_w,\sigma)$ 并把 $w\sigma$ 登记进词典。
+\textbf{⑥} 为什么 LZ 短序列会输：指针开销按短语条数摊，短序列摊不薄；本题 $40>26$ 就是实例。
+\end{exam}
+
+\vspace{4pt}
+\begin{center}
+\small —— 全文完。最终答案：$11$ 个短语；逐短语约定 \textbf{$40$ 位}，统一 $4$ 位指针约定 \textbf{$51$ 位}，定长对照 \textbf{$26$ 位}。——
+\end{center}
+
+\end{document}

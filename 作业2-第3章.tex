@@ -1,0 +1,872 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+% 仅本文件范围内略微收紧行距与段距，让四道长题的解答更紧凑（不改动公共导言区）
+\linespread{1.0}
+\setlength{\parskip}{1.5pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 信息论基础\quad 第三次作业（第3章）超详细解答}\\[7pt]
+{\large —— 每一条式子的“依据”都写在旁边，一节课没听过也能一路抄懂}\\[7pt]
+{\small 教材：石峰、莫忠息《信息论基础》（第三版）\quad 习题 P54：3.2、3.3、3.7、3.10\quad 对数底为 2，单位 bit}
+\end{center}
+
+\begin{idea}{开工前：这一份作业只需要五个“零件”}
+\begin{enumerate}[leftmargin=1.8em,itemsep=2pt,topsep=2pt]
+  \item \textbf{熵} $\Hx{X}=-\sum_x \p{x}\lb\p{x}$：把 $X$ 猜出来平均要花多少 bit，也就是“猜不准的程度”。
+  \item \textbf{联合熵} $\Hx{X,Y}=-\sum_x\sum_y \p{x,y}\lb\p{x,y}$：把 $X,Y$ 捆在一起当成一个人，他有多难猜。
+  \item \textbf{条件熵} $\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}$：\textbf{已经知道 $Y$ 之后}，$X$ 还剩多少猜不准。
+  \item \textbf{互信息} $\I{X;Y}=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}=\Hx{X}+\Hx{Y}-\Hx{X,Y}$：
+        $X$ 与 $Y$ 的“共有信息量”，也就是\textbf{知道其中一个能替你省下多少 bit}。
+  \item \textbf{条件互信息} $\I{X;Y|Z}=\Hx{X|Z}-\Hx{X|Y,Z}$：在\textbf{已经知道 $Z$ 的前提下}，$X$ 与 $Y$ 还能替你省下多少 bit。
+\end{enumerate}
+\textbf{再加三条“法则”，这份作业从头到尾只用它们：}
+\begin{enumerate}[label=(\alph*),leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item \textbf{链式法则}：$\Hx{X,Y}=\Hx{X}+\Hx{Y|X}$（在“给定 $W$”的条件下同理：$\Hx{X,Y|W}=\Hx{X|W}+\Hx{Y|X,W}$）；
+  \item \textbf{互信息链式法则}：$\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y}=\I{X;Z}+\I{X;Y|Z}$；
+  \item \textbf{两条不等式}：\textbf{条件不增熵} $\Hx{X|Y}\le\Hx{X}$；\textbf{互信息非负} $\I{X;Y}\ge0$。
+\end{enumerate}
+\end{idea}
+
+\subsection*{符号怎么念（第一次看到也别慌）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}p{8.0cm}@{}}
+\toprule
+符号 & 念作 & 一句大白话 \\
+\midrule
+$\I{X;Y}$ & “$X$ 与 $Y$ 的互信息” & 知道 $Y$ 能替你省下多少 bit 才猜中 $X$ \\
+$\I{X;Y|Z}$ & “在已知 $Z$ 的前提下，$X$ 与 $Y$ 的（条件）互信息” &
+在“$Z$ 已经告诉你”之后，$Y$ 还能再多省下多少 bit 才猜中 $X$ \\
+$\I{X;Z|Y}$ & “在已知 $Y$ 的前提下，$X$ 与 $Z$ 的（条件）互信息” & 同上，只是把 $Y,Z$ 的位置换了一下 \\
+$\Hx{X|Y,Z}$ & “已知 $Y$ 和 $Z$ 之后 $X$ 的条件熵” & 手里已经握着 $Y$ 和 $Z$，$X$ 还剩多难猜 \\
+$\I{X;Y,Z}$ & “$X$ 与“$(Y,Z)$ 这一对”的互信息” & 把 $Y,Z$ 打成包当一个人，看它能替 $X$ 省多少 bit \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{qa}{这四道题其实是三件事，先看地图再动笔}
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item \textbf{3.2 与 3.10 是同一台机器}：都靠恒等式 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$ 加上一个
+        “马尔可夫链”条件（$\I{X;Z|Y}=0$）。3.2 是这台机器的一次运转，3.10 是它的工程版（数据处理定理）。
+  \item \textbf{3.3 是纯代数}：拿链式法则和条件互信息的定义式来回代换，不涉及任何概率计算。
+  \item \textbf{3.7 是“确定性函数”的八种玩法}：核心只有一句——\textbf{$Z=X+Y$ 是 $X,Y$ 的函数，
+        反过来用 $Z$ 和其中一个也能定出另一个}。抓住“双向确定性”，八问全部落地。
+\end{itemize}
+\end{qa}
+
+%====================== 3.2 ======================
+\section{3.2\quad 求证 $\I{X;Y}\ge\I{X;Y|Z}$}
+
+\begin{defbox}{题目（教材 P54 习题 3.2，照原样抄）}
+求证
+\[
+\I{X;Y}\ \ge\ \I{X;Y|Z}.
+\]
+\end{defbox}
+
+\begin{qa}{先泼一盆冷水：这条不等式\textbf{没有附加条件时是假的}}
+教材 P54 把这道题印成上面那样，可是\textbf{它并不无条件成立}。教材自己在习题 3.1 就给了反例：
+取 $X,Y$ 相互独立（此时 $\I{X;Y}=0$），再令 $Z=X\oplus Y$（模 2 加，即“异或”）。
+$X$ 与 $Y$ 本来毫无关系，可是\textbf{一旦知道了 $Z$，$X$ 和 $Y$ 反而互相锁死了}——知道 $X$ 就能算出 $Y=Z\oplus X$，
+于是 $\I{X;Y|Z}=1$ bit。结果是
+\[
+\I{X;Y}=0\ <\ 1=\I{X;Y|Z},
+\]
+和题目要证的方向正好相反。
+
+那本题到底要证什么？看教材书后答案（P237“部分习题解答或提示”）：
+\begin{quote}
+“首先由定义可计算出 $\I{X;Z|Y}=0$，再利用三个随机变量的互信息公式可以证明。”
+\end{quote}
+这句话里藏着本题\textbf{真正的条件}：题设默认 \textbf{$X,Y,Z$ 构成马尔可夫链 $X\to Y\to Z$}，
+也就是\textbf{给定 $Y$ 时 $X$ 与 $Z$ 条件独立}，即 $\I{X;Z|Y}=0$。
+（“$X\to Y\to Z$”读作“$X$ 经 $Y$ 到 $Z$”，意思是：$Z$ 只通过 $Y$ 和 $X$ 发生关系，$Y$ 把 $X$ 能告诉 $Z$ 的话全说完了。）
+\end{qa}
+
+\begin{defbox}{于是本题按“两条命题”来写（卷面上建议就这么起手）}
+\textbf{命题 A（恒等式，无条件成立）}
+\[
+\I{X;Y}-\I{X;Y|Z}\ =\ \I{X;Z}-\I{X;Z|Y}.
+\]
+\textbf{命题 B（在题设条件下成立）}\quad 若 $\I{X;Z|Y}=0$（即 $X\to Y\to Z$ 马尔可夫），则
+\[
+\I{X;Y}-\I{X;Y|Z}=\I{X;Z}\ \ge\ 0,\qquad\text{即}\qquad \I{X;Y}\ \ge\ \I{X;Y|Z}.
+\]
+\end{defbox}
+
+\subsection{命题 A：把恒等式一步一步推出来}
+
+\begin{idea}{先问一句：为什么要找这个恒等式}
+因为左边 $\I{X;Y}-\I{X;Y|Z}$ 里出现的三个变量“地位不对等”（$Y$ 多出现一次），
+而右边的 $\I{X;Z}-\I{X;Z|Y}$ 是它的“镜像”。\textbf{恒等式的作用是换一个视角}：
+在新视角下，只要 $\I{X;Z|Y}=0$，第一项就消失了，只剩一个一定非负的 $\I{X;Z}$（互信息非负，下面第 3 步会用到）。
+\textbf{这类“先证一个恒等式、再用条件砍掉一项”的套路，是本课程证明题的通用引擎。}
+\end{idea}
+
+\begin{calc}{推法一：用互信息的链式法则（最快，考试就写这个）}
+
+\textbf{第 1 步：写出互信息链式法则的第一种拆法。}
+把“$Y$ 与 $Z$ 打包”看成一个人，先算 $\I{X;Y}$，再算“已知 $Y$ 之后剩下的那部分” $\I{X;Z|Y}$：
+\begin{equation}
+\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y}. \tag{3.2-1}
+\end{equation}
+\textbf{依据}：互信息的链式法则（就是“先算一个、再算条件版”的那个加法律）。
+顺便验一遍（用熵的定义硬拆，确认它不是天上掉下来的）：
+\[
+\underbrace{\Hx{X}-\Hx{X|Y,Z}}_{\I{X;Y,Z}}
+=\underbrace{\bigl[\Hx{X}-\Hx{X|Y}\bigr]}_{\I{X;Y}}
++\underbrace{\bigl[\Hx{X|Y}-\Hx{X|Y,Z}\bigr]}_{\I{X;Z|Y}},
+\]
+右边三个 $\Hx{X}$、$\Hx{X|Y}$ 正负相消，正好剩左边。\checkmark
+
+\textbf{第 2 步：写出第二种拆法。}这回先算 $\I{X;Z}$，再算“已知 $Z$ 之后剩下的那部分” $\I{X;Y|Z}$：
+\begin{equation}
+\I{X;Y,Z}=\I{X;Z}+\I{X;Y|Z}. \tag{3.2-2}
+\end{equation}
+\textbf{依据}：同一条链式法则，只是把加法的先后顺序换了（打包的两个变量谁先算都一样，因为左端都是 $\I{X;Y,Z}$）。
+
+\textbf{第 3 步：两式相减。}（3.2-1）与（3.2-2）的左端完全相同，所以右端相等：
+\[
+\I{X;Y}+\I{X;Z|Y}=\I{X;Z}+\I{X;Y|Z}.
+\]
+把 $\I{X;Y|Z}$ 和 $\I{X;Z|Y}$ 各挪到对面（移项，等号不变）：
+\[
+\boxed{\ \I{X;Y}-\I{X;Y|Z}\ =\ \I{X;Z}-\I{X;Z|Y}\ }
+\]
+这就是命题 A。\textbf{一句话翻译}：\emph{“$Y$ 从 $X$ 那里拿到的信息，比它在 $Z$ 已经在场时还能多拿到的部分，
+正好等于 $Z$ 本来就能从 $X$ 那里拿到的信息，减去它在 $Y$ 已经在场时还能多拿到的部分。”}
+——绕口，但结构完全对称，这就是它好用的原因。
+\end{calc}
+
+\begin{calc}{推法二：从熵的定义硬算（不怕忘公式时的保命写法）}
+四个量全部按同一条定义 $\I{A;B}=\Hx{A}-\Hx{A|B}$ 展开（无非是“多加一个已知条件”）：
+\begin{align*}
+\I{X;Y}&=\Hx{X}-\Hx{X|Y}, &\qquad \I{X;Y|Z}&=\Hx{X|Z}-\Hx{X|Y,Z},\\
+\I{X;Z}&=\Hx{X}-\Hx{X|Z}, &\qquad \I{X;Z|Y}&=\Hx{X|Y}-\Hx{X|Y,Z}.
+\end{align*}
+分别代入左右两边（依据只有两条：去括号、合并同类项）：
+\begin{align*}
+\I{X;Y}-\I{X;Y|Z}
+&=\bigl[\Hx{X}-\Hx{X|Y}\bigr]-\bigl[\Hx{X|Z}-\Hx{X|Y,Z}\bigr]\\
+&=\Hx{X}-\Hx{X|Y}-\Hx{X|Z}+\Hx{X|Y,Z};\\[2pt]
+\I{X;Z}-\I{X;Z|Y}
+&=\bigl[\Hx{X}-\Hx{X|Z}\bigr]-\bigl[\Hx{X|Y}-\Hx{X|Y,Z}\bigr]\\
+&=\Hx{X}-\Hx{X|Z}-\Hx{X|Y}+\Hx{X|Y,Z}.
+\end{align*}
+两边都是“$\Hx{X}$ 加上另外三项的加减组合”，逐项比对\textbf{完全一样}，所以
+$\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$。\checkmark
+
+\textbf{这种“四项展开再比对”的写法虽然笨，但在考场上最保险}：它只用到互信息的定义，你不必担心记错链式法则的顺序。
+\end{calc}
+
+\subsection{命题 B：加上条件，结论落地}
+
+\begin{calc}{三步收尾}
+\textbf{第 1 步：把条件写出来。}题设给的“已知 $Y$ 时 $X$ 与 $Z$ 条件独立”翻译成公式就是
+\[
+\I{X;Z|Y}=0 .
+\]
+（人话：手里已经有 $Y$ 了，再去打听 $Z$，对猜 $X$ 一点忙都帮不上。）
+
+\textbf{第 2 步：代入命题 A。}
+\[
+\I{X;Y}-\I{X;Y|Z}\ =\ \I{X;Z}-\underbrace{\I{X;Z|Y}}_{=\,0}\ =\ \I{X;Z}.
+\]
+
+\textbf{第 3 步：用“互信息非负”。}对任意两个随机变量都有 $\I{X;Z}\ge0$（知道 $Z$ 只会帮你猜 $X$，不会帮倒忙），于是
+\[
+\I{X;Y}-\I{X;Y|Z}=\I{X;Z}\ \ge\ 0
+\quad\Longrightarrow\quad
+\boxed{\ \I{X;Y}\ \ge\ \I{X;Y|Z}\ }
+\]
+证明完毕。$\blacksquare$
+\end{calc}
+
+\begin{idea}{三句人话，帮你记住这个结论}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{为什么需要条件}：$\I{X;Y}$ 是“$Y$ 单独告诉我的关于 $X$ 的信息”，
+        $\I{X;Y|Z}$ 是“$Z$ 已经说过的前提下，$Y$ 还能补充的信息”。
+        \textbf{补充的量当然比“单说的量”少}——但这话只在 $Y$ 是“中介”时成立
+        （信息从 $X$ 流经 $Y$ 到 $Z$，$Y$ 在管线上游，说话最全）。
+  \item \textbf{马尔可夫链 $X\to Y\to Z$ 的画面}：$X$ 是原始信号，$Y$ 是第一次处理后的结果，$Z$ 是第二次处理后的结果。
+        既然 $Z$ 是从 $Y$ 加工出来的，$Z$ 里关于 $X$ 的话全是 $Y$ 说过的，所以再说一遍没有新东西，$\I{X;Z|Y}=0$。
+        这正是下一题 3.10 要证的东西——\textbf{3.2 是 3.10 的代数内核}。
+  \item \textbf{什么时候取等号}：若 $Y$ 与 $(X,Z)$ 独立，则 $\Hx{X|Y,Z}=\Hx{X|Z}$，
+        于是 $\I{X;Z|Y}=\Hx{X|Y}-\Hx{X|Y,Z}=\Hx{X}-\Hx{X|Z}=\I{X;Z}$，恒等式中两项相消，得
+        $\I{X;Y}=\I{X;Y|Z}$。（举例：$Y$ 是一枚与本题完全无关的骰子。）
+\end{enumerate}
+\end{idea}
+
+\subsection{反例：为什么缺了这个条件就不成立}
+
+\begin{calc}{习题 3.1 的反例，一步一步算给你看}
+
+\textbf{设定}：$X,Y$ 相互独立，各自在 $\{0,1\}$ 上等概；令 $Z=X\oplus Y$（异或，等价于模 2 加法）。
+因为 $Z$ 由 $(X,Y)$ 唯一确定，所以\textbf{三者的联合分布只有 4 个可能取值}，每个概率都是 $\frac14$：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c|c|c|c}
+\toprule
+$X$ & $Y$ & $Z=X\oplus Y$ & $p(x,y,z)$ \\
+\midrule
+0 & 0 & 0 & $\frac14$ \\
+0 & 1 & 1 & $\frac14$ \\
+1 & 0 & 1 & $\frac14$ \\
+1 & 1 & 0 & $\frac14$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{先核对概率}（考试写这一句能显专业）：每行 $\frac14$，四行相加 $=1$ \checkmark；每个分量的边缘分布也都是 $\frac12,\frac12$ \checkmark。
+
+\textbf{第 1 步：算 $\Hx{X},\Hx{Y},\Hx{Z}$。}三者都等概取两个值，各自的熵都是
+\[
+-\tfrac12\lb\tfrac12-\tfrac12\lb\tfrac12 .
+\]
+其中 $-\lb\tfrac12=-\lb 2^{-1}=1$，所以
+\[
+\Hx{X}=1\bit,\qquad \Hx{Y}=1\bit,\qquad \Hx{Z}=1\bit .
+\]
+（$\Hx{Z}$ 也等于 1 bit 的原因：$Z$ 的取值是 $Z=0$ 两行、$Z=1$ 两行，概率各 $\frac12$。）
+
+\textbf{第 2 步：算 $\I{X;Y}$。}$X$ 与 $Y$ 相互独立，所以知道 $Y$ 对猜 $X$ 毫无帮助，$\Hx{X|Y}=\Hx{X}=1\bit$，于是
+\[
+\I{X;Y}=\Hx{X}-\Hx{X|Y}=1-1=0\bit .
+\]
+
+\textbf{第 3 步：算 $\Hx{X|Y,Z}$。}已知 $Y$ 和 $Z$ 之后，$X$ 被唯一确定（$X=Y\oplus Z$），所以
+\[
+\Hx{X|Y,Z}=0\bit .
+\]
+\textbf{第 4 步：算 $\Hx{X|Z}$。}这一项是本题的关键，要按 $Z$ 的两种取值分开看：
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item 若 $Z=0$：可能的情况只有 $(X,Y)=(0,0)$、$(X,Y)=(1,1)$ 两种，等概各 $\frac12$，
+        所以 $\Hx{X|Z=0}=-\tfrac12\lb\tfrac12-\tfrac12\lb\tfrac12=1\bit$（\textbf{知道 $Z$ 也没法定 $X$！}）；
+  \item 若 $Z=1$：可能的情况只有 $(X,Y)=(0,1)$、$(X,Y)=(1,0)$ 两种，等概各 $\frac12$，同样 $\Hx{X|Z=1}=1\bit$。
+\end{itemize}
+按 $Z$ 的两种取值各占 $\frac12$ 加权：
+\[
+\Hx{X|Z}=\frac12\times1+\frac12\times1=1\bit .
+\]
+
+\textbf{第 5 步：算 $\I{X;Y|Z}$（这就是反例的“杀手锏”）。}
+\begin{align*}
+\I{X;Y|Z}
+&=\Hx{X|Z}-\Hx{X|Y,Z} &&\text{（条件互信息的定义式）}\\
+&=1-0=1\bit .
+\end{align*}
+人话：\textbf{本来 $X$ 和 $Y$ 是完全无关的两个人；可是把 $Z$（模 2 和）这个“扳手”摆在桌上，
+知道 $X$ 就立刻能算出 $Y$，于是它们突然变得高度相关了}——条件互信息从 $0$ 涨到了 $1$ bit。
+
+\textbf{第 6 步：对照结论。}
+\[
+\boxed{\ \I{X;Y}=0\bit\ <\ 1\bit=\I{X;Y|Z}\ }
+\]
+所以\textbf{不加条件时，习题 3.2 的结论不成立}。
+
+\textbf{第 7 步（顺手把恒等式也验一遍，说明错的是“条件”而不是“恒等式”）}。再算 $\I{X;Z|Y}$：
+\[
+\I{X;Z|Y}=\Hx{X|Y}-\Hx{X|Y,Z}=1-0=1\bit .
+\]
+而 $\I{X;Z}=\Hx{X}-\Hx{X|Z}=1-1=0\bit$（$X$ 与 $Z$ 也相互独立：$Z$ 是 $X,Y$ 的“平衡”组合，看不出 $X$ 的偏向）。
+代入命题 A：
+\[
+\I{X;Y}-\I{X;Y|Z}=0-1=-1,
+\qquad
+\I{X;Z}-\I{X;Z|Y}=0-1=-1 .
+\]
+两边都是 $-1$ \checkmark —— \textbf{恒等式照旧成立，出问题的是右边两项的符号}：
+这个例子里 $\I{X;Z|Y}=1>0=\I{X;Z}$，恰好把命题 B 需要的条件破坏了。
+\end{calc}
+
+\begin{qa}{这个反例与 3.7 是同一家人}
+3.7 里的设定是“$X+Y=Z$ 且 $X\perp Y$”，和本题反例（$X\oplus Y=Z$ 且 $X\perp Y$）是同一族结构：
+\textbf{两个独立的部件拼成第三个量}。这类结构里，$\I{X;Y|Z}$ 一般\textbf{不是} $0$，反而是 $Z$ 把 $X,Y$ 绑在了一起。
+3.7 第 (8) 问要你算的正是这个量（那里取 $X,Y$ 为两个独立的等概二值变量、$Z=X+Y$，算得 $\I{X;Y|Z}=0.5$ bit）。
+所以：\textbf{凡是看到“独立 + 相加/异或”，第一反应必须是“条件互信息可能变大”，千万别写“$\I{X;Y|Z}=0$”。}
+\end{qa}
+
+\begin{exam}{3.2 考试怎么考}
+\textbf{题型}：证明题（8--10 分），句式为“求证 $\I{X;Y}\ge\I{X;Y|Z}$”或“证明串联系统不损失互信息”。
+\textbf{卷面必须有的 4 行}：
+\begin{enumerate}[leftmargin=1.7em,itemsep=1pt,topsep=1pt]
+  \item “由互信息链式法则，$\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y}=\I{X;Z}+\I{X;Y|Z}$”；
+  \item “两式相减得恒等式 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$”；
+  \item “由题设 $X,Y,Z$ 构成马尔可夫链 $X\to Y\to Z$，故 $\I{X;Z|Y}=0$”；
+  \item “故 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}\ge0$，即 $\I{X;Y}\ge\I{X;Y|Z}$。$\blacksquare$”
+\end{enumerate}
+\textbf{三个易错点}：
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item \textbf{不写条件直接证}：逻辑上不成立（本页反例就是证据）。稳一点的做法：先写“本题需附加条件 $X\to Y\to Z$”，再证。
+  \item \textbf{把恒等式记错方向}：一定记住“$\I{X;Z}$ 与 $\I{X;Z|Y}$ 配一对”，不要写成 $\I{Y;Z}$。
+  \item \textbf{漏掉“互信息非负”这一句}：最后一步必须点明 $\I{X;Z}\ge0$ 的依据，否则从“$= \I{X;Z}$”跳不到“$\ge0$”。
+\end{itemize}
+\end{exam}
+
+%====================== 3.3 ======================
+\section{3.3\quad 求证 $\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}$}
+
+\begin{defbox}{题目（教材 P54 习题 3.3）}
+试证
+\[
+\Hx{X,Y,Z}\ =\ \Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}
+\]
+（教材中 $H(X,Y,Z)$ 写作 $H(XYZ)$、$H(X,Z)$ 写作 $H(XZ)$，意思完全一样。）
+\end{defbox}
+
+\begin{idea}{动笔前先看清楚“谁在左边、谁在右边”}
+左边是\textbf{三个变量}的联合熵；右边只出现了 $\Hx{X,Z}$（两个变量的联合熵）和两个“关于 $Y$ 的量”。
+这种形状说明：\textbf{要把 $Y$ 单独挂上去}，即先用链式法则把 $Y$ 从三元联合熵里剥出来：
+\[
+\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X,Z}.
+\]
+剩下唯一的事，就是\textbf{把 $\Hx{Y|X,Z}$ 换成题给的 $\Hx{Y|X}-\I{Y;Z|X}$}。
+而这一步恰恰是条件互信息定义式的变形：
+\[
+\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}
+\quad\Longleftrightarrow\quad
+\Hx{Y|X,Z}=\Hx{Y|X}-\I{Y;Z|X}.
+\]
+把这个式子代回去就完事了——整道题只有这一层转折。
+\end{idea}
+
+\subsection{路线一：先把三元熵拆成两块，再换掉其中一块}
+
+\begin{calc}{四行推完}
+\textbf{第 1 步（拆）}：把 $(X,Z)$ 打包当一个人，然后把 $Y$ 加上去，用链式法则：
+\begin{equation}
+\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X,Z}. \tag{3.3-1}
+\end{equation}
+\textbf{依据}：链式法则 $\Hx{A,B}=\Hx{A}+\Hx{B|A}$，其中取 $A=(X,Z)$、$B=Y$。
+（人话：要同时确定 $X,Z,Y$，可以“先把 $X,Z$ 一起定下来，再定 $Y$”，两部分加起来。）
+
+\textbf{第 2 步（变）}：把条件互信息的定义式反解。定义是
+\[
+\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z},
+\]
+把 $\Hx{Y|X,Z}$ 移到等号另一边（等式两边同时加减同一个量，等式不变）：
+\begin{equation}
+\Hx{Y|X,Z}=\Hx{Y|X}-\I{Y;Z|X}. \tag{3.3-2}
+\end{equation}
+\textbf{依据}：条件互信息定义式 $\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}$（这是互信息定义“$\I{A;B}=\Hx{A}-\Hx{A|B}$”在给定 $X$ 条件下的版本）。
+（人话：$\I{Y;Z|X}$ 就是“在已知 $X$ 时，$Z$ 帮我把 $Y$ 的熵削掉了多少”，所以剩下的熵 $=$ 原来的熵 $-$ 被削掉的部分。）
+
+\textbf{第 3 步（代）}：把（3.3-2）代入（3.3-1）：
+\[
+\Hx{X,Y,Z}=\Hx{X,Z}+\bigl[\Hx{Y|X}-\I{Y;Z|X}\bigr].
+\]
+
+\textbf{第 4 步（收）}：
+\[
+\boxed{\ \Hx{X,Y,Z}\ =\ \Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}\ }
+\]
+$\blacksquare$
+\end{calc}
+
+\subsection{路线二：从 $\I{Y;Z|X}$ 的三项展开式反过来代}
+
+\begin{calc}{换一个“零件”，结果一样（可以互相检验）}
+\textbf{第 1 步}：条件互信息还有一条“加法版”定义（把条件熵按定义展开再合并同类项就得到）：
+\begin{equation}
+\I{Y;Z|X}=\Hx{Y|X}+\Hx{Z|X}-\Hx{Y,Z|X}. \tag{3.3-3}
+\end{equation}
+\textbf{依据}：$\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}$，而由条件链式法则 $\Hx{Y,Z|X}=\Hx{Z|X}+\Hx{Y|X,Z}$，
+解得 $\Hx{Y|X,Z}=\Hx{Y,Z|X}-\Hx{Z|X}$，代回即得（3.3-3）。
+
+\textbf{第 2 步}：把（3.3-3）代进要证的右边：
+\begin{align*}
+\text{右端}&=\Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}\\
+&=\Hx{X,Z}+\Hx{Y|X}-\Bigl[\Hx{Y|X}+\Hx{Z|X}-\Hx{Y,Z|X}\Bigr]\\
+&=\Hx{X,Z}-\Hx{Z|X}+\Hx{Y,Z|X}.
+\end{align*}
+注意 $\Hx{Y|X}$ 正负相消（这是本题最舒服的一处）。
+
+\textbf{第 3 步}：把 $\Hx{X,Z}-\Hx{Z|X}$ 合并。由链式法则 $\Hx{X,Z}=\Hx{X}+\Hx{Z|X}$，所以
+\[
+\Hx{X,Z}-\Hx{Z|X}=\Hx{X}.
+\]
+于是
+\[
+\text{右端}=\Hx{X}+\Hx{Y,Z|X}.
+\]
+
+\textbf{第 4 步}：再用一次链式法则（把 $Y,Z$ 打包）：
+\[
+\Hx{X}+\Hx{Y,Z|X}=\Hx{X,Y,Z}.
+\]
+\textbf{依据}：$\Hx{A}+\Hx{B|A}=\Hx{A,B}$，取 $A=X$、$B=(Y,Z)$。
+
+于是右端 $=\Hx{X,Y,Z}=$ 左端。$\blacksquare$
+\end{calc}
+
+\begin{qa}{两条路线为什么必然一致}
+两条路线用的是同一条定义式的两种“长相”：
+\[
+\underbrace{\Hx{Y|X,Z}=\Hx{Y|X}-\I{Y;Z|X}}_{\text{路线一用这个}}
+\qquad
+\underbrace{\I{Y;Z|X}=\Hx{Y|X}+\Hx{Z|X}-\Hx{Y,Z|X}}_{\text{路线二用这个}}
+\]
+而这两个式子本来就是同一件事移项得来的。考场上\textbf{写一条就够}，
+另一条留着\textbf{自检}：如果你算出来的两式对不上，一定是某一步把 $|X$ 漏写了。
+\end{qa}
+
+\begin{idea}{这条式子的直观含义（一句话记住）}
+在“已知 $X$”的世界里，$Y$ 与 $Z$ 之间有一部分不确定性是\textbf{互相泄露}的——同一件事被两个变量重复说了一遍。
+这条式子说：
+\[
+\Hx{X,Y,Z}=\underbrace{\Hx{X,Z}}_{\text{$X,Z$ 这块的总不确定性}}+\underbrace{\Hx{Y|X}}_{\text{$Y$ 在已知 $X$ 后的总量}}-\underbrace{\I{Y;Z|X}}_{\text{重复算了一遍的那部分}} .
+\]
+\textbf{知道了 $X$ 之后，“$Y$ 与 $Z$ 的相互泄露量”要从总不确定性里扣掉}——因为它在 $\Hx{X,Z}$ 里已经算过一回了，
+再算一遍就是重复计数。这和“容斥原理”是同一个思想：$|A\cup B|=|A|+|B|-|A\cap B|$。
+\end{idea}
+
+\begin{calc}{拿 3.2 的反例验一遍（数值自检，30 秒）}
+沿用 3.2 的表：$X,Y$ 独立等概取 $\{0,1\}$，$Z=X\oplus Y$，四行各 $\frac14$。于是
+$\Hx{X,Y,Z}=4\times\frac14\times2=2\bit$（$-\lb\frac14=2$）；$\Hx{X,Z}=2\bit$（$(X,Z)$ 的 4 种组合也等概）；
+$\Hx{Y|X}=\Hx{Y}=1\bit$（独立性）；$\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}=1-0=1\bit$。
+代入右端：$2+1-1=2\bit=$ 左端 \checkmark 一致。
+\end{calc}
+
+\begin{exam}{3.3 考试怎么考}
+\textbf{题型}：证明题（6--8 分），或“用两种方法证明”的对比题。
+\textbf{卷面上最省事的 3 行}：
+(1)“由链式法则 $\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X,Z}$”；
+(2)“由条件互信息定义 $\Hx{Y|X,Z}=\Hx{Y|X}-\I{Y;Z|X}$”；
+(3)“代入即得”。
+\textbf{易错点}：
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item 把 $\I{Y;Z|X}$ 写成 $\I{Y;Z}$——\textbf{条件一漏，整题性质就变了}（$\I{Y;Z}$ 里没有 $X$ 的事）；
+  \item 漏掉那个\textbf{负号}：是“减去”泄露量，不是加上；
+  \item $\Hx{Y|X,Z}$ 与 $\Hx{Y|Z,X}$ 是同一个东西（条件可以交换顺序），别以为写反了就错；
+  \item 别把 $\Hx{X,Z}$ 写成 $\Hx{X}\Hx{Z}$——\textbf{熵之间只有加减，没有乘法}。
+\end{itemize}
+\end{exam}
+
+%====================== 3.7 ======================
+\section{3.7\quad $X+Y=Z$ 且 $X\perp Y$ 的八问}
+
+\begin{defbox}{题目（教材 P54 习题 3.7，照原样抄）}
+若三个随机变量 $X,Y,Z$ 满足 $X+Y=Z$，其中 $X$ 和 $Y$ 相互独立，试证：
+\begin{enumerate}[label=(\arabic*),leftmargin=1.9em,itemsep=1pt,topsep=2pt]
+  \item $\Hx{X}\le\Hx{Z}$；
+  \item $\Hx{Y}\le\Hx{Z}$；
+  \item $\Hx{X,Y}\ge\Hx{Z}$；
+  \item $\I{X;Z}=\Hx{Z}-\Hx{Y}$；
+  \item $\I{X,Y;Z}=\Hx{Z}$；
+  \item $\I{X;Y,Z}=\Hx{X}$；
+  \item $\I{Y;Z|X}=\Hx{Y}$；
+  \item $\I{X;Y|Z}=\Hx{X|Z}=\Hx{Y|Z}$。
+\end{enumerate}
+\end{defbox}
+
+\begin{idea}{先立三个“抓手”，八问全靠它们}
+\textbf{（一）$Z$ 是 $(X,Y)$ 的确定性函数。}因为 $Z=X+Y$，所以只要知道 $X$ 和 $Y$，$Z$ 就完全确定了：
+\[
+\Hx{Z|X,Y}=0,\qquad\text{从而}\qquad \Hx{X,Y,Z}=\Hx{X,Y}+0=\Hx{X,Y}.
+\]
+
+\textbf{（二）$X\perp Y$（相互独立）。}所以知道一个对猜另一个毫无帮助：
+\[
+\Hx{X|Y}=\Hx{X},\qquad \Hx{Y|X}=\Hx{Y}.
+\]
+
+\textbf{（三）\underline{反向也确定}——这是本题的灵魂，很多同学只想到（一）就卡住了。}
+$X+Y=Z$ 可以反解：
+\[
+X=Z-Y,\qquad Y=Z-X .
+\]
+也就是说：\textbf{知道 $(Y,Z)$ 就定出 $X$，知道 $(X,Z)$ 就定出 $Y$}。于是
+\[
+\Hx{X|Y,Z}=0,\qquad \Hx{Y|X,Z}=0 .
+\]
+\textbf{一句话}：$X,Y,Z$ 三者中\textbf{任意知道两个，第三个就定了}（三者构成一个“确定性三角”）。
+所以 \textbf{三元的联合熵 $=$ 任意两元的联合熵}：
+\[
+\Hx{X,Y}=\Hx{X,Z}=\Hx{Y,Z}=\Hx{X,Y,Z}.
+\]
+（依据：$\Hx{X,Z}=\Hx{X,Z,Y}-\Hx{Y|X,Z}=\Hx{X,Y,Z}-0$，另两个同理。这条等式能一口气秒掉好几问。）
+\end{idea}
+
+\subsection{(1) $\Hx{X}\le\Hx{Z}$}
+
+\begin{calc}{为什么？}
+\textbf{因为 $Z$ 是 $(X,Y)$ 的函数，却比 $X$ 多吸收了 $Y$ 的不确定性，所以它一定不比 $X$ 好猜。}
+严格写两步：
+\begin{align*}
+\Hx{Z}&\ \ge\ \Hx{Z|Y} &&\text{（依据：条件不增熵，多知道一个 $Y$ 只会更确定）}\\
+&=\Hx{X+Y\ \big|\ Y}=\Hx{X|Y} &&\text{（依据：已知 $Y$ 时 $X+Y$ 与 $X$ 只差常数，}\\
+& &&\text{平移不改熵）}\\
+&=\Hx{X}. &&\text{（依据：$X\perp Y$，故 $\Hx{X|Y}=\Hx{X}$）}
+\end{align*}
+连起来：$\Hx{X}=\Hx{Z|Y}\le\Hx{Z}$。$\blacksquare$
+
+\textbf{人话}：$Z=X+Y$ 里装着 $X$ 的全部信息（外加 $Y$ 的信息），所以 $Z$ “更丰富”，就更难猜。
+\end{calc}
+
+\noindent\textbf{这一问考的是}：条件不增熵 $+$ 平移不改熵 $+$ 独立性。
+
+\subsection{(2) $\Hx{Y}\le\Hx{Z}$}
+
+\begin{calc}{为什么？}
+\textbf{因为道理与 (1) 完全对称——把 $X$ 和 $Y$ 的角色对调即可。}
+\begin{align*}
+\Hx{Z}\ \ge\ \Hx{Z|X}=\Hx{X+Y\,|\,X}=\Hx{Y|X}=\Hx{Y}.
+\end{align*}
+逐步依据同 (1)：先“条件不增熵”，再“平移不改熵”（已知 $X$ 时，$X+Y$ 与 $Y$ 只差一个已知常数），最后用 $X\perp Y$ 得 $\Hx{Y|X}=\Hx{Y}$。$\blacksquare$
+
+\textbf{一句提醒}：\textbf{没有人说 $\Hx{X}\le\Hx{Z}$ 和 $\Hx{Y}\le\Hx{Z}$ 能推出 $\Hx{X}+\Hx{Y}\le\Hx{Z}$}——那是错的。
+（例如 $X,Y$ 都等概取 $\{0,1\}$，则 $\Hx{X}+\Hx{Y}=2$ bit，而 $\Hx{Z}=1.5$ bit。）
+\end{calc}
+
+\noindent\textbf{这一问考的是}：与 (1) 同一条性质，考的是“你会不会对称地抄”。
+（顺带记住 (1)(2) 的本质：\textbf{函数的熵不超过自变量的熵}——$Z$ 是 $X$（在给定 $Y$ 时）的函数。）
+这一句话也解释了为什么“处理数据只会丢信息”（见 3.10）。
+
+\subsection{(3) $\Hx{X,Y}\ge\Hx{Z}$}
+
+\begin{calc}{为什么？}
+\textbf{因为 $Z$ 完全由 $(X,Y)$ 决定，所以 $(X,Y)$ 的不确定性里“包含”了 $Z$ 的不确定性。}
+\begin{align*}
+\Hx{X,Y}&=\Hx{X,Y,Z} &&\text{（依据：$\Hx{X,Y,Z}=\Hx{X,Y}+\underbrace{\Hx{Z|X,Y}}_{=0}$，即 (一)）}\\
+&\ \ge\ \Hx{Z}. &&\text{（依据：增加变量不会减少熵，$\Hx{X,Y,Z}\ge\Hx{Z}$；}\\
+& &&\text{也就是“把 $X,Y$ 扔进包里不会让 $Z$ 更好猜”）}
+\end{align*}
+$\blacksquare$
+
+\textbf{另一种写法（更直观）}：由链式法则 $\Hx{X,Y}=\Hx{Z}+\Hx{X,Y|Z}$，而条件熵 $\Hx{X,Y|Z}\ge0$，所以 $\Hx{X,Y}\ge\Hx{Z}$。
+（第二种写法顺便告诉你\textbf{等号条件}：$\Hx{X,Y|Z}=0$，即给定和 $Z$ 之后 $(X,Y)$ 唯一——只有“$X$ 只有一种可能”那种退化情形才会等号。）
+\end{calc}
+
+\noindent\textbf{这一问考的是}：确定性函数不改联合熵 $+$ 增变量不增熵。
+
+\subsection{(4) $\I{X;Z}=\Hx{Z}-\Hx{Y}$}
+
+\begin{calc}{为什么？}
+\textbf{因为“知道 $X$ 之后 $Z$ 剩下的不确定性”正好就是 $Y$ 的不确定性——$Z=X+Y$ 里 $X$ 那部分被彻底抵消了。}
+\begin{align*}
+\I{X;Z}&=\Hx{Z}-\Hx{Z|X} &&\text{（依据：互信息的定义式 $\I{X;Z}=\Hx{Z}-\Hx{Z|X}$）}\\
+&=\Hx{Z}-\Hx{X+Y\,|\,X} &&\text{（把 $Z=X+Y$ 代进去）}\\
+&=\Hx{Z}-\Hx{Y|X} &&\text{（依据：已知 $X$ 时 $X+Y$ 与 $Y$ 只差常数，平移不改熵）}\\
+&=\Hx{Z}-\Hx{Y}. &&\text{（依据：$X\perp Y$，故 $\Hx{Y|X}=\Hx{Y}$）}
+\end{align*}
+$\blacksquare$
+
+\textbf{人话}：$X$ 能从 $Z$ 那里“拿回”的信息量，等于 $Z$ 的总不确定性减去 $Y$ 造成的那部分。
+拿 $X,Y$ 独立等概二值、$Z=X+Y$ 验一下：$\I{X;Z}=1.5-1=0.5$ bit（$\Hx{Z}=1.5$ 见本节最后的数值检验）。
+\end{calc}
+
+\noindent\textbf{这一问考的是}：互信息的定义式 $+$ 平移不改熵 $+$ 独立性。\textbf{（4）是八问里最常被单独出成小题的一问。}
+
+\subsection{(5) $\I{X,Y;Z}=\Hx{Z}$}
+
+\begin{calc}{为什么？}
+\textbf{因为 $(X,Y)$ 能把 $Z$ 完全确定下来，所以“$(X,Y)$ 关于 $Z$ 的互信息”就是 $Z$ 的全部熵——一点没剩下。}
+\begin{align*}
+\I{X,Y;Z}&=\Hx{Z}-\Hx{Z|X,Y} &&\text{（依据：$\I{A;B}=\Hx{B}-\Hx{B|A}$，取 $A=(X,Y)$）}\\
+&=\Hx{Z}-0 &&\text{（依据：$Z$ 由 $X,Y$ 决定，$\Hx{Z|X,Y}=0$）}\\
+&=\Hx{Z}. &&\ \blacksquare
+\end{align*}
+\textbf{人话}：只要允许你把 $X,Y$ 一起看，$Z$ 就毫无秘密可言，所以互信息顶格等于 $\Hx{Z}$。
+\end{calc}
+
+\noindent\textbf{这一问考的是}：$\I{A;B}=\Hx{B}-\Hx{B|A}$ $+$ 确定性函数 $\Hx{Z|X,Y}=0$。
+
+\subsection{(6) $\I{X;Y,Z}=\Hx{X}$}
+
+\begin{calc}{为什么？}
+\textbf{因为反方向的确定性：由 $(Y,Z)$ 能定出 $X$（$X=Z-Y$），所以 $(Y,Z)$ 对 $X$ 也是“全知”的。}
+\begin{align*}
+\I{X;Y,Z}&=\Hx{X}-\Hx{X|Y,Z} &&\text{（依据：$\I{X;A}=\Hx{X}-\Hx{X|A}$，取 $A=(Y,Z)$）}\\
+&=\Hx{X}-0 &&\text{（依据：$X=Z-Y$ 由 $Y,Z$ 决定，故 $\Hx{X|Y,Z}=0$）}\\
+&=\Hx{X}. &&\ \blacksquare
+\end{align*}
+\textbf{注意这里的方向与 (5) 相反}：(5) 是“$(X,Y)\Rightarrow Z$”，(6) 是“$(Y,Z)\Rightarrow X$”。
+\textbf{两个方向都成立，正是 $X+Y=Z$ 这条等式“可正可反”的体现。}
+\end{calc}
+
+\noindent\textbf{这一问考的是}：同一条公式 $+$ \textbf{反向}确定性。\textbf{漏掉反向确定性是本题第一大失分点。}
+
+\subsection{(7) $\I{Y;Z|X}=\Hx{Y}$}
+
+\begin{calc}{为什么？}
+\textbf{因为在“已知 $X$”的前提下，$Z$ 就是 $Y$ 加一个常数，所以 $Z$ 关于 $Y$ 的信息被 $X$ 全部保留，一点没被削。}
+\begin{align*}
+\I{Y;Z|X}&=\Hx{Y|X}-\Hx{Y|X,Z} &&\text{（依据：条件互信息的定义式）}\\
+&=\Hx{Y|X}-0 &&\text{（依据：$Y=Z-X$ 被 $X,Z$ 唯一确定，}\\
+& &&\text{$\Hx{Y|X,Z}=0$）}\\
+&=\Hx{Y}. &&\text{（依据：$X\perp Y$，故 $\Hx{Y|X}=\Hx{Y}$）}
+\end{align*}
+$\blacksquare$
+
+\textbf{人话}：$X$ 虽然是“条件”，但它与 $Y$ 完全无关，所以“已知 $X$”并没有替你削掉一丝 $Y$ 的不确定性
+——起点仍然是整个 $\Hx{Y}$；而终点是 $0$（$X$ 已知时 $Z$ 只是 $Y$ 平移一个常数，$Z$ 到手 $Y$ 就定了，
+$\Hx{Y|X,Z}=0$）。起点满格、终点清零，所以 $\I{Y;Z|X}$ 把 $\Hx{Y}$ 整份拿回来，等于 $\Hx{Y}$。
+
+\textbf{必须分清的四个数（下面数值检验里都算过）}：
+\[
+\I{Y;Z}=0.5\bit,\qquad \I{Y;Z|X}=1\bit,\qquad
+\Hx{Z|Y}=\Hx{X|Y}=1\bit,\qquad \Hx{Y|Z}=0.5\bit .
+\]
+也就是说：\textbf{“加一个条件”不是白加}（$\I{Y;Z|X}\ne\I{Y;Z}$，两者差 $0.5$ bit），
+而两者之差由 3.2 的恒等式给出：
+$\I{Y;Z}-\I{Y;Z|X}=\I{Y;X}-\I{Y;X|Z}=0-0.5=-0.5$，与 $0.5-1=-0.5$ 吻合 \checkmark
+\end{calc}
+
+\noindent\textbf{这一问考的是}：条件互信息定义式 $+$ 反向确定性 $+$ 独立性让条件“失效”。
+
+\subsection{(8) $\I{X;Y|Z}=\Hx{X|Z}=\Hx{Y|Z}$}
+
+\begin{calc}{为什么？（三连等式，分两段证）}
+\textbf{第一段：$\I{X;Y|Z}=\Hx{X|Z}$。}
+\begin{align*}
+\I{X;Y|Z}&=\Hx{X|Z}-\Hx{X|Y,Z} &&\text{（依据：条件互信息的定义式）}\\
+&=\Hx{X|Z}-0 &&\text{（依据：$X=Z-Y$，故 $\Hx{X|Y,Z}=0$）}\\
+&=\Hx{X|Z}.
+\end{align*}
+\textbf{第二段：$\I{X;Y|Z}=\Hx{Y|Z}$。}同理
+\begin{align*}
+\I{X;Y|Z}&=\Hx{Y|Z}-\Hx{Y|X,Z} &&\text{（依据：定义式，这次把 $Y$ 放在前面）}\\
+&=\Hx{Y|Z}-0 &&\text{（依据：$Y=Z-X$，故 $\Hx{Y|X,Z}=0$）}\\
+&=\Hx{Y|Z}.
+\end{align*}
+两段合起来就是 $\I{X;Y|Z}=\Hx{X|Z}=\Hx{Y|Z}$。$\blacksquare$
+
+\textbf{第三段（更漂亮的一手：证明 $\Hx{X|Z}=\Hx{Y|Z}$ 的另一条路，考试这样写更显功力）}：
+在“已知 $Z$”的条件下，$X$ 与 $Y$ 互相确定（$X=Z-Y$，$Y=Z-X$），所以对已知 $Z$ 的观察者来说，
+\textbf{“再加一个 $Y$”不带来任何新信息}：
+\[
+\Hx{Y|X,Z}=0\ \Longrightarrow\ \Hx{X,Y|Z}=\Hx{X|Z}+\Hx{Y|X,Z}=\Hx{X|Z},
+\]
+同理（这次先算 $Y$ 再算 $X$）$\Hx{X,Y|Z}=\Hx{Y|Z}+\Hx{X|Y,Z}=\Hx{Y|Z}$。
+两条都等于 $\Hx{X,Y|Z}$，所以 $\Hx{X|Z}=\Hx{Y|Z}$。\checkmark
+
+\textbf{人话}：知道和 $Z$ 之后，$X$ 的剩余不确定性正好等于“$X,Y$ 这一对的剩余不确定性”，
+因为知道其中任何一个，另一个立刻算出——所以\textbf{两者“一样难猜”}。
+\end{calc}
+
+\noindent\textbf{这一问考的是}：双向确定性 $+$ 条件链式法则。这是八问的“收官题”，也是最能区分“会不会用反向确定性”的一问。
+
+\subsection{八问结论一览（可直接抄）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.32}
+\small
+\begin{tabular}{@{}c >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{8.6cm}@{}}
+\toprule
+问 & 结论 & 一句话依据 \\
+\midrule
+(1) & $\Hx{X}\le\Hx{Z}$ & $\Hx{Z}\ge\Hx{Z|Y}=\Hx{X|Y}=\Hx{X}$（条件不增熵、平移、独立）\\
+(2) & $\Hx{Y}\le\Hx{Z}$ & 同 (1)，$X$ 与 $Y$ 对调\\
+(3) & $\Hx{X,Y}\ge\Hx{Z}$ & $Z$ 由 $(X,Y)$ 定 $\Rightarrow\Hx{X,Y,Z}=\Hx{X,Y}\ge\Hx{Z}$\\
+(4) & $\I{X;Z}=\Hx{Z}-\Hx{Y}$ & $\I{X;Z}=\Hx{Z}-\Hx{Z|X}=\Hx{Z}-\Hx{Y|X}=\Hx{Z}-\Hx{Y}$\\
+(5) & $\I{X,Y;Z}=\Hx{Z}$ & $\I{X,Y;Z}=\Hx{Z}-\Hx{Z|X,Y}=\Hx{Z}-0$\\
+(6) & $\I{X;Y,Z}=\Hx{X}$ & $\I{X;Y,Z}=\Hx{X}-\Hx{X|Y,Z}=\Hx{X}-0$（$X=Z-Y$）\\
+(7) & $\I{Y;Z|X}=\Hx{Y}$ & $\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}=\Hx{Y}-0$\\
+(8) & $\I{X;Y|Z}=\Hx{X|Z}=\Hx{Y|Z}$ & 分别代入定义式，两个“剩下的条件熵”都是 $0$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{calc}{数值检验：让 $X,Y$ 都是独立等概的二值变量，把八问全算出来}
+设 $X,Y$ 相互独立，各自等概取 $\{0,1\}$，$Z=X+Y$。四个等概组合同样列成表：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|c|c|c}
+\toprule
+$X$ & $Y$ & $Z=X+Y$ & $p(x,y)$ \\
+\midrule
+0 & 0 & 0 & $\frac14$ \\
+0 & 1 & 1 & $\frac14$ \\
+1 & 0 & 1 & $\frac14$ \\
+1 & 1 & 2 & $\frac14$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{先算公共的几个量}：$\Hx{X}=\Hx{Y}=1\bit$；由独立性 $\Hx{X,Y}=1+1=2\bit$。
+$Z$ 取 $0,1,2$，概率分别是 $\frac14,\frac12,\frac14$，所以
+\[
+\Hx{Z}=-\tfrac14\lb\tfrac14-\tfrac12\lb\tfrac12-\tfrac14\lb\tfrac14
+=\tfrac14\times2+\tfrac12\times1+\tfrac14\times2=1.5\bit
+\]
+（用到 $-\lb\tfrac14=2$、$-\lb\tfrac12=1$）。
+再看 $\Hx{X|Z}$：$Z=0$ 时 $X$ 必为 $0$（剩 $0$ bit），$Z=2$ 时 $X$ 必为 $1$（剩 $0$ bit），
+$Z=1$ 时 $X$ 在 $\{0,1\}$ 上等概（剩 $1$ bit），按 $Z$ 的概率加权得
+$\Hx{X|Z}=\tfrac14\cdot0+\tfrac12\cdot1+\tfrac14\cdot0=0.5\bit$。
+
+\textbf{逐问核对}：
+\begin{enumerate}[label=(\arabic*),leftmargin=1.9em,itemsep=1pt,topsep=1pt]
+  \item $1\le1.5$ \checkmark
+  \item $1\le1.5$ \checkmark
+  \item $2\ge1.5$ \checkmark
+  \item $\I{X;Z}=\Hx{Z}-\Hx{Y}=1.5-1=0.5$ bit；直接算也得 $\Hx{Z}-\Hx{Z|X}=1.5-1=0.5$ \checkmark
+  \item $\I{X,Y;Z}=\Hx{Z}-\Hx{Z|X,Y}=1.5-0=1.5=\Hx{Z}$ \checkmark
+  \item $\I{X;Y,Z}=\Hx{X}-\Hx{X|Y,Z}=1-0=1=\Hx{X}$ \checkmark
+  \item $\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}=1-0=1=\Hx{Y}$ \checkmark
+  \item $\I{X;Y|Z}=\Hx{X|Z}-0=0.5$，而 $\Hx{X|Z}=\Hx{Y|Z}=0.5$ \checkmark
+\end{enumerate}
+
+\textbf{顺带一个漂亮的交叉检验（把 3.2 的恒等式搬来用）}：
+\[
+\I{X;Y}-\I{X;Y|Z}=0-0.5=-0.5,
+\qquad
+\I{X;Z}-\I{X;Z|Y}=0.5-1=-0.5,
+\]
+两边相等 \checkmark —— 又一次验证：\textbf{$X\perp Y$ 且 $Z=X+Y$ 时，$\I{X;Y|Z}>0$，
+所以 3.2 的不等式在这种结构下确实不成立}（此时 $\I{X;Z|Y}=\Hx{Z|Y}-\Hx{Z|X,Y}=1-0=1>0$）。
+\end{calc}
+
+\begin{exam}{3.7 考试怎么考}
+\textbf{题型}：八小问“证明或判断”（每问 2--3 分，共约 20 分），是本课程\textbf{最典型的送分题，也是最容易连环失分的大题}。
+\textbf{开篇先写两行“总纲”}（这两行写好，八问都对一半）：
+\[
+\text{“因 }Z=X+Y\text{，故 }\Hx{Z|X,Y}=0\text{；又 }X=Z-Y,\ Y=Z-X\text{，故 }\Hx{X|Y,Z}=\Hx{Y|X,Z}=0\text{；}
+\]
+\[
+\text{又 }X\perp Y\text{，故 }\Hx{X|Y}=\Hx{X},\ \Hx{Y|X}=\Hx{Y}\text{。”}
+\]
+\textbf{每问的答题模板}：一句“因为……”解释方向 $+$ 一条带依据的式子 $+$ 结论。
+\textbf{四个易错点}：
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item \textbf{只想到“$Z$ 由 $X,Y$ 定”，忘了“$X,Y$ 也能由 $Z$ 与对方定”}——(6)(7)(8) 全卡在这里；
+  \item 误以为 $\I{X;Y|Z}=0$（以为“$X,Y$ 独立”在条件化之后还成立）——\textbf{恰恰相反}，本题数值是 $0.5$ bit；
+  \item 把 (1) 写成 $\Hx{X}=\Hx{Z}$——正文里 (1) 是\textbf{不等号}，等号只在退化情形成立；
+  \item (3) 用“$X,Y$ 各自的熵都小于 $\Hx{Z}$”去推 $\Hx{X,Y}$——\textbf{熵不能这样相加}，必须走 $\Hx{X,Y}=\Hx{X,Y,Z}\ge\Hx{Z}$。
+\end{itemize}
+\end{exam}
+
+%====================== 3.10 ======================
+\section{3.10\quad 数据处理定理：$\I{X;Z}\le\I{X;Y}$}
+
+\begin{defbox}{题目（教材 P54 习题 3.10，照原样抄）}
+设有信号 $X$ 经处理器 $A$ 后获得输出 $Y$，$Y$ 再经过处理器 $B$ 后获得输出 $Z$。
+已知处理器 $A$ 和 $B$ 分别独立地处理 $X$ 和 $Y$。试证：
+\[
+\I{X;Z}\ \le\ \I{X;Y} .
+\]
+（教材中常把条件概率写作 $p(x\,|\,y)$；本题用到的量只有三个：$\I{X;Y}$、$\I{X;Z}$、$\I{X;Z|Y}$。）
+\end{defbox}
+
+\begin{idea}{先搞懂“马尔可夫链 $X\to Y\to Z$”是什么意思}
+\textbf{“处理器 $A$、$B$ 分别独立地处理 $X$ 和 $Y$”的数学含义}是：$B$ 干活时只看得到 $Y$，
+\textbf{看不到 $X$}（也不需要看）。用条件概率写就是
+\[
+\p{z\,|\,x,y}=\p{z\,|\,y}\qquad\text{对一切 }x,y,z .
+\]
+\textbf{这条式子等价于“给定 $Y$ 时 $X$ 与 $Z$ 条件独立”}，记作马尔可夫链
+\[
+X\ \longrightarrow\ Y\ \longrightarrow\ Z ,
+\]
+读作“$X$ 经 $Y$ 到 $Z$”。人话：\textbf{$Z$ 只通过 $Y$ 与 $X$ 发生关系；$Y$ 之后，$X$ 对 $Z$ 就再没有直接影响了。}
+
+\textbf{它的直接后果}是本题的关键一步：
+\[
+\I{X;Z|Y}=0 .
+\]
+\textbf{为什么？}把定义写开：
+\[
+\I{X;Z|Y}=\sum_{x,y,z}\p{x,y,z}\lb\frac{\p{x,z|y}}{\p{x|y}\p{z|y}},
+\]
+其中每一项里面的比值为 $1$（因为 $\p{z|x,y}=\p{z|y}$，所以 $\p{x,z|y}=\p{x|y}\p{z|y}$），
+而 $\lb1=0$，所以整个和是 $0$。\textbf{更省事的说法}：$\I{X;Z|Y}$ 是“在已知 $Y$ 的群体里，$X$ 与 $Z$ 还剩下多少相关性”，
+条件独立就是“一点相关性都不剩”，所以为 $0$。
+\end{idea}
+
+\begin{calc}{证明：三行搞定（和 3.2 的机器完全一样）}
+
+\textbf{第 1 步：把 $\I{X;Y,Z}$ 按两种顺序拆开（互信息链式法则）。}
+\begin{equation}
+\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y} \tag{3.10-1}
+\end{equation}
+\begin{equation}
+\I{X;Y,Z}=\I{X;Z}+\I{X;Y|Z} \tag{3.10-2}
+\end{equation}
+\textbf{依据}：互信息链式法则；两式左端相同（都是“$X$ 与打包的 $(Y,Z)$ 的互信息”）。
+（若想自己验一遍，把每个量都按定义展开成 $\Hx{\cdot}-\Hx{\cdot|\cdot}$ 再合并，同 3.2 的推法二。）
+
+\textbf{第 2 步：用马尔可夫性砍掉（3.10-1）里的条件项。}由 $X\to Y\to Z$ 得 $\I{X;Z|Y}=0$，于是
+\begin{equation}
+\I{X;Y,Z}=\I{X;Y}+\underbrace{\I{X;Z|Y}}_{=0}=\I{X;Y}. \tag{3.10-3}
+\end{equation}
+\textbf{人话}：把 $Z$ 也告诉你也好，不告诉你也罢，在 $Y$ 已经在手的条件下，对 $X$ 的认识一样——
+所以“$(Y,Z)$ 这一对”能告诉你的关于 $X$ 的信息，就等于“$Y$ 一个”能告诉你的。
+
+\textbf{第 3 步：代入（3.10-2）。}
+\begin{align*}
+\I{X;Z}&=\I{X;Y,Z}-\I{X;Y|Z} &&\text{（把（3.10-2）里的 $\I{X;Y|Z}$ 移到左边）}\\
+&=\I{X;Y}-\I{X;Y|Z} &&\text{（依据：（3.10-3））}\\
+&\le\I{X;Y}. &&\text{（依据：条件互信息非负，$\I{X;Y|Z}\ge0$）}
+\end{align*}
+\[
+\boxed{\ \I{X;Z}\ \le\ \I{X;Y}\ }
+\qquad\blacksquare
+\]
+
+\textbf{第 4 步（自检：换一条等价路线）}：也可以从恒等式 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$ 出发，
+用 $\I{X;Z|Y}=0$ 得 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}\le\I{X;Y}$。\textbf{这正是 3.2 的命题 B}——
+所以\textbf{3.2 与 3.10 是同一件事的两种问法}：3.2 是纯代数版，3.10 是工程版。
+\end{calc}
+
+\begin{idea}{三句“人话结论”（答题时最好补上，能加印象分）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{数据可以被处理（加工、压缩、量化、滤波），但处理只能丢信息，不可能凭空增加关于源头 $X$ 的信息。}
+        用式子说：$\I{X;Z}\le\I{X;Y}\le\Hx{X}$。每多一道工序，能“说出的关于 $X$ 的话”只会越来越少。
+  \item \textbf{为什么}：$Z$ 只认识 $Y$，它关于 $X$ 的一切知识都是 $Y$ 转述的；转述只会（或至少）不会更精确。
+        \textbf{信息不增原理}——它和热力学第二定律是一个意思：信息处理不会无中生有。
+  \item \textbf{什么时候不损失}：当 $\I{X;Y|Z}=0$ 时取等号，即 $Z$ 把 $Y$ 里关于 $X$ 的信息\textbf{全部保留}了下来
+        （这种 $Y$（或 $Z$）叫关于 $X$ 的\textbf{充分统计量}）。这就是为什么“无损压缩”不丢互信息，
+        而“有损压缩”必然 $\I{X;Z}<\I{X;Y}$。
+\end{enumerate}
+\end{idea}
+
+\begin{qa}{常见误解：能不能说“$X,Y,Z$ 两两独立”？}
+\textbf{不能。}马尔可夫链 $X\to Y\to Z$ 只说“$Z$ 与 $X$ 在给定 $Y$ 时条件独立”，
+\textbf{完全不涉及} $X$ 与 $Y$ 是否独立、$Y$ 与 $Z$ 是否独立。举例：$X$ 等概取 $\{0,1\}$，$Y=-X$，$Z=-Y=X$。
+此时 $Y$ 由 $X$ 决定（$\I{X;Y}=\Hx{X}=1$）、$Z$ 由 $Y$ 决定（$\I{Y;Z}=\Hx{Y}=1$），三者之间一点“独立”都没有，
+可是 $\I{X;Z|Y}=0$（$Y$ 一给，$X$ 与 $Z$ 都定了，再说 $Z$ 也没新东西），马尔可夫链成立。
+\textbf{记住：马尔可夫链管的是“条件独立”，不是“独立”。}
+\end{qa}
+
+\begin{exam}{3.10 考试怎么考}
+\textbf{题型}：证明题（8--10 分），偶尔改成“举例说明等号何时成立”。
+\textbf{卷面必须有的 4 行}：
+\begin{enumerate}[leftmargin=1.7em,itemsep=1pt,topsep=1pt]
+  \item “由处理器 $A,B$ 各自独立处理，得 $\p{z|x,y}=\p{z|y}$，即 $X\to Y\to Z$ 构成马尔可夫链，故 $\I{X;Z|Y}=0$”；
+  \item “由互信息链式法则 $\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y}=\I{X;Y}$”；
+  \item “又 $\I{X;Y,Z}=\I{X;Z}+\I{X;Y|Z}$，故 $\I{X;Z}=\I{X;Y}-\I{X;Y|Z}$”；
+  \item “由 $\I{X;Y|Z}\ge0$ 得 $\I{X;Z}\le\I{X;Y}$。$\blacksquare$”
+\end{enumerate}
+\textbf{三个易错点}：
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item \textbf{把“独立处理”误读成“$X,Y,Z$ 相互独立”}——那会让 $\I{X;Y}=0$，结论就没意义了；
+  \item \textbf{漏写“$\I{X;Z|Y}=0$”的理由}（$\p{z|x,y}=\p{z|y}$）——这是全题唯一需要“物理”假设的地方，不写就断了链；
+  \item 把方向写反成 $\I{X;Z}\ge\I{X;Y}$——\textbf{牢记“处理只会丢信息”这条口诀}就不会反。
+\end{itemize}
+\end{exam}
+
+%====================== 收尾 ======================
+\begin{center}
+{\large\bfseries 收尾：四道题的共同骨架}
+\end{center}
+
+\begin{idea}{看懂这一句，本章的证明题都会了}
+\textbf{所有这类题都在做同一件事}：把要证的式子用链式法则改写成
+“某个互信息 $-\ \I{\cdot;\cdot|\cdot}$” 的加减组合，\textbf{然后用一个条件把带条件的项砍成 $0$，再用非负性收尾}。
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item 3.2：条件 $\I{X;Z|Y}=0$，收尾用 $\I{X;Z}\ge0$；
+  \item 3.10：同一个条件（马尔可夫链），收尾用 $\I{X;Y|Z}\ge0$；
+  \item 3.3：不砍项，只做代数代换；
+  \item 3.7：条件换成“确定性三角”（$\Hx{\cdot|\cdot,\cdot}=0$），收尾用条件熵非负／条件不增熵。
+\end{itemize}
+\textbf{所以真正要背的只有四句}：链式法则、互信息非负、条件不增熵、$\I{A;B}=\Hx{A}-\Hx{A|B}$。
+\end{idea}
+
+\end{document}

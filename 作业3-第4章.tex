@@ -1,0 +1,609 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+% 本份作业的章标题直接用题号，故取消导言区的“第 N 讲”前缀
+\titleformat{\section}{\Large\bfseries\color{acc1}}{}{0pt}{}
+\titleformat{\subsection}{\large\bfseries\color{mainblue}}{}{0pt}{}
+\fancyhead[L]{\small 信息论基础\ \textbar\ 第四次作业（第4章）}
+\fancyhead[R]{\small\leftmark}
+
+% 局部排版微调（只作用于本文件）
+\linespread{1.03}
+\setlength{\parskip}{2pt}
+\setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{1pt plus 1pt}
+\setlength{\belowdisplayshortskip}{1pt plus 1pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 信息论基础\ \ 第四次作业（第4章）超详细解答}\\[6pt]
+{\large —— 典型序列、AEP 与 Huffman 编码，每一步在“干什么”都写出来}\\[6pt]
+{\small 教材：石峰、莫忠息《信息论基础》（第三版），习题 P93--P94\quad 对数底为 2，单位 bit}
+\end{center}
+
+\begin{idea}{动手之前：这一章只用到四样东西}
+① 自信息 $-\lb \p{x}$（概率为 $\p{x}$ 的事件发生时带来的信息量）；② 熵 $\Hx{X}=-\sum_k p_k\lb p_k$（平均每符号的不确定性）；③ 条件熵 $\Hx{X|s_k}=-\sum_a \p{a|s_k}\lb \p{a|s_k}$（\emph{已知状态}后剩下的不确定性）；④ 三条工具：\textbf{独立性}（联合概率拆成乘积）、\textbf{取对数}（乘积变求和）、\textbf{大数定律}（算术平均换成数学期望）。
+
+\textbf{四道题的套路}：4.1 $=$ 拆乘积 $+$ 取对数 $+$ 大数定律；4.2 $=$ 把“典型”写成不等式、解出整数 $k$、二项求和；4.4 $=$ 反复“合并最小概率”；4.12 $=$ 解平稳分布方程组 $+$ 分状态编码。
+\end{idea}
+
+%====================== 4.1 ======================
+\section{4.1\quad 独立同分布序列的典型性（AEP）}
+
+\begin{defbox}{题目（教材 P93）}
+设 $X_1,X_2,\dots$ 为取自分布
+$\begin{pmatrix} a_1 & a_2 & \cdots & a_K\\ p_1 & p_2 & \cdots & p_K\end{pmatrix}$
+的独立同分布离散随机序列，试求极限
+\[
+\lim_{N\to\infty}-\frac1N \lb\, p(X_1X_2\cdots X_N).
+\]
+（书后答案只有一句提示：“利用大数定理”。）
+\end{defbox}
+
+\begin{idea}{审题：每个符号先说人话}
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt,topsep=1pt]
+  \item \textbf{独立同分布（i.i.d.）}：每次抽符号都用同一张概率表 $(p_1,\dots,p_K)$，抽完放回、互不影响；$K$ 是字母表大小。
+  \item \textbf{$X_i$ 与 $x_i$}：大写 $X_i$ 是“第 $i$ 位的\emph{随机}符号”（尚未抽出），小写 $x_i$ 是“某次具体抽到的值”。\emph{算概率、算期望用大写；算某条具体序列用小写。}
+  \item \textbf{$p(X_1\cdots X_N)$}：这 $N$ 个符号\textbf{一起}出现的概率（联合概率），它本身也是随机变量。
+  \item \textbf{$-\frac1N\lb p(\cdot)$}：取对数、除以 $N$、取负号 $\Rightarrow$ “\textbf{平均每符号的信息量}”，把整条长序列压成了一个数。
+  \item \textbf{$\lim_{N\to\infty}$}：序列无限长时，这个平均值稳定到哪个数？
+\end{itemize}
+\end{idea}
+
+\begin{calc}{步骤 1：用“独立性”把联合概率拆成乘积}
+因为 $X_1,\dots,X_N$ 相互独立，“一起出现”的概率等于各自概率相乘：
+\begin{equation*}
+p(x_1x_2\cdots x_N)=p(x_1)p(x_2)\cdots p(x_N)=\prod_{i=1}^{N}p(x_i).
+\end{equation*}
+\textbf{人话}：独立 $=$ 互不牵连 $=$ 概率直接相乘。\textbf{“独立”这两个字是整题的地基}——不独立就没法拆，后面的每一步也就无从谈起。
+\end{calc}
+
+\begin{calc}{步骤 2：取对数，把“乘法”变成“加法”}
+利用 $\lb(ab)=\lb a+\lb b$，连乘变连加，再两边乘 $-1/N$：
+\begin{align*}
+-\frac1N\lb p(x_1\cdots x_N)
+&=-\frac1N\sum_{i=1}^{N}\lb p(x_i)
+=\frac1N\sum_{i=1}^{N}\bigl[-\lb p(x_i)\bigr]\notag\\
+&=\frac1N\sum_{i=1}^{N}Z_i,\qquad Z_i:=-\lb p(X_i).
+\end{align*}
+\textbf{人话}：\emph{为什么非取对数不可？}大数定律只处理“$N$ 个数相加再除以 $N$”这种算术平均，而原式是“$N$ 个数相乘”。取对数就是那座桥——取完对数，题目要求的量正好是 $N$ 个数的算术平均。
+\end{calc}
+
+\begin{calc}{步骤 3：认清 $Z_i=-\lb p(X_i)$ 的三个性质}
+$Z_i$ 是随机变量：当 $X_i=a_k$ 时 $Z_i=-\lb p_k$。
+\begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=1pt]
+  \item \textbf{同分布}：每个 $X_i$ 用同一张表，所以每个 $Z_i$ 的“取值—概率”表都一样。
+  \item \textbf{独立}：$X_i$ 独立，函数关系不破坏独立性，故 $Z_1,\dots,Z_N$ 相互独立。
+  \item \textbf{期望有限且等于熵}：$\E[Z]=\sum_k p_k(-\lb p_k)=-\sum_k p_k\lb p_k=\Hx{X}$。
+  \textbf{人话}：期望就是“按概率加权平均”——$-\lb p_k$ 是抽到 $a_k$ 时的信息量，按各符号概率加权平均，得到正是熵。\emph{熵的定义就是这么来的，所以这一步不是巧合。}
+\end{enumerate}
+（$Z$ 只取 $K$ 个值，方差 $\mathrm{Var}(Z)=\sum_kp_k(\lb p_k)^2-\Hx{X}^2$ 当然有限。）
+\end{calc}
+
+\begin{calc}{步骤 4：请出辛钦大数定律，得答案}
+\textbf{辛钦（弱）大数定律}：若 $Z_1,Z_2,\dots$ 独立同分布且 $\E|Z|<\infty$，则对任意 $\varepsilon>0$，
+\[
+\Pr\Bigl\{\Bigl|\frac1N\sum_{i=1}^{N}Z_i-\E[Z]\Bigr|<\varepsilon\Bigr\}\xrightarrow[N\to\infty]{}1 .
+\]
+代入 $\E[Z]=\Hx{X}$，即得本题答案：
+\begin{equation*}
+\boxed{\ \lim_{N\to\infty}-\frac1N\lb\,p(X_1X_2\cdots X_N)=\Hx{X}=-\sum_{k=1}^{K}p_k\lb p_k\ }
+\end{equation*}
+\textbf{人话}：不管信源长什么样，长序列“平均每符号的信息量”最终稳定在\textbf{信源熵}上。
+
+\textbf{必须强调}：这是\textbf{依概率收敛}，不是“每条序列都成立”。坏序列（比如 $N$ 位全是那个稀有符号）当然存在，但它们概率越来越小、趋于 $0$。所以准确写法是 $-\frac1N\lb p(\cdot)\xrightarrow{P}\Hx{X}$。
+\end{calc}
+
+\subsection{结论的三种人话说法：渐近等同分割性（AEP）}
+
+对数与指数互逆，把结论等价变形：
+\begin{equation*}
+-\frac1N\lb p(x)\approx\Hx{X}\iff \lb p(x)\approx-N\Hx{X}\iff p(x)\approx 2^{-N\Hx{X}}.
+\end{equation*}
+\textbf{人话}：长为 $N$ 的序列中，凡是“常出现”的那些，概率\textbf{近似相等}、都约等于 $2^{-N\Hx{X}}$。名字“渐近等同分割”就是这个意思：\textbf{渐近}（$N$ 大才准）$+$ \textbf{等同}（每条典型序列近似等概率）$+$ \textbf{分割}（总概率 $1$ 被切成许多份 $2^{-N\Hx{X}}$）。
+
+\begin{idea}{典型序列的“人口普查”：两个数就够了}
+设信源熵为 $H$，即 $\Hx{X}=H$。二元信源共 $K^N=2^N$ 条可能序列，其中：
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt,topsep=1pt]
+  \item 典型序列约 \textbf{$2^{N\!H}$ 条}（每条概率约 $2^{-N\!H}$，乘起来总概率 $\approx1$）；
+  \item 它们的\textbf{总概率 $\approx1$}：几乎必然抽到典型序列；
+  \item 但只占全部序列的比例 $\approx \dfrac{2^{N\!H}}{K^N}=2^{-N(\lb K-H)}$，指数级地小。
+\end{itemize}
+\textbf{人话}：绝大多数序列“几乎从不出现”，真正要对付的只有 $2^{N\!H}$ 条。例：$H=0.5\bit$、$N=1000$，典型序列只有 $2^{500}$ 条而全部有 $2^{1000}$ 条——\textbf{压缩掉一半}。
+\end{idea}
+
+\begin{idea}{用途：AEP 是定长信源编码定理的根}
+只需管 $2^{N\!H}$ 条序列 $\Rightarrow$ 给它们各编一个编号，编号只需 $\lb 2^{N\!H}=N\Hx{X}$ 个比特。于是“\textbf{$N$ 长序列只需约 $N\Hx{X}$ 比特就能几乎无错地表示}”，少于它则装不下这么多序列。所以 $\Hx{X}$ 是\textbf{压缩的极限速率}（bit/符号），信源编码定理就是把这句话严格化（$\bar L\to\Hx{X}$）。
+\end{idea}
+
+\begin{exam}{考试怎么考（4.1 只有三种问法）}
+① \textbf{求这个极限}：拆乘积 $\to$ 取对数变求和 $\to$ 指出 $-\lb p(X_i)$ 独立同分布、期望为 $\Hx{X}$ $\to$ 由\textbf{辛钦大数定律}得极限 $=\Hx{X}$。② \textbf{问典型序列多少条／概率多大}：$2^{N\Hx{X}}$ 条、总概率 $\to1$、占全部 $K^N$ 的比例 $\approx2^{-N(\lb K-\Hx{X})}$。③ \textbf{问为何能压到 $\Hx{X}$}：用“$2^{N\Hx{X}}$ 条编号需 $N\Hx{X}$ 比特”回答。
+
+\textbf{三个扣分点}：漏写“依概率”；只说“平均自信息就是熵”却不点大数定律；把 $p(X_i)$ 写成常数 $p_i$（$X_i$ 随机，$p(X_i)$ 才是随机变量）。
+\end{exam}
+
+%====================== 4.2 ======================
+\section{4.2\quad 典型序列出现的概率}
+
+\begin{defbox}{题目（教材 P93）}
+设 $X_1,X_2,\dots$ 为取自 $\begin{pmatrix}0&1\\ 0.25&0.75\end{pmatrix}$ 的独立同分布序列，求下列两种情况下序列取典型序列的概率：(1) 定理 4.2.1 中 $\varepsilon=0.05$，$N=10$；(2) $\varepsilon=0.10$，$N=100$。
+\end{defbox}
+
+\begin{idea}{审题：求的是“概率”，不是“序列”}
+概率表读作：符号 $0$ 的概率 $0.25$、符号 $1$ 的概率 $0.75$。为方便，\textbf{下面用 $k$ 表示 $N$ 长序列中“符号 $0$”的个数}（即概率为 $0.25$ 的那个符号的个数；若改记 $1$ 的个数，全部结论不变、只是把 $0$ 与 $1$ 对调）。要求的是
+\[
+P=\Pr\{\text{随机抽出的 }N\text{ 长序列 }x\text{ 是典型序列}\},
+\]
+是一个 $0\sim1$ 之间的数。所以整题结构：\emph{把“典型”写成不等式 $\to$ 解出合法序列的数目 $\to$ 把这些序列的概率加起来}。
+\end{idea}
+
+\textbf{准备 1：信源熵（后面处处要用）}。$\lb0.25=\lb\frac14=-2$（精确），$\lb0.75=\lb\frac34=\lb3-\lb4=1.5850-2=-0.4150$：
+\begin{align*}
+\Hx{X}&=-0.25\lb0.25-0.75\lb0.75
+=0.25\times2+0.75\times0.4150\notag\\
+&=0.5000+0.3113=\boxed{0.8113\ \text{bit}} .
+\end{align*}
+\textbf{人话}：平均每符号 $0.8113$ 比特；同时它就是典型序列的概率标志——$N$ 长典型序列概率约 $2^{-0.8113N}$。
+
+\begin{defbox}{准备 2：什么叫典型序列（定理 4.2.1 的判据）}
+称 $N$ 长序列 $x$ 为 \textbf{$\varepsilon$-典型序列}，若
+$\bigl|-\frac1N\lb\p{x}-\Hx{X}\bigr|<\varepsilon$。
+定理 4.2.1：对任意 $\varepsilon>0$，$N\to\infty$ 时随机序列为典型序列的概率 $\to1$。
+\end{defbox}
+\textbf{人话}：$-\frac1N\lb\p{x}$ 是这条序列“平均每符号的信息量”，典型序列就是\textbf{这个值落在 $\Hx{X}\pm\varepsilon$ 以内}的序列——即概率恰好“卡在 $2^{-N\Hx{X}}$ 附近”的序列。所以两问就是在问：\emph{这个窄窗口里住了多少条序列、它们合起来概率多大}。
+
+\textbf{准备 3：二元情形的关键简化}。设 $N$ 长序列里有 $k$ 个 $0$（概率 $0.25$）、$N-k$ 个 $1$（概率 $0.75$），独立 $+$ 同分布给出
+\[
+\p{x}=\underbrace{0.25\times\cdots\times0.25}_{k\ \text{个}}\times\underbrace{0.75\times\cdots\times0.75}_{N-k\ \text{个}}=0.25^{\,k}0.75^{\,N-k},
+\]
+\textbf{概率只看“有几个 $0$”，不看 $0$ 排在哪儿}；而 $N$ 个位置里挑 $k$ 个放 $0$ 有 $\binom Nk$ 种挑法，故\textbf{这 $\binom Nk$ 条序列概率完全相等}（本题最省力的地方）。取对数除以 $N$：
+\begin{align*}
+-\frac1N\lb\p{x}
+&=-\frac1N\Bigl[k\lb0.25+(N-k)\lb0.75\Bigr]
+=\frac1N\Bigl[k(-\lb0.25)+(N-k)(-\lb0.75)\Bigr]\notag\\
+&=\frac1N\bigl[2k+0.4150(N-k)\bigr]
+=\frac1N\bigl[0.4150N+1.5850\,k\bigr]
+=0.4150+1.5850\cdot\frac kN .
+\end{align*}
+\textbf{人话}：每个 $0$（概率 $0.25$，稀有）贡献 $2$ 比特、每个 $1$（概率 $0.75$，常见）只贡献 $0.4150$ 比特；每把一个 $1$ 换成 $0$，平均值就上升 $2-0.4150=1.5850=\lb3$ 比特。\emph{越稀有的符号越“意外”，信息量越大。}
+
+\textbf{准备 4：解出 $k$ 的允许范围（两种 $\varepsilon$ 通用）}。代入判据：
+\begin{align*}
+\Bigl|0.4150+1.5850\tfrac kN-0.8113\Bigr|<\varepsilon
+&\iff \Bigl|1.5850\tfrac kN-0.3962\Bigr|<\varepsilon
+\quad(\text{因 }0.8113-0.4150=0.3962)\notag\\
+&\iff
+\boxed{\ \frac{0.3962-\varepsilon}{1.5850}<\frac kN<\frac{0.3962+\varepsilon}{1.5850}\ }
+\end{align*}
+\textbf{人话}：典型序列的“$1$ 的比例 $k/N$”必须落在某个小区间里；$\varepsilon$ 越大窗口越宽、住进来的序列越多。下面把两个 $\varepsilon$ 代进去，\textbf{再没有新思想}。
+
+\subsection{第 (1) 问：$\varepsilon=0.05$，$N=10$}
+\begin{align*}
+\text{下界}&=\frac{0.3962-0.05}{1.5850}=\frac{0.3462}{1.5850}=0.2185,\qquad
+\text{上界}=\frac{0.3962+0.05}{1.5850}=\frac{0.4462}{1.5850}=0.2816,\notag\\
+&\Longrightarrow\quad 0.2185<\frac kN<0.2816
+\iff 0.2185\times10<k<0.2816\times10
+\iff 2.185<k<2.816 .
+\end{align*}
+$k$ 是“$0$ 的个数”，只能取整数 $0,1,\dots,10$，而开区间 $(2.185,\,2.816)$ \textbf{里一个整数都没有}（$2$ 太小、$3$ 太大）。故 $N=10$ 时没有典型序列：
+\begin{equation*}
+\boxed{\ P=\Pr\{\text{典型}\}=0\ }
+\end{equation*}
+
+\begin{idea}{为什么会是 $0$？——“台阶”太粗}
+$N=10$ 时 $-\frac1N\lb\p{x}=0.4150+0.1585\,k$ 只能取 $11$ 个离散值：
+\begin{center}
+\small
+\begin{tabular}{@{}c c@{\qquad}c c@{}}
+\toprule
+$k$ & $-\frac1N\lb\p{x}$ & $k$ & $-\frac1N\lb\p{x}$\\
+\midrule
+0 & .4150 & 6 & 1.3660\\
+1 & .5735 & 7 & 1.5245\\
+2 & \textbf{.7320}（偏低，窗口外） & 8 & 1.6830\\
+3 & \textbf{.8905}（偏高，窗口外） & 9 & 1.8415\\
+4 & 1.0490 & 10 & 2.0000\\
+5 & 1.2075 & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+窗口是 $(0.8113-0.05,\ 0.8113+0.05)=(0.7613,\ 0.8613)$：$k=2$ 给 $0.7320$（偏低）、$k=3$ 给 $0.8905$（偏高），\textbf{窗口恰好卡在两个台阶之间的缝里}。这不是算错，而是台阶宽 $0.1585$ 远大于窗口半宽 $0.05$——\textbf{格子太粗自然漏掉}，这正是 AEP 要 $N\to\infty$ 的原因。
+\end{idea}
+
+\subsection{第 (2) 问：$\varepsilon=0.10$，$N=100$}
+\begin{align*}
+\text{下界}&=\frac{0.3962-0.10}{1.5850}=\frac{0.2962}{1.5850}=0.1869,\qquad
+\text{上界}=\frac{0.3962+0.10}{1.5850}=\frac{0.4962}{1.5850}=0.3131,\notag\\
+&\Longrightarrow\quad 0.1869<\frac kN<0.3131
+\iff 18.69<k<31.31 .
+\end{align*}
+$k$（$0$ 的个数）取整数：$k=19,20,\dots,31$，\textbf{共 $31-19+1=13$ 个值}。于是
+\begin{equation*}
+P=\sum_{k=19}^{31}\binom{100}{k}0.25^{\,k}0.75^{\,100-k}.
+\end{equation*}
+\textbf{人话}：这是\textbf{二项分布}求和——$k$（$100$ 个位置里 $0$ 的个数）服从 $B(100,0.25)$，每个 $k$ 对应 $\binom{100}{k}$ 条等概率序列、每条概率 $0.25^k0.75^{100-k}$，“典型序列总概率”就是这些加起来。
+
+\begin{center}
+\small
+\begin{tabular}{@{}c r@{\qquad}c r@{\qquad}c r@{}}
+\toprule
+$k$ & 该项数值 & $k$ & 该项数值 & $k$ & 该项数值\\
+\midrule
+19 & 0.036519 & 24 & 0.090592 & 29 & 0.057998\\
+20 & 0.049301 & 25 & 0.091800 & 30 & 0.045754\\
+21 & 0.062604 & 26 & 0.088269 & 31 & 0.034438\\
+22 & 0.074935 & 27 & 0.080641 & 合计 & \textbf{0.867640}\\
+23 & 0.084709 & 28 & 0.070081 & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{align*}
+P&\approx0.036519+0.049301+0.062604+0.074935+0.084709+0.090592+0.091800\notag\\
+&\qquad+0.088269+0.080641+0.070081+0.057998+0.045754+0.034438
+=\boxed{0.8676}.
+\end{align*}
+\textbf{人话}：$\varepsilon=0.10$、$N=100$ 时，随机抽一条 $100$ 长序列，有\textbf{约 $86.76\%$} 的把握是典型序列——\textbf{这正是 AEP：典型序列以压倒性概率出现}。（剩下 $13\%$ 是 $N=100$ 还不够长、窗口还不够宽造成的尾巴；$N$ 加大或 $\varepsilon$ 放宽，这个比例会迅速趋近 $1$。）
+
+\subsection{考场救命招：用中心极限定理验算（不用算十三项）}
+$k\sim B(100,0.25)$：$\E[k]=Np=100\times0.25=25$，$\sigma_k=\sqrt{Np(1-p)}=\sqrt{100\times0.25\times0.75}=\sqrt{18.75}=4.330$。端点做\textbf{连续修正}（$18.69<k<31.31$ 视为 $18.5\le k\le31.5$）并标准化：
+\[
+z_1=\frac{18.5-25}{4.330}=-1.50,\qquad z_2=\frac{31.5-25}{4.330}=+1.50,
+\]
+查表 $\Phi(1.5)=0.9332$，故 $P\approx\Phi(1.5)-\Phi(-1.5)=2\times0.9332-1=0.8664$，与精确值 $0.8676$ 只差 $0.0012$（相对误差 $0.14\%$）。\textbf{考场上写“$\approx0.87$（正态近似）”够分}，但要知道本质是二项求和。
+
+\begin{qa}{你可能想问：为什么不逐条列序列？}
+\textbf{对称性}：同 $k$ 的序列概率完全相同，于是“逐条累加”被压成“$\binom Nk\times$ 一条的概率”。这同时解释了典型集的两大性质——\textbf{集内近似等概率}、\textbf{总概率$\to1$}，也就把 AEP 又说了一遍。
+\end{qa}
+
+\begin{exam}{考试怎么考（4.2 是“套公式的算术题”）}
+\textbf{五步照抄}：① 写判据 $\bigl|-\frac1N\lb\p{x}-\Hx{X}\bigr|<\varepsilon$ 并算出 $\Hx{X}$；② 写出 $-\frac1N\lb\p{x}=\frac1N[k(-\lb p_1)+(N-k)(-\lb p_2)]$；③ 解不等式化成 $\frac kN\in(\alpha,\beta)$、两边乘 $N$；④ 找整数，无整数则 $P=0$（并说明“窗口落在两个台阶之间”）；⑤ 二项求和或正态近似（写 $z$ 值 $+\Phi$）。
+
+\textbf{易错点}：判据符号写成 $+\frac1N\lb\p{x}$（区间整体平移）；解出 $k/N$ 忘乘 $N$；把 $P$ 答成“$13$”（那是 $k$ 的个数，$P$ 是 $\binom{100}{k}$ 之和）；误用 $\Hx{X}=1$（二元熵最大值）而不用 $0.8113$。
+\end{exam}
+
+%====================== 4.4 ======================
+\section{4.4\quad 二元与三元 Huffman 编码}
+
+\begin{defbox}{题目（教材 P93）}
+信源 $\begin{pmatrix} a_1&a_2&a_3&a_4&a_5&a_6&a_7&a_8&a_9&a_{10}\\ 0.16&0.14&0.13&0.12&0.10&0.09&0.08&0.07&0.06&0.05\end{pmatrix}$，(a) 求二元 Huffman 码并计算 $\bar L$；(b) 求三元 Huffman 码并计算 $\bar L_3$。
+\end{defbox}
+
+\begin{idea}{Huffman 编码是什么（一句话）}
+给 $10$ 个符号各配一串 $0/1$ 码字，使平均码长 $\bar L=\sum_i p_il_i$（$l_i=$ 第 $i$ 个码字长度）\textbf{最小}；还要求\textbf{前缀码}（任何码字都不是别的码字的前缀，否则收到一串 $0$ 不知该断在哪里）。
+
+\textbf{算法}（自底向上建树）：① 所有概率当孤立叶子；② \textbf{每次挑出概率最小的两个（三元时三个）}当兄弟接到新父节点下，父节点概率 $=$ 子节点之和；③ 重复直到只剩 $1$ 个根。
+\textbf{人话}：概率小的被合并得最晚、离根最远 $\Rightarrow$ 码字长；概率大的离根近 $\Rightarrow$ 码字短。“常用的话说短点”的数学版本。
+\end{idea}
+
+\subsection{(a) 二元 Huffman：9 次合并全过程}
+$10$ 个符号要合并 $10-1=9$ 次，\textbf{每一轮都要重新排序取最小的两个}（最容易偷懒出错的地方）：
+
+\begin{center}
+\small
+\begin{tabular}{@{}c l c l@{}}
+\toprule
+轮次 & 本次合并（最小两个） & 新概率 & 本轮之后剩下的概率（升序）\\
+\midrule
+1 & $0.05+0.06$ & $0.11$ & $0.07,0.08,0.09,0.10,\mathbf{0.11},0.12,0.13,0.14,0.16$\\
+2 & $0.07+0.08$ & $0.15$ & $0.09,0.10,0.11,0.12,0.13,0.14,\mathbf{0.15},0.16$\\
+3 & $0.09+0.10$ & $0.19$ & $0.11,0.12,0.13,0.14,0.15,0.16,\mathbf{0.19}$\\
+4 & $0.11+0.12$ & $0.23$ & $0.13,0.14,0.15,0.16,0.19,\mathbf{0.23}$\\
+5 & $0.13+0.14$ & $0.27$ & $0.15,0.16,0.19,0.23,\mathbf{0.27}$\\
+6 & $0.15+0.16$ & $0.31$ & $0.19,0.23,0.27,\mathbf{0.31}$\\
+7 & $0.19+0.23$ & $0.42$ & $0.27,0.31,\mathbf{0.42}$\\
+8 & $0.27+0.31$ & $0.58$ & $0.42,\mathbf{0.58}$\\
+9 & $0.42+0.58$ & $1.00$ & 只剩根，和为 $1$ $\checkmark$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{自检}：每轮“两个数换成一个和”，总和仍是 $1$；最后 $0.42+0.58=1.00$，合并无误。
+
+\textbf{人话}：第 $1$ 轮产生的 $0.11$ 是“虚拟符号”（代表 $a_{10}$、$a_9$ 这一族），它在第 $4$ 轮又和 $0.12$ 合并——\textbf{虚拟符号走过几次，那一族符号的码长就是几}。
+
+\textbf{码长 $=$ 从叶到根被合并的次数}（每上一层加 $1$ 位）。先定树：每个内部节点“左支赋 $0$、右支赋 $1$”。
+
+\begin{center}
+\small
+\begin{tabular}{@{}c c c c@{}}
+\toprule
+内部节点 & 左支（$+0$） & 右支（$+1$） & 说明\\
+\midrule
+$1.00$ & $0.42$ & $0.58$ & 根\\
+$0.42$ & $0.19$ & $0.23$ & 轮 7\\
+$0.58$ & $0.27$ & $0.31$ & 轮 8\\
+$0.19$ & $0.09$ & $0.10$ & 轮 3\\
+$0.23$ & $0.11$ & $0.12$ & 轮 4\\
+$0.27$ & $0.13$ & $0.14$ & 轮 5\\
+$0.31$ & $0.15$ & $0.16$ & 轮 6\\
+$0.11$ & $0.05$ & $0.06$ & 轮 1\\
+$0.15$ & $0.07$ & $0.08$ & 轮 2\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{从根走到叶、把沿途标号连起来就是码字}。例如 $0.16$：$1.00\to0.58$（记 $1$）$\to0.31$（记 $1$）$\to0.16$（记 $1$），得 $111$。
+
+\begin{center}
+\small
+\begin{tabular}{@{}c c l c c@{}}
+\toprule
+符号 & 概率 $p_i$ & 参与的轮次 / 走法 & 码字 & 码长 $l_i$\\
+\midrule
+$a_1$ & 0.16 & 6,8,9\ \ \ $1.00\to0.58\to0.31\to0.16$ & 111 & 3\\
+$a_2$ & 0.14 & 5,8,9\ \ \ $1.00\to0.58\to0.27\to0.14$ & 101 & 3\\
+$a_3$ & 0.13 & 5,8,9\ \ \ $1.00\to0.58\to0.27\to0.13$ & 100 & 3\\
+$a_4$ & 0.12 & 4,7,9\ \ \ $1.00\to0.42\to0.23\to0.12$ & 011 & 3\\
+$a_5$ & 0.10 & 3,7,9\ \ \ $1.00\to0.42\to0.19\to0.10$ & 001 & 3\\
+$a_6$ & 0.09 & 3,7,9\ \ \ $1.00\to0.42\to0.19\to0.09$ & 000 & 3\\
+$a_7$ & 0.08 & 2,6,8,9\ $1.00\to0.58\to0.31\to0.15\to0.08$ & 1101 & 4\\
+$a_8$ & 0.07 & 2,6,8,9\ $1.00\to0.58\to0.31\to0.15\to0.07$ & 1100 & 4\\
+$a_9$ & 0.06 & 1,4,7,9\ $1.00\to0.42\to0.23\to0.11\to0.06$ & 0101 & 4\\
+$a_{10}$ & 0.05 & 1,4,7,9\ $1.00\to0.42\to0.23\to0.11\to0.05$ & 0100 & 4\\
+\bottomrule
+\end{tabular}
+\end{center}
+故\textbf{二元码长 $=(3,3,3,3,3,3,4,4,4,4)$}。这套码字无前缀冲突（有 $111,1101,1100$ 却没有 $11,110$，读到 $11$ 开头就知道还要再等 $1\sim2$ 位），可逐位译码。码字不唯一（左右可换），\textbf{但 $\bar L$ 唯一}。
+
+\begin{idea}{Kraft 不等式一分钟自检（强烈建议写进卷面）}
+前缀码必须 $\sum_i r^{-l_i}\le1$。二元：$6\times2^{-3}+4\times2^{-4}=6\times\frac18+4\times\frac1{16}=0.75+0.25=1.00$。
+取等号 $\Rightarrow$ 是\textbf{满二叉树}，这几个码长确实能造出前缀码，且一点没浪费。
+\end{idea}
+
+\textbf{平均码长}：
+\begin{align*}
+\bar L&=\sum_{i=1}^{10}p_il_i
+=3\times\underbrace{(0.16+0.14+0.13+0.12+0.10+0.09)}_{=0.74}
++4\times\underbrace{(0.08+0.07+0.06+0.05)}_{=0.26}\notag\\
+&=3\times0.74+4\times0.26=2.22+1.04=\boxed{3.26\ \text{bit}}
+\end{align*}
+（$0.16+0.14=0.30$，$+0.13=0.43$，$+0.12=0.55$，$+0.10=0.65$，$+0.09=0.74$；$0.08+0.07=0.15$，$+0.06=0.21$，$+0.05=0.26$；且 $0.74+0.26=1$，自检通过。）\textbf{人话}：平均每符号发 $3.26$ 个二进制码元，介于 $3$ 与 $4$ 之间，符合“六个短码 $+$ 四个长码”。
+
+\textbf{信源熵}（逐项列出，$\lb p_i$ 都写出来）：
+
+\begin{center}
+\small
+\begin{tabular}{@{}c c r r@{}}
+\toprule
+$p_i$ & $\lb p_i$ & $p_i\lb p_i$ & 累加 $-p_i\lb p_i$\\
+\midrule
+0.16 & $-2.6439$ & $-0.4230$ & 0.4230\\
+0.14 & $-2.8365$ & $-0.3971$ & 0.8201\\
+0.13 & $-2.9434$ & $-0.3826$ & 1.2027\\
+0.12 & $-3.0589$ & $-0.3671$ & 1.5698\\
+0.10 & $-3.3219$ & $-0.3322$ & 1.9020\\
+0.09 & $-3.4739$ & $-0.3127$ & 2.2147\\
+0.08 & $-3.6439$ & $-0.2915$ & 2.5062\\
+0.07 & $-3.8365$ & $-0.2686$ & 2.7748\\
+0.06 & $-4.0589$ & $-0.2435$ & 3.0183\\
+0.05 & $-4.3219$ & $-0.2161$ & 3.2344\\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{align*}
+\Hx{X}&=-\sum_{i=1}^{10}p_i\lb p_i
+=0.4230+0.3971+0.3826+0.3671+0.3322\notag\\
+&\qquad+0.3127+0.2915+0.2686+0.2435+0.2161
+=\boxed{3.2344\ \text{bit}}
+\end{align*}
+\textbf{人话}：这是“理论上最少也要 $3.2344$ bit/符号”的下限，任何无失真编码都不可能更短。于是
+\begin{align*}
+\eta&=\frac{\Hx{X}}{\bar L}=\frac{3.2344}{3.26}=0.9921\approx\boxed{99.2\%},\notag\\
+\text{冗余度}&=1-\eta=0.79\%,
+\qquad \bar L-\Hx{X}=3.26-3.2344=0.0256\ \text{bit/符号}.
+\end{align*}
+\textbf{人话}：只比理论极限多花 $0.0256$ bit/符号，浪费不到 $1\%$。\textbf{为什么这么高}？因为 Huffman 码满足 $\Hx{X}\le\bar L<\Hx{X}+1$，而本例概率相当“平”（$0.16$ 到 $0.05$ 差得不多）、$n=10$ 也够多，$\bar L$ 就挤在下界附近；若某个概率是 $0.99$、其余都很小，$\bar L$ 可能离 $\Hx{X}$ 很远。
+
+\subsection{(b) 三元 Huffman：先讲清“为什么补一个符号”}
+
+\begin{idea}{$r$ 元编码的凑数条件：$n\equiv1\pmod{r-1}$}
+$r$ 元 Huffman 每轮合并 $r$ 个节点、净减少 $r-1$ 个；要从 $n$ 减到 $1$，必须 $n-1$ 能被 $r-1$ 整除，即 $n\equiv1\pmod{r-1}$。
+
+\textbf{本题}：$n=10$，$r=3$，$r-1=2$，而 $(10-1)\bmod2=1\ne0$ $\Rightarrow$ 不满足。
+
+\textbf{看直白些}（三元每轮净减 $2$）：$10\to8\to6\to4\to2\to\ ?$ 最后剩 $2$ 个节点，而一次要凑满 $3$ 个——\textbf{凑不满，树长歪}。
+
+\textbf{解法}：补 $1$ 个概率为 $0$ 的虚拟符号 $\delta$，变成 $11$ 个，$(11-1)\bmod2=0$ 满足，于是 $11\to9\to7\to5\to3\to1$。一般地取最小非负整数 $m$ 使 $n+m\equiv1\pmod{r-1}$；本题 $m=1$。
+
+\textbf{人话}：零概率符号是“空椅子”，自己的码字用不上、权重为 $0$ 故不影响 $\bar L_3$；唯一作用是让每轮凑满 $3$ 个，把树补成\textbf{满三叉树}。
+\end{idea}
+
+\begin{center}
+\small
+\begin{tabular}{@{}c l c l@{}}
+\toprule
+轮次 & 本次合并（最小三个） & 新概率 & 本轮之后剩下的概率（升序）\\
+\midrule
+1 & $0.00+0.05+0.06$ & $0.11$ & $0.07,0.08,0.09,0.10,\mathbf{0.11},0.12,0.13,0.14,0.16$\\
+2 & $0.07+0.08+0.09$ & $0.24$ & $0.10,0.11,0.12,0.13,0.14,0.16,\mathbf{0.24}$\\
+3 & $0.10+0.11+0.12$ & $0.33$ & $0.13,0.14,0.16,0.24,\mathbf{0.33}$\\
+4 & $0.13+0.14+0.16$ & $0.43$ & $0.24,0.33,\mathbf{0.43}$\\
+5 & $0.24+0.33+0.43$ & $1.00$ & 只剩根，和为 $1$ $\checkmark$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{自检}：$0.24+0.33+0.43=1.00$；节点数 $11\to9\to7\to5\to3\to1$，每轮净减 $2$，与 $r-1=2$ 一致。
+
+\begin{center}
+\small
+\begin{tabular}{@{}c c l c c@{}}
+\toprule
+符号 & 概率 & 参与的轮次 & 码字 & 码长 $l_i$\\
+\midrule
+$a_1$ & 0.16 & 4,5 & 22 & 2\\
+$a_2$ & 0.14 & 4,5 & 21 & 2\\
+$a_3$ & 0.13 & 4,5 & 20 & 2\\
+$a_4$ & 0.12 & 3,5 & 12 & 2\\
+$a_5$ & 0.10 & 3,5 & 10 & 2\\
+$a_6$ & 0.09 & 2,5 & 02 & 2\\
+$a_7$ & 0.08 & 2,5 & 01 & 2\\
+$a_8$ & 0.07 & 2,5 & 00 & 2\\
+$a_9$ & 0.06 & 1,3,5 & 112 & 3\\
+$a_{10}$ & 0.05 & 1,3,5 & 111 & 3\\
+$\delta$ & 0.00 & 1,3,5 & 110 & 3（不用）\\
+\bottomrule
+\end{tabular}
+\end{center}
+故\textbf{三元码长 $=(2,2,2,2,2,2,2,2,3,3)$}（前八个 $2$、后两个 $3$）。Kraft 自检：$8\times3^{-2}+3\times3^{-3}=\frac89+\frac19=1.00$ $\checkmark$（满三叉树）。
+
+\textbf{平均码长}：
+\begin{align*}
+\bar L_3&=2\times\underbrace{(0.16+0.14+0.13+0.12+0.10+0.09+0.08+0.07)}_{=0.89}
++3\times\underbrace{(0.06+0.05)}_{=0.11}\notag\\
+&=2\times0.89+3\times0.11=1.78+0.33=\boxed{2.11\ \text{三进制符号/信源符号}}
+\end{align*}
+（前八个相加：$0.30,0.43,0.55,0.65,0.74,0.82,0.89$；且 $0.89+0.11=1$，自检通过。）
+
+\textbf{关键一步：单位换算}。$\bar L_3$ 的单位是“三进制符号”，熵的单位是 bit，\textbf{不能直接相除}！一个三进制符号最多携带 $\lb3=1.5850$ bit，故三元码平均每信源符号实际携带 $\bar L_3\lb3=2.11\times1.5850=3.3443$ bit，于是
+\begin{align*}
+\eta&=\frac{\Hx{X}}{\bar L_3\lb3}=\frac{3.2344}{3.3443}=0.9671\approx\boxed{96.7\%},
+\qquad\text{冗余度}=1-\eta=3.3\%,
+\end{align*}
+并可核对 $r$ 元 Huffman 界 $\Hx{X}\le\bar L_3\lb3<\Hx{X}+\lb3$：$3.2344\le3.3443<4.8194$ $\checkmark$
+
+\begin{idea}{为什么三元效率（$96.7\%$）反而比二元（$99.2\%$）低？}
+不是算错，是必然：$r$ 元 Huffman 的冗余上界是 $\lb r$（二元 $1$、三元 $1.585$），$r$ 越大一次“砍掉”的名额越多、量化越粗；本题码长只有 $2$ 或 $3$，档位很粗，$\pm$半档就相当于 $10\%$ 误差；二元码长 $3/4$ 分得更细，所以更贴熵。
+\textbf{人话}：用三进制图的是“一次传 $3$ 种电平”，省的是\emph{信道符号个数}（$2.11$ 个 vs $3.26$ 个），效率略降是正常代价。
+\end{idea}
+
+\begin{exam}{考试怎么考（4.4 是必考大计算题）}
+\textbf{标准答题格式}：① \textbf{画合并树或列合并表}（每轮写清合并了哪几个、新概率、剩下哪些，最后一轮必须合成 $1$）；② \textbf{写码长}（由“被合并次数”读出，用 Kraft 自检）；③ \textbf{给码字表}并验证前缀性；④ \textbf{算 $\bar L=\sum p_il_i$}（写出分组和，如 $3\times0.74+4\times0.26$）；⑤ \textbf{算 $\Hx{X}$ 与 $\eta$}（$r$ 元写成 $\eta=\Hx{X}/(\bar L_r\lb r)$），最后写冗余度。
+
+\textbf{三个致命易错点}：① \textbf{三元漏补符号}——$n=10$ 时不补那个零概率符号，合并到第 $4$ 轮只剩 $2$ 个节点、凑不满 $3$ 个，码长必错；② \textbf{拿 $\bar L$ 直接除熵}——三元必须乘 $\lb3=1.5850$ 换成 bit，否则 $\eta=\frac{3.2344}{2.11}=1.53>1$（效率不可能超过 $1$，这是最好的自检）；③ \textbf{概率顺序写乱}——题给概率是降序 $0.16\to0.05$，码长必须对到正确符号上，把 $(3,3,3,3,3,3,4,4,4,4)$ 抄成反序会让 $\bar L$ 从 $3.26$ 变成 $3.55$。
+\end{exam}
+
+%====================== 4.12 ======================
+\section{4.12\quad 马尔可夫信源的熵率与状态编码}
+
+\begin{defbox}{题目（教材 P94，附状态图）}
+设有一马尔可夫信源，其状态图见教材习题 4.12 图。(1) 求平稳状态下各状态的概率 $q(i)$ 及各字母 $a_i$ 出现的概率；(2) 求 $\Hx{X|s_i}$；(3) 求 $H_\infty(X)$；(4) 对各状态 $s_i$ 求最佳二元码；(5) 计算平均码长 $\bar L$。
+\end{defbox}
+
+\begin{qa}{重要说明：最终数值请以教材 P94 状态图为准}
+本题的三个状态、转移概率、各状态发出各字母的概率全部画在 P94 的\textbf{插图}里（扫描件图形），本解答\textbf{无法读取图中数字}，因此\textbf{绝不编造}转移概率。本节给出\textbf{通用解法模板 $+$ 一个数据齐全的两状态示范}，你把状态图上的数字代入即得教材答案。书后答案可用来核对：各字母概率是\textbf{分数}（如 $p(a_1)=\frac3{11}$ 一类），且 $\Hx{X|s_1}=\frac34=0.75$、$\Hx{X|s_2}=1$、$\Hx{X|s_3}=0$。
+\end{qa}
+
+\subsection{五个概念先讲清（不然后面全是天书）}
+\begin{itemize}[leftmargin=1.3em,itemsep=1pt,topsep=1pt]
+  \item \textbf{马尔可夫信源}：下一个符号的概率\emph{只取决于当前状态}，与更早历史无关（“记忆只有一格”）。
+  \item \textbf{转移概率 $p_{jk}=\Pr(s_k\mid s_j)$}：现在在 $s_j$，下一步跑到 $s_k$ 的概率；就是状态图上箭头旁的数字。
+  \item \textbf{平稳分布 $q(i)$}（第 (1) 问）：跑久了以后“处于 $s_i$ 的概率”稳定不变，即\emph{长期有百分之多少时间待在 $s_i$}。
+  \item \textbf{状态条件熵 $\Hx{X|s_k}$}（第 (2) 问）：\emph{已知在 $s_k$} 时下一个符号还剩多少不确定性。
+  \item \textbf{极限熵（熵率）$H_\infty(X)$}（第 (3) 问）：长期平均每符号信息量 $=$ 各状态条件熵按平稳概率加权。
+\end{itemize}
+
+\subsection{通用解法模板（六步，任何状态图都能套）}
+\begin{calc}{第 1 步：由状态图写转移矩阵并自检}
+$P=(p_{jk})$：第 $j$ 行第 $k$ 列填“从 $s_j$ 指向 $s_k$ 的概率”，且\textbf{每行和为 $1$}（从某状态出发必然走到某状态）。\textbf{写完第一件事就是逐行求和自检}——这一分钟能救回后面全部计算。
+\end{calc}
+\begin{calc}{第 2 步：解平稳分布（本题最易失分处）}
+$q=(q_1,q_2,q_3)$ 是\emph{行向量}，“再走一步分布不变”即
+\[
+qP=q\iff \sum_j q_jp_{jk}=q_k\ (k=1,2,3),\qquad\text{再加归一化}\ \sum_k q_k=1 .
+\]
+\textbf{人话}：$qP=q$ 表示“流入 $s_k$ 的概率总量 $=$ 留在 $s_k$ 的概率”。这三条方程\textbf{不独立}（加起来是恒等式），\textbf{必须丢掉一条、用 $\sum q_k=1$ 补上}，否则解不出来。操作上先由 $qP=q$ 得比例 $q_1:q_2:q_3$，再用和为 $1$ 定标；比例通常是有理数，\textbf{答案多是分数}（本书 $p(a_1)=\frac3{11}$ 就由此而来）。
+\end{calc}
+\begin{calc}{第 3--5 步：字母概率 $\to$ 各状态熵 $\to$ 熵率}
+\begin{align*}
+\text{字母概率（全概率公式）}\text{：}&\quad p(a_l)=\sum_k q_k\,p(a_l\mid s_k),
+\qquad \text{自检}\ \textstyle\sum_l p(a_l)=1;\\
+\text{各状态熵}\text{：}&\quad \Hx{X|s_k}=-\sum_l p(a_l\mid s_k)\lb p(a_l\mid s_k);\\
+\text{熵率}\text{：}&\quad H_\infty(X)=\sum_k q_k\,\Hx{X|s_k}\ \le\ \Hx{X}\ (\text{无记忆时取等}).
+\end{align*}
+\textbf{人话}：字母可能从任何状态发出，所以“分别算 $[$在 $s_k$ 的概率 $\times$ 在 $s_k$ 时发该字母的概率$]$ 再相加”；条件熵就是把“该状态下各字母的概率”当独立信源算熵；熵率就是按“待的时间比例”加权。若某状态只发一个字母（概率 $1$），则 $\Hx{X|s_k}=-\lb1=0$——\textbf{零不确定性}，书后 $\Hx{X|s_3}=0$ 即此。\emph{“知道状态”本身就是信息，所以有记忆时 $H_\infty<\Hx{X}$，更好压。}
+\end{calc}
+\begin{calc}{第 6 步：各状态分别 Huffman 编码，再合成平均码长}
+对每个状态用其概率表 $\{p(a_l\mid s_k)\}$ 单独做（4.4 的方法）Huffman，得 $\bar L_k=\sum_l p(a_l\mid s_k)l^{(k)}_l$，再
+\[
+\bar L=\sum_k q_k\bar L_k,\qquad \eta=\frac{H_\infty(X)}{\bar L}\ (\text{二元；}r\text{ 元则除以 }\bar L\lb r).
+\]
+\textbf{人话}：收发双方都知道当前状态（状态可由已收符号推出），所以可“按状态换码表”，平均码长按平稳概率加权——\textbf{不是三个状态简单取算术平均}。
+\end{calc}
+
+\subsection{示范：一个数据齐全的两状态例子（把模板完整跑一遍）}
+\begin{defbox}{示范题（自构数据，只为演示流程）}
+两状态信源 $s_1,s_2$，字母表 $\{a_1,a_2,a_3\}$：
+$P=\begin{pmatrix}0.9&0.1\\ 0.2&0.8\end{pmatrix}$，
+\[
+\begin{array}{c|ccc} & a_1&a_2&a_3\\\hline s_1 & 0.5&0.3&0.2\\ s_2 & 0.2&0.3&0.5\end{array}
+\]
+求 $q(i)$、$p(a_l)$、$\Hx{X|s_k}$、$H_\infty$、各状态最佳二元码与 $\bar L$。
+\end{defbox}
+
+\textbf{第 1 步}：$0.9+0.1=1$ $\checkmark$，$0.2+0.8=1$ $\checkmark$。含义：$s_1$ 很“黏”（$90\%$ 留在 $s_1$）。
+
+\textbf{第 2 步}：$qP=q$ 给出 $q_1=0.9q_1+0.2q_2\Rightarrow0.1q_1=0.2q_2\Rightarrow q_1=2q_2$（第二式 $q_2=0.1q_1+0.8q_2$ 与它等价，冗余，丢弃）。配 $q_1+q_2=1$：$3q_2=1\Rightarrow q_2=\frac13,\ q_1=\frac23$。回代验算第二式：$0.1\times\frac23+0.8\times\frac13=\frac1{15}+\frac4{15}=\frac5{15}=\frac13=q_2$ $\checkmark$
+\[
+\boxed{q(1)=\tfrac23=0.6667,\qquad q(2)=\tfrac13=0.3333}
+\]
+\textbf{人话}：长期有 $2/3$ 的时间待在 $s_1$，因为它的自留概率高。
+
+\textbf{第 3 步（全概率公式）}：
+\begin{align*}
+p(a_1)&=\underbrace{\tfrac23\times0.5}_{s_1}+\underbrace{\tfrac13\times0.2}_{s_2}=\tfrac13+\tfrac1{15}=\tfrac5{15}+\tfrac1{15}=\tfrac6{15}=\tfrac25=0.4,\\
+p(a_2)&=\tfrac23\times0.3+\tfrac13\times0.3=0.2+0.1=0.3,\\
+p(a_3)&=\tfrac23\times0.2+\tfrac13\times0.5=\tfrac2{15}+\tfrac16=\tfrac4{30}+\tfrac5{30}=\tfrac9{30}=\tfrac3{10}=0.3 .
+\end{align*}
+算术说明：$\frac23\times0.2=\frac23\times\frac15=\frac2{15}=\frac4{30}$；$\frac13\times0.5=\frac13\times\frac12=\frac16=\frac5{30}$。
+\textbf{自检}：$0.4+0.3+0.3=1.0$ $\checkmark$——\textbf{概率题最后一定把和为 $1$ 加一遍}，分数通分错立刻暴露。
+
+\textbf{第 4 步（条件熵）}：$s_1$ 的概率表 $(0.5,0.3,0.2)$：
+$-0.5\lb0.5=0.5\times1.0000=0.5000$，$-0.3\lb0.3=0.3\times1.7370=0.5211$，$-0.2\lb0.2=0.2\times2.3219=0.4644$，故
+$\Hx{X|s_1}=0.5000+0.5211+0.4644=1.4855$ bit。$s_2$ 的表 $(0.2,0.3,0.5)$ 只是把同样三个数换序（熵与顺序无关），故 $\Hx{X|s_2}=1.4855$ bit。
+
+\textbf{第 5 步（熵率）}：$H_\infty=\frac23\times1.4855+\frac13\times1.4855=1.4855$ bit/符号。
+\textbf{对照}（说明“记忆有用”）：不管状态、当无记忆信源用字母概率 $(0.4,0.3,0.3)$ 算熵：
+\begin{align*}
+\Hx{X}&=-0.4\lb0.4-0.3\lb0.3-0.3\lb0.3=0.4\times1.3219+2\times(0.3\times1.7370)\notag\\
+&=0.5288+1.0422=1.5710\ \text{bit},
+\end{align*}
+故 $H_\infty=1.4855<1.5710=\Hx{X}$ $\checkmark$，每符号省 $1.5710-1.4855=0.0855$ bit。这就是“有记忆信源的熵率低于无记忆熵”。
+
+\textbf{第 6 步（各状态最佳二元码）}：对 $s_1$ 的 $(0.5,0.3,0.2)$：合并最小的两个 $0.3+0.2=0.5$，剩 $\{0.5,0.5\}$，再合并成 $1$；码长 $a_1\to1$、$a_2\to2$、$a_3\to2$，故 $\bar L_1=0.5\times1+0.3\times2+0.2\times2=0.5+0.6+0.4=1.5$ bit。
+对 $s_2$ 的 $(0.2,0.3,0.5)$：$0.2+0.3=0.5$ 再与 $0.5$ 合并，码长 $a_1\to2,a_2\to2,a_3\to1$，$\bar L_2=0.4+0.6+0.5=1.5$ bit。于是
+\[
+\bar L=\tfrac23\times1.5+\tfrac13\times1.5=1.50\ \text{bit/符号},\qquad
+\eta=\frac{1.4855}{1.50}=0.9903\approx99.0\% .
+\]
+\textbf{附加对比}：若不分状态、按 $(0.4,0.3,0.3)$ 一套码（码长 $a_1\to1,a_2\to2,a_3\to2$），$\bar L'=0.4+0.6+0.6=1.60$ bit $>1.50$。\textbf{人话}：利用“状态已知”每符号少花 $0.10$ bit，这正是第 (4)(5) 问存在的意义。
+
+\subsection{教材书后答案对照（代入状态图后用它核对）}
+\begin{idea}{4.12 的答案长什么样}
+① \textbf{平稳分布与字母概率都是分数}：$qP=q$ 解出的 $q_i$ 常形如 $\frac4{11},\frac4{11},\frac3{11}$，字母概率 $p(a_l)=\sum_kq_kp(a_l|s_k)$ 随之是分数（书后 $p(a_1)=\frac3{11}$ 即此；写成 $0.2727$ 也对，但分数更能看出结构）。② \textbf{条件熵}：$\Hx{X|s_1}=\frac34=0.75$ bit（对应 $1/4,3/4$ 二字母或四个等概字母）；$\Hx{X|s_2}=1$ bit（等概二字母，$\lb2=1$）；$\Hx{X|s_3}=0$ bit（\textbf{确定性状态}，只发一个字母，$-\lb1=0$）。③ \textbf{熵率}：$H_\infty=\sum_kq_k\Hx{X|s_k}$，把上面三个数按你的 $q_k$ 加权。④ \textbf{各状态码}：每状态分别做 Huffman，常见结构是 $2$ 个码长 $1$、其余码长 $2$，可心算 $\bar L_k=1+$（次大概率之和）。⑤ \textbf{平均码长}：$\bar L=\sum_kq_k\bar L_k$，与 $H_\infty$ 相除得 $\eta$，必有 $0<\eta\le1$（算出 $>1$ 一定是把 $\bar L$ 与熵的对应搞错了）。
+\end{idea}
+
+\begin{qa}{醒目提示：本题数值的唯一来源是教材 P94 的状态图}
+本解答没有、也不会凭空给出 $p_{jk}$ 与 $p(a_l\mid s_k)$ 的数值——那些数字在书上的图里。\textbf{你只需做一件事}：把图中每根箭头旁的数字抄进第 1 步的矩阵、把每个状态旁标注的各字母概率抄进第 3--4 步，然后\textbf{严格按六步模板算下去}，得到的 $q_i$、$p(a_l)$、$\Hx{X|s_i}$、$H_\infty$、$\bar L$ 就是标准答案。算完用三条自检兜底：转移矩阵每行和为 $1$；$\sum_l p(a_l)=1$；$0<\eta\le1$。
+\end{qa}
+
+\begin{exam}{考试怎么考（4.12 是“五问一条龙”题）}
+① \textbf{平稳分布}：写 $qP=q$ 三条 $+$ 归一化，\textbf{丢掉一条冗余方程}，答分数；字母概率用全概率公式。② \textbf{条件熵}：逐状态套 $-\sum p\lb p$，确定性状态直接写 $0$。③ \textbf{熵率}：$H_\infty=\sum q_k\Hx{X|s_k}$，可加一句 $H_\infty\le\Hx{X}$。④ \textbf{编码}：每状态独立做 Huffman（同 4.4），务必写码字表并注明“状态已知”。⑤ \textbf{平均码长}：$\bar L=\sum q_k\bar L_k$，\textbf{用平稳概率加权，不是算术平均}（最常见的错：$\frac{\bar L_1+\bar L_2+\bar L_3}{3}$）。
+\end{exam}
+
+%====================== 速查 ======================
+\section*{本章公式速查表（考前 5 分钟）}
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.20\textwidth} p{0.38\textwidth} p{0.26\textwidth}@{}}
+\toprule
+\textbf{考点} & \textbf{公式} & \textbf{口诀}\\
+\midrule
+AEP（4.1） & $-\frac1N\lb p(x_1\cdots x_N)\to\Hx{X}$（依概率） & 拆乘积 $\to$ 取对数 $\to$ 大数定律\\
+典型序列 & $p(x)\approx2^{-N\Hx{X}}$，约 $2^{N\Hx{X}}$ 条，总概率 $\to1$ & 等概率 $+$ 占尽概率\\
+典型判据（4.2） & $\bigl|-\frac1N\lb\p{x}-\Hx{X}\bigr|<\varepsilon$ & 化为 $\frac kN$ 区间找整数\\
+二元 $N$ 长序列 & $p(x)=p_1^kp_2^{N-k}$，同 $k$ 共 $\binom Nk$ 条 & 同 $k$ 的序列等概率\\
+Huffman（4.4） & 每次合并 $r$ 个最小概率，需 $n\equiv1\!\!\pmod{r-1}$ & 补零概率符号凑满树\\
+平均码长／效率 & $\bar L=\sum_ip_il_i$；二元 $\eta=\frac{\Hx{X}}{\bar L}$，$r$ 元 $\eta=\frac{\Hx{X}}{\bar L_r\lb r}$ & $r$ 元别忘乘 $\lb r$\\
+平稳分布（4.12） & $qP=q$，$\sum_kq_k=1$；$p(a_l)=\sum_kq_kp(a_l\mid s_k)$ & 丢一条冗余方程，答分数\\
+熵率／状态编码 & $H_\infty=\sum_kq_k\Hx{X|s_k}$；$\bar L=\sum_kq_k\bar L_k$ & 按“待的时间”加权\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{idea}{最后一句总结}
+\textbf{4.1--4.2 讲“概率世界有多稀疏”}：$2^N$ 条序列里只有 $2^{N\Hx{X}}$ 条常来，每条约 $2^{-N\Hx{X}}$，所以每符号至少 $\Hx{X}$ 比特。\textbf{4.4--4.12 讲“怎么把话说到这么短”}：Huffman 用“短码给大概率符号”逼近 $\Hx{X}$；有记忆时知道状态还能更省，极限就是 $H_\infty$。
+\end{idea}
+
+\end{document}
