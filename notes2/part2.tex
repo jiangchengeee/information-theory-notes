@@ -1,0 +1,207 @@
+\section{熵 $H(X)$：平均每条消息值多少 bit}
+
+\begin{idea}{一句话：熵就是“自信息的加权平均”}
+上一讲算出了每条消息各自值多少 bit，但每条都不一样（$0.152$ 和 $3.322$）。工程上我们要一个\textbf{平均指标}：长期来看，平均每发一条消息，你收到多少 bit？
+
+答案就是把各自的信息量按它们出现的概率加权平均：
+\[
+\Hx{X}=p(x_1)I(x_1)+p(x_2)I(x_2)+\cdots=\sum_x p(x)\cdot\bigl(-\lb p(x)\bigr).
+\]
+这个“平均自信息”就叫\textbf{熵}，书上记作 $H(X)$（$H$ 源自物理学里的“熵”，表示混乱/不确定程度）。
+\end{idea}
+
+\subsection{熵的定义}
+
+\begin{defbox}{定义 2.1.3（信源熵 / 信息熵 / 香农熵）}
+设离散随机变量 $X$ 的取值集合为 $\{x_1,x_2,\dots,x_n\}$，概率为 $p(x_i)$，则 $X$ 的\textbf{熵}定义为
+\[
+\boxed{\ \Hx{X}=\E\bigl[I(x)\bigr]=\sum_{i=1}^{n}p(x_i)\bigl(-\lb p(x_i)\bigr)
+=-\sum_{i=1}^{n}p(x_i)\lb p(x_i)\ }
+\]
+单位 bit（对数底为 2 时）；若底取 $e$ 则单位是 nat，底取 10 则单位是 Hart，但\textbf{本课程统一用 $\lb$，单位一律 bit}。
+\end{defbox}
+
+\begin{qa}{这条公式到底在算什么？三句话}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item $-\lb p(x_i)$ 是“第 $i$ 种情况\textbf{一旦发生}值多少 bit”；
+  \item 再乘上 $p(x_i)$ 表示“这种情况\textbf{出现的可能性有多大}，就按多大份额算”；
+  \item 全部加起来 = “平均每种情况值多少 bit”，也就是\textbf{平均不确定性}。
+\end{enumerate}
+所以同一个 $H(X)$ 有两个等价的说法：\textbf{“平均信息量”}（告诉你结果后你平均收到多少 bit）与\textbf{“平均不确定性”}（告诉你之前你对结果有多糊涂）。这两者是同一件事的两面：不确定性越大，一旦告诉你，你得到的信息就越多。
+\end{qa}
+
+\subsection{手把手算熵（三个必须会算的例子）}
+
+\begin{calc}{例 1：掷一颗骰子（等概率情形）}
+六种结果各 $\frac16$，于是
+\begin{align*}
+\Hx{X}&=-\sum_{x=1}^{6}\frac16\lb\frac16
+=-6\cdot\frac16\cdot\lb\frac16\\
+&=-\lb\frac16=\lb 6\approx2.585\bit .
+\end{align*}
+（这里用了一个省力技巧：$6$ 项完全一样，直接乘 $6$。注意 $-\lb\frac16$ 就是“六种等可能”的不确定性，与上一讲单条消息的自信息相同——因为等概率时每条消息信息量一样，平均值当然不变。）
+
+\textbf{结论记牢}：等概 $n$ 元信源的熵是 $\lb n$。特别地，抛公平硬币 $\Hx{X}=\lb2=1$ bit。
+\end{calc}
+
+\begin{calc}{例 2：不公平硬币（二元信源，全书最重要的一族）}
+设 $p(\text{正})=p$，$p(\text{反})=1-p$。定义
+\[
+H(p)=-p\lb p-(1-p)\lb(1-p),
+\]
+这个函数叫\textbf{二元熵函数}。代几个数进去：
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|ccccccc}
+\toprule
+$p$ & 0（或1） & 0.01 & 0.1 & 0.25 & 0.5 & 0.75 & 0.9\\
+\midrule
+$H(p)$ & 0 & 0.081 & 0.469 & 0.811 & 1 & 0.811 & 0.469\\
+\bottomrule
+\end{tabular}
+\end{center}
+\textbf{怎么算的（以 $p=0.1$ 为例）}：
+\begin{align*}
+H(0.1)&=-0.1\times\lb0.1-0.9\times\lb0.9\\
+&=-0.1\times(-3.322)-0.9\times(-0.152)\\
+&=0.332+0.137=0.469\bit .
+\end{align*}
+\textbf{读出三条信息}：
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item $p=\frac12$ 时最大，等于 $1$ bit —— 这时最猜不准；
+  \item $p=0$ 或 $p=1$ 时为零 —— 结果完全确定（永远正面或永远反面），没有任何不确定性；
+  \item 函数关于 $p=\frac12$ 对称：$H(0.1)=H(0.9)$（“偏 0.1”和“偏 0.9”一样糊涂）。
+\end{itemize}
+\end{calc}
+
+\begin{calc}{例 3：天气预报（考试常用）}
+晴 $0.5$、阴 $0.25$、雨 $0.25$：
+\begin{align*}
+\Hx{X}&=-0.5\lb0.5-0.25\lb0.25-0.25\lb0.25\\
+&=0.5\times1+0.25\times2+0.25\times2\\
+&=0.5+0.5+0.5=1.5\bit .
+\end{align*}
+\textbf{算这类题的标准写法}：先列表（概率、$-\lb p$、乘积），再求和：
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|c|c|c}
+\toprule
+天气 & $p_i$ & $-\lb p_i$ & $p_i(-\lb p_i)$\\
+\midrule
+晴 & 0.5 & 1 & 0.5\\
+阴 & 0.25 & 2 & 0.5\\
+雨 & 0.25 & 2 & 0.5\\
+\midrule
+合计 & 1 & — & $\Hx{X}=1.5$\\
+\bottomrule
+\end{tabular}
+\end{center}
+这一列“$p_i(-\lb p_i)$”加起来就是熵。\textbf{考试时永远这么列表}，既清楚又不容易算错。
+\end{calc}
+
+\begin{defbox}{约定：$0\lb 0=0$}
+如果某个 $p(x_i)=0$（这种情况根本不可能发生），那么它对应的项 $0\cdot\lb 0$ 规定为 $0$，即“不可能发生的事不贡献任何不确定性”。
+\textbf{人话}：算熵时可以把概率为 0 的项直接划掉不写。
+（严格说这是极限 $\lim_{p\to0^+}p\lb p=0$，你在做作业时直接写“含 0 的项略去”就行。）
+\end{defbox}
+
+\subsection{熵的三重含义（同一个公式，三种说法）}
+
+\begin{idea}{同一件事的三种说法，考试都可能问}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{不确定性的度量}：收到结果之前，你对它有多糊涂。$H$ 越大越糊涂。
+  \item \textbf{平均信息量}：收到结果之后，你平均收获多少 bit。$H$ 越大，这条消息平均越“值钱”。
+  \item \textbf{无损压缩的下限}：平均每个符号\textbf{至少要}用 $H(X)$ 个二进制位来表示，做不到更短。这就是第8讲信源编码里 $\bar L\ge H(X)$ 的来源。
+\end{enumerate}
+第三条最实用：它给了“压缩的极限”。比如一段中文每个字熵是 8 bit，那你无论怎么压缩，都不可能平均用少于 8 bit 表示一个字。
+\end{idea}
+
+\subsection{熵的性质（考试判断/填空的高频点）}
+
+\begin{defbox}{性质 1：非负性}
+\[
+\Hx{X}\ge 0,
+\]
+且 $\Hx{X}=0$ 当且仅当 $X$ 的取值完全确定（某个 $p(x_i)=1$，其余全为 0）。
+理由：每一项 $p_i(-\lb p_i)$ 都 $\ge0$。
+\end{defbox}
+
+\begin{defbox}{性质 2：极值性（离散熵最大值，必背）}
+设 $X$ 有 $n$ 个可能取值，则
+\[
+0\le \Hx{X}\le \lb n,
+\]
+且\textbf{右端取等号当且仅当所有取值等可能}（$p(x_i)=\frac1n$）。
+\textbf{人话}：在所有“$n$ 种结果”的分布里，\textbf{等概率是最不确定的}。这一点直觉上也对：如果你知道某个结果特别容易出现，那你就没那么糊涂了。
+例：骰子 $\Hx{X}=\lb6\approx2.585$ 是六种收手里的最大值；换成概率 $(0.5,0.1,0.1,0.1,0.1,0.1)$ 后熵只有约 $2.16$ bit。
+\end{defbox}
+
+\begin{defbox}{性质 3：对称性}
+熵只看\textbf{概率的集合}，与“哪个概率对应哪个符号”无关：
+\[
+\Hx{p_1,p_2,\dots,p_n}=\Hx{p_2,p_1,\dots,p_n}\ \ \text{等等任意重排}.
+\]
+人话：把“晴 0.5、雨 0.5”改成“晴 0.5、雪 0.5”，熵不变——熵不关心符号叫什么，只关心概率长什么样。
+\end{defbox}
+
+\begin{defbox}{性质 4：可加性（分组原则，做难题要用）}
+若把 $n$ 个符号分个组，先按组算一次熵、再在组内算一次熵，两次相加等于原来的熵：
+\[
+\Hx{p_1,\dots,p_n}=H(\text{组概率})+\sum_{\text{组}}p(\text{组})\cdot H(\text{组内条件概率}).
+\]
+\textbf{人话}：不确定性可以“先分大类、再分小类”分批算，加起来一样。
+\textbf{用处}：遇到“概率里有一大堆 0.01 的小概率符号”这类题，可以先归并成两组，能省很多计算。
+\end{defbox}
+
+\begin{defbox}{性质 5：上凸性}
+$H(p)$ 是概率向量 $\mathbf{p}=(p_1,\dots,p_n)$ 的\textbf{上凸函数}；$-H$ 是下凸函数。
+\textbf{人话}：把两个分布“掺”在一起（取凸组合），熵不会比原来两个的平均值更小——\textbf{混合只会让事情更不确定}。
+（这也是“等概时熵最大”的另一种说法。）
+\end{defbox}
+
+\subsection{为什么偏偏是“熵”这个函数？——唯一性定理一句话版}
+
+教材 2.3 节证明了：如果要求一个“不确定性度量”函数 $H(p_1,\dots,p_n)$ 满足三条常识：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{连续性}：概率稍微变一点，熵也只能稍微变一点（不能跳）；
+  \item \textbf{单调性}：等概情况下，可选结果越多熵越大（$\lb n$ 随 $n$ 增大）；
+  \item \textbf{分组可加性}：像上面性质 4 那样可以分批算；
+\end{enumerate}
+那么\textbf{唯一可能的函数形式就是} $H=-\sum p_i\lb p_i$（相差一个常数倍数）。
+
+\begin{idea}{这一条对你的实际意义}
+考试里如果问“为什么要用这个公式”“熵函数为什么唯一”，标准答法就是：
+\textbf{“因为它满足连续性、单调性、分组可加性三条公理，而这三条公理唯一确定了 $H=-\sum p\lb p$ 这一形式。”}——把三条公理的名字写出来就是分。
+\end{idea}
+
+\subsection{初学者最常见的四个错}
+
+\begin{qa}{四个必查的坑}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{忘了检查概率和为 1}。比如给 $(0.5,0.3,0.3)$（和为 1.1），要先归一化成 $(0.4545,0.2727,0.2727)$ 这类东西，或题目本身有误——先查这个，能救回很多分。
+  \item \textbf{把 $\lb$ 当成自然对数}。课本一律 $\lb$；如果你按 $\ln$ 算了，结果要再除以 $\ln2\approx0.693$。例如 $\ln6=1.792$，而 $\lb6=2.585$（$1.792/0.693=2.585$）。
+  \item \textbf{把 $H(X)$ 当成某一个符号的信息量}。$H$ 是平均值；单个符号的信息量是 $I(x)=-\lb p(x)$，两者只有在等概时才相等。
+  \item \textbf{漏掉概率为 0 的项还好，但漏掉“小概率项”就是致命错误}。比如 $p=(0.99,0.01)$，那个 $0.01$ 看起来可以忽略，实际上贡献了 $0.01\times6.64=0.066$ bit，占全部熵 $0.081$ 的八成以上。
+\end{enumerate}
+\end{qa}
+
+\begin{exam}{第3讲：考试怎么用}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{基本计算题}：给概率分布求 $H$。答题格式：列“$p_i$ / $-\lb p_i$ / 乘积”三列表格，最后求和，写单位 bit。
+  \item \textbf{问最大熵}：$n$ 个符号的最大熵是 $\lb n$，在等概时达到；二元时最大是 1 bit（$p=\frac12$）。
+  \item \textbf{判断/改错题}：如“等概信源的熵最大”“离散熵不能为负”“概率为 0 的项可以略去”——这三条都对。
+  \item \textbf{与编码挂钩}：问“这段消息至少需要多少 bit”——答 $\Hx{X}$ 再乘符号数；问“最多能压缩到什么程度”——答 $H(X)$ 就是下限。
+\end{enumerate}
+\end{exam}
+
+\begin{qa}{自测：三问（有答案）}
+（1）$X$ 等可能取 $1,2,3,4$，$\Hx{X}=$？\\
+（2）$X$ 取 $0.9,0.1$ 两个值，$\Hx{X}\approx$？\\
+（3）$X$ 的概率分布为 $(0.6,0.2,0.2)$，$\Hx{X}=$？
+
+\textbf{答}：
+（1）$\lb4=2$ bit。
+（2）$H(0.1)=0.469$ bit（查上面的表）。
+（3）$-0.6\lb0.6-2\times0.2\lb0.2$，其中 $-\lb0.6=0.737$、$-\lb0.2=2.322$，故
+$0.6\times0.737+0.2\times2.322+0.2\times2.322=0.442+0.464+0.464=1.371$ bit。
+\end{qa}

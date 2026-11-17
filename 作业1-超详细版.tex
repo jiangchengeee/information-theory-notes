@@ -1,0 +1,739 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 信息论基础\ \ 第一次作业（第2章）超详细解答}\\[8pt]
+{\large —— 每一步都在“干什么”都写出来了，零基础也能抄懂}\\[8pt]
+{\small 教材：石峰、莫忠息《信息论基础》（第三版），习题 P43\quad 对数底为 2，单位 bit}
+\end{center}
+
+\begin{idea}{动手之前：这次作业只用到四样东西}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item $I(x)=-\lb p(x)$：一条消息的信息量；
+  \item $\Hx{X}=-\sum p(x)\lb p(x)$：平均信息量（熵）；
+  \item $\Hx{X,Y}=-\sum\sum p(x,y)\lb p(x,y)$：打包的不确定性（联合熵）；
+  \item 链式法则 $\Hx{X,Y}=\Hx{X}+\Hx{Y|X}$，以及由它变出来的 $\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}$。
+\end{enumerate}
+\textbf{整份作业的套路只有一个}：\textbf{先把概率表算出来 → 再套上面四个公式 → 最后检查概率和是否为 1、结果是否 $\ge0$。}
+\end{idea}
+
+%====================== 2.1 ======================
+\section{2.1\quad 掷三颗骰子}
+
+\begin{defbox}{题目（教材 P43）}
+随机地掷三颗骰子，以 $X,Y,Z$ 分别表示第一颗骰子抛掷的结果、第一颗与第二颗骰子抛掷结果之和、三颗骰子抛掷结果之和，试求
+\[
+\Hx{X|Y},\qquad \Hx{Y|X},\qquad \Hx{Z|X,Y},\qquad \Hx{X,Z|Y},\qquad \Hx{Z|X}.
+\]
+\end{defbox}
+
+\begin{idea}{先读懂题（这一步很多人省了，结果算错方向）}
+设三颗骰子的点数分别是 $X_1,X_2,X_3$，它们\textbf{相互独立}且各自在 $1\sim6$ 上等可能。那么
+\[
+X=X_1,\qquad Y=X_1+X_2,\qquad Z=X_1+X_2+X_3 .
+\]
+所以本题要算的五个量，本质都是在问：\textbf{“已知某个信息后，某个量还剩多少不确定性”}。而“已知某个信息”在公式里就是\textbf{把它减掉/抽走}。
+
+\textbf{一个贯穿全题的省力技巧}：单颗骰子的熵永远是
+\[
+\Hx{X_1}=\Hx{X_2}=\Hx{X_3}=\lb6\approx2.585\bit .
+\]
+后面凡是“抽掉一个已知量，剩下一个独立骰子”的，答案直接就是 $2.585$。
+\end{idea}
+
+\subsection{第 (1) 问：$\Hx{Y|X}$}
+
+\begin{calc}{手把手}
+\textbf{问：已知第一颗骰子 $X=X_1$，求和 $Y=X_1+X_2$ 还剩多少不确定性？}
+
+\textbf{步骤 1}：已知 $X_1$ 之后，$Y=X_1+X_2$ 里唯一还不知道的是 $X_2$（$X_1$ 是已知常数）。
+\[
+\Hx{Y|X}=\Hx{X_1+X_2\ \big|\ X_1}=\Hx{X_2\ |\ X_1}.
+\]
+
+\textbf{步骤 2}：$X_2$ 与 $X_1$ 独立，所以知道 $X_1$ 对猜 $X_2$ 毫无帮助，$\Hx{X_2|X_1}=\Hx{X_2}$。
+
+\textbf{步骤 3}：$X_2$ 是均匀的六面骰子。
+\[
+\boxed{\ \Hx{Y|X}=\Hx{X_2}=\lb6=-\lb\tfrac16\approx2.585\bit\ }
+\]
+
+\textbf{顺带一说}：这里出现的“$+\ X_1$”不影响熵，因为\textbf{给一个随机变量加上一个已知常数，等于平移，不确定性不变}。这条性质考试很好用。
+\end{calc}
+
+\subsection{第 (2) 问：$\Hx{X|Y}$（本题的核心，也是最容易错的一问）}
+
+\begin{calc}{手把手}
+\textbf{问：已知两颗骰子之和 $Y$，第一颗 $X$ 还剩多少不确定性？}
+
+\textbf{步骤 1：用链式法则把它变成“两个好算的量”。} 由
+$\Hx{X,Y}=\Hx{X}+\Hx{Y|X}=\Hx{Y}+\Hx{X|Y}$，把后两式整理得
+\[
+\Hx{X|Y}=\Hx{X}+\Hx{Y|X}-\Hx{Y}
+=2\lb6-\Hx{Y}.
+\]
+其中 $\Hx{X}=\lb6$、$\Hx{Y|X}=\lb6$ 都已知，所以\textbf{只剩 $\Hx{Y}$ 要算}。
+
+\textbf{步骤 2：求 $Y$ 的分布。} 两颗骰子一共有 $6\times6=36$ 种等可能情况。数一数“和为 $y$”有几种（记作 $c_y$）：
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|ccccccccccc}
+\toprule
+$y$ & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12\\
+\midrule
+$c_y$ & 1 & 2 & 3 & 4 & 5 & 6 & 5 & 4 & 3 & 2 & 1\\
+$p(y)=\frac{c_y}{36}$ & $\frac1{36}$ & $\frac2{36}$ & $\frac3{36}$ & $\frac4{36}$ & $\frac5{36}$ & $\frac6{36}$ & $\frac5{36}$ & $\frac4{36}$ & $\frac3{36}$ & $\frac2{36}$ & $\frac1{36}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+检查：$1+2+3+4+5+6+5+4+3+2+1=36$ ✓（概率加起来为 1）。
+
+\textbf{步骤 3：算 $\Hx{Y}$。} 用一个小技巧：先提 $\lb 36$ 出来。
+\[
+\Hx{Y}=-\sum_{y}\frac{c_y}{36}\lb\frac{c_y}{36}
+=\underbrace{\sum_y\frac{c_y}{36}\lb36}_{=\lb36}-\sum_y\frac{c_y}{36}\lb c_y
+=\lb36-\frac1{36}\sum_y c_y\lb c_y .
+\]
+其中 $\lb36=\lb(6^2)=2\lb6=2\times2.585=5.170$。
+
+再算 $\sum_y c_y\lb c_y$。注意 $c_y=1$ 的两项贡献 $1\times\lb1=0$，可以删掉；其余每个值出现两次：
+\begin{align*}
+\sum_{y=2}^{12}c_y\lb c_y
+&=2\bigl(2\lb2+3\lb3+4\lb4+5\lb5+6\lb6\bigr)\\
+&=2\bigl(2\times1+3\times1.585+4\times2+5\times2.322+6\times2.585\bigr)\\
+&=2\bigl(2+4.755+8+11.610+15.510\bigr)=2\times41.875=83.749 .
+\end{align*}
+（这里用的常数：$\lb3=1.585$，$\lb5=2.322$，$\lb6=2.585$，都是第1讲最后那张对数表里的数。）
+于是
+\[
+\Hx{Y}=5.170-\frac{83.749}{36}=5.170-2.326=3.274\bit .
+\]
+
+\textbf{步骤 4：回代。}
+\[
+\boxed{\ \Hx{X|Y}=2\lb6-\Hx{Y}=5.170-3.274=1.896\bit\ }
+\]
+
+\textbf{步骤 5（强烈建议写在卷子上作为检验）：直接用定义算一遍。} 已知 $Y=y$ 时，$X$ 有 $c_y$ 种等可能取值（因为每种 $(X_1,X_2)$ 组合等可能），故
+\[
+\Hx{X|Y=y}=\lb c_y,\qquad\text{于是}\qquad
+\Hx{X|Y}=\sum_y p(y)\lb c_y=\frac1{36}\sum_y c_y\lb c_y=1.896\bit .
+\]
+两条路结果一致 ✓。
+\end{calc}
+
+\begin{idea}{这一问的三条“考试要点”}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item $\Hx{X|Y}=1.896$ 而 $\Hx{Y|X}=2.585$：\textbf{条件熵不对称}，这是老师反复强调的考点。
+  \item 但“差值”是对称的：$\Hx{X}-\Hx{X|Y}=2.585-1.896=0.689$，$\Hx{Y}-\Hx{Y|X}=3.274-2.585=0.689$，两者相等，都等于互信息 $\I{X;Y}$。
+  \item 那个漂亮的表示 $\Hx{X|Y}=\frac1{36}\sum_y c_y\lb c_y$ 有一个很直白的解释：\textbf{“和为 $y$ 的凑法有 $c_y$ 种，你就得从这 $c_y$ 种里挑，所以还剩 $\lb c_y$ 的不确定性”}；凑法越多越猜不准（和是 7 有 6 种凑法，最难猜；和是 2 只有 1 种，最好猜）。
+\end{enumerate}
+\end{idea}
+
+\subsection{第 (3) 问：$\Hx{Z|X,Y}$}
+
+\begin{calc}{手把手（这一问最快，一行就完）}
+\textbf{问：已知前两颗骰子，总和 $Z=X_1+X_2+X_3$ 还剩多少不确定性？}
+
+$Z=X_1+X_2+X_3$ 里，$X_1$（就是 $X$）和 $X_2$（由 $Y-X$ 得到）都已知了，\textbf{唯一还不知道的是第三颗 $X_3$}：
+\[
+\Hx{Z|X,Y}=\Hx{X_3}=\lb6\approx2.585\bit .
+\]
+\[
+\boxed{\ \Hx{Z|X,Y}=2.585\bit\ }
+\]
+\textbf{为什么能这么写}：把已知的 $X_1,X_2$ 看成常数加到 $X_3$ 上（平移不改熵），所以熵就等于单颗骰子的熵。
+\end{calc}
+
+\subsection{第 (4) 问：$\Hx{X,Z|Y}$}
+
+\begin{calc}{手把手（用链式法则拆成两个已知结果）}
+\textbf{问：已知 $Y$，把 $X$ 和 $Z$ 一起告诉你，还值多少 bit？}
+
+\textbf{步骤 1}：先在“给定 $Y$”的条件下用链式法则（条件版的链式法则同样成立）：
+\[
+\Hx{X,Z|Y}=\Hx{X|Y}+\Hx{Z|X,Y} .
+\]
+（人话：已知 $Y$ 时，要同时确定 $X$ 与 $Z$，可以“先确定 $X$，再确定 $Z$”，两部分加起来。）
+
+\textbf{步骤 2}：代入前面两个结果
+\[
+\boxed{\ \Hx{X,Z|Y}=1.896+2.585=4.480\bit\ }
+\]
+\end{calc}
+
+\subsection{第 (5) 问：$\Hx{Z|X}$}
+
+\begin{calc}{手把手}
+\textbf{问：已知第一颗骰子，总和 $Z$ 还剩多少不确定性？}
+
+$Z=X_1+\underbrace{(X_2+X_3)}_{\text{记作 }W}$。已知 $X_1$ 后，剩下的不确定性全在 $W=X_2+X_3$ 上；而 $W$ 与“两颗骰子之和”$Y$ 是\textbf{同一个分布}（都是两颗均匀骰子相加），所以
+\[
+\boxed{\ \Hx{Z|X}=\Hx{X_2+X_3}=\Hx{Y}=3.274\bit\ }
+\]
+\end{calc}
+
+\subsection{2.1 答案汇总（可直接抄）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c|c|c}
+\toprule
+所求 & 表达式 & 数值 (bit)\\
+\midrule
+$\Hx{X|Y}$ & $2\lb6-\Hx{Y}$ & $1.896$\\
+$\Hx{Y|X}$ & $\lb6$ & $2.585$\\
+$\Hx{Z|X,Y}$ & $\lb6$ & $2.585$\\
+$\Hx{X,Z|Y}$ & $3\lb6-\Hx{Y}$ & $4.480$\\
+$\Hx{Z|X}$ & $\Hx{Y}$ & $3.274$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%====================== 2.2 ======================
+\section{2.2\quad 十个数字的传输}
+
+\begin{defbox}{题目（教材 P43）}
+设一个系统传送 10 个数字 $0,1,2,\dots,9$。奇数在传送时以 $0.5$ 的概率等可能地错成“下一个奇数”，而其他数字完全正确地接收。试求收到一个数字后\textbf{平均得到的信息量}。
+\end{defbox}
+
+\begin{idea}{先读懂题：这句话到底在问什么}
+“收到一个数字后平均得到的信息量”= \textbf{收到 $Y$ 之后，关于发送的 $X$ 平均能确定多少}，也就是互信息
+\[
+\I{X;Y}=\Hx{X}-\Hx{X|Y}.
+\]
+所以思路固定：\textbf{① 求 $\Hx{X}$（发送端）→ ② 建信道模型 $p(y|x)$ → ③ 算 $\Hx{X|Y}$（收完后还剩多少）→ ④ 相减}。
+
+还有一句必须自己补上的假设（卷面上要写出来）：\textbf{假设 10 个数字等可能发送}，即 $p(x)=\frac1{10}$。
+
+“模 2 加”和本题无关，但要提醒：本题的“下一个奇数”按 $1\to3\to5\to7\to9\to1$（循环）理解。
+\end{idea}
+
+\begin{calc}{手把手}
+\textbf{步骤 1：发送端熵。}
+\[
+\Hx{X}=-\sum_{x=0}^{9}\frac1{10}\lb\frac1{10}=\lb10\approx3.322\bit .
+\]
+
+\textbf{步骤 2：写出信道模型（转移概率 $p(y|x)$）。}
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item 偶数 $x\in\{0,2,4,6,8\}$：完全正确，$p(y=x|x)=1$，其余为 $0$。
+  \item 奇数 $x\in\{1,3,5,7,9\}$：以 $\frac12$ 正确，以 $\frac12$ 变成“下一个奇数”，即
+        $1\to3,\ 3\to5,\ 5\to7,\ 7\to9,\ 9\to1$。
+\end{itemize}
+
+\textbf{步骤 3：求接收端 $Y$ 的分布}（本题“信道有对称性”，值得一算，能帮你检查）。
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item 偶数 $y$：只能由“自己发对自己收”得到，$p(y)=\frac1{10}\times1=\frac1{10}$。
+  \item 奇数 $y$：有两个来源——“$y$ 自己发对”（概率 $\frac1{10}\times\frac12$）和“上一个奇数发错”（概率 $\frac1{10}\times\frac12$），故
+        $p(y)=\frac1{20}+\frac1{20}=\frac1{10}$。
+\end{itemize}
+结论：\textbf{$Y$ 仍然在 10 个数字上等可能}，$\Hx{Y}=\lb10=3.322$ bit。（顺便检查：10 个 $\frac1{10}$ 加起来为 1 ✓）
+
+\textbf{步骤 4：求 $\Hx{X|Y}$。} 按 $Y$ 的两种情形分别算，再按概率加权：
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item 收到偶数 $y$：必是 $X=y$（因为偶数只会正确传送），\textbf{完全确定}，$\Hx{X|Y=y}=0$。
+  \item 收到奇数 $y$：$X$ 只可能是 $y$（自己发对）或 $y-2$（上一个奇数发错；当 $y=1$ 时是 $9$），
+        而两者概率都是 $\frac1{20}$，条件概率为 $\bigl(\frac12,\frac12\bigr)$，故
+        \[
+        \Hx{X|Y=y}=-\tfrac12\lb\tfrac12-\tfrac12\lb\tfrac12=1\bit .
+        \]
+  \item 加权：10 个数字里 5 个偶数、5 个奇数，各占 $\frac{5}{10}$，于是
+        \[
+        \Hx{X|Y}=\frac{5}{10}\times0+\frac{5}{10}\times1=\frac12=0.5\bit .
+        \]
+\end{itemize}
+
+\textbf{步骤 5：相减。}
+\[
+\boxed{\ \I{X;Y}=\Hx{X}-\Hx{X|Y}=\lb10-\tfrac12=3.322-0.500=2.822\bit\ }
+\]
+
+\textbf{步骤 6（检验）}：用另一条公式算 $\I{X;Y}=\Hx{Y}-\Hx{Y|X}$。
+奇数的 $x$ 有 $\Hx{Y|X=x}=-\frac12\lb\frac12=1$ bit，偶数 $=0$，加权 $\Hx{Y|X}=\frac12$，于是
+$\Hx{Y}-\Hx{Y|X}=3.322-0.5=2.822$ ✓ 一致。
+\end{calc}
+
+\begin{qa}{如果老师说“写法不一样”，我该怎么写才稳妥？}
+在卷子上开头先写一句\textbf{假设}，把题意固定下来，然后按上面的步骤走，就不会被判错：
+\begin{quote}
+“设发送符号等概，$p(x)=\frac1{10}$；奇数以 $\frac12$ 概率正确、以 $\frac12$ 概率错成下一个奇数（$9\to1$）。”
+\end{quote}
+再补一句“由信道对称性有 $\Hx{X|Y}=\Hx{Y|X}$”作为自检，就更完整了。
+如果老师的意思是“奇数的错误结果等可能落在其余四个奇数上”，那么 $\Hx{X|Y}=1$ bit、$\I{X;Y}=\lb10-1=2.322$ bit。两种读法只差这一步（能否错成 4 种还是 1 种），把假设写在前面即可。
+\end{qa}
+
+%====================== 2.4 ======================
+\section{2.4\quad 条件熵的三角不等式}
+
+\begin{defbox}{题目（教材 P43）}
+对任意概率分布的随机变量，试证：
+\begin{enumerate}[label=(\alph*),leftmargin=1.8em,itemsep=1pt,topsep=2pt]
+  \item $\Hx{X|Y}+\Hx{Y|Z}\ \ge\ \Hx{X|Z}$；
+  \item $\dfrac{\Hx{X|Y}}{\Hx{X,Y}}+\dfrac{\Hx{Y|Z}}{\Hx{Y,Z}}\ \ge\ \dfrac{\Hx{X|Z}}{\Hx{X,Z}}$。
+\end{enumerate}
+\end{defbox}
+
+\subsection{(a) 的证明}
+
+\begin{calc}{思路：只用一条不等式“条件不增熵”}
+\textbf{第一步}：在“已知 $Y$”的基础上，再多知道一个 $Z$，只会让你对 $X$ 更确定（或不变），所以
+\[
+\Hx{X|Y}\ \ge\ \Hx{X|Y,Z}.
+\]
+\textbf{第二步}：两边同时加 $\Hx{Y|Z}$（不等式两边加同一个数，方向不变）：
+\[
+\Hx{X|Y}+\Hx{Y|Z}\ \ge\ \Hx{X|Y,Z}+\Hx{Y|Z}.
+\]
+\textbf{第三步}：右边恰好是一条链式法则（注意是“在给定 $Z$ 的条件下”的链式法则）：
+\[
+\Hx{X|Y,Z}+\Hx{Y|Z}=\Hx{X,Y|Z}.
+\]
+\textbf{第四步}：把 $X$ 换成“$X$ 与 $Y$ 一起”，不确定性只会更大：
+\[
+\Hx{X,Y|Z}\ \ge\ \Hx{X|Z}.
+\]
+连起来就是
+\[
+\Hx{X|Y}+\Hx{Y|Z}\ \ge\ \Hx{X,Y|Z}\ \ge\ \Hx{X|Z}.\qquad\blacksquare
+\]
+\end{calc}
+
+\begin{exam}{卷面上要怎么呈现（3 行就够，但要有依据）}
+写：(1)“由条件熵不增性，$\Hx{X|Y}\ge\Hx{X|YZ}$”；(2)“由链式法则 $\Hx{X|YZ}+\Hx{Y|Z}=\Hx{XY|Z}$”；
+(3)“又 $\Hx{XY|Z}\ge\Hx{X|Z}$，故命题成立”。\textbf{关键是每条都要写出“依据的是哪条性质”}，不能只写符号。
+\end{exam}
+
+\subsection{(b) 的证明}
+
+\begin{idea}{先看清难点：三个分式的分母不同}
+$\Hx{X,Y}$、$\Hx{Y,Z}$、$\Hx{X,Z}$ 是三个不同的数，\textbf{不能}随便“分别除以各自的分母再比较大小”——这就是老师说的“基本都对”的那部分之所以容易写歪的原因。
+
+破题思路只有一句话：\textbf{把两个分母统一放大成同一个数 $\Hx{X,Y,Z}$}。分母变大，分式变小，所以这一步是在“把左边往小里算”，只要能压到右边就成功。
+\end{idea}
+
+\begin{calc}{手把手（三步）}
+记
+\[
+A\triangleq\Hx{X,Y,Z},\qquad u\triangleq\Hx{X,Y},\qquad v\triangleq\Hx{Y,Z},\qquad w\triangleq\Hx{X,Z}.
+\]
+\textbf{已知三个基本事实}：增加变量不会减少不确定性，所以
+\[
+A\ \ge\ u,\qquad A\ \ge\ v,\qquad A\ \ge\ w .
+\]
+
+\textbf{第一步（统一分母）}：因为 $u\le A$、$v\le A$，
+\[
+\frac{\Hx{X|Y}}{u}+\frac{\Hx{Y|Z}}{v}
+\ \ge\ \frac{\Hx{X|Y}}{A}+\frac{\Hx{Y|Z}}{A}
+=\frac{\Hx{X|Y}+\Hx{Y|Z}}{A}.
+\]
+（第一次放缩：\textbf{左边被压小了}，方向正确。）
+
+\textbf{第二步（把分子算清）}：由链式法则，
+\[
+\Hx{X|Y}=A-v,\qquad \Hx{Y|Z}=v-\Hx{Z},
+\]
+两式相加时 $v$ 正好抵消：
+\[
+\Hx{X|Y}+\Hx{Y|Z}=A-\Hx{Z}.
+\]
+（这一步很关键，很多同学的卡点就在这里。可以理解为“$A$ 减去最后一个 $Z$ 的熵”。）
+于是
+\[
+\frac{\Hx{X|Y}+\Hx{Y|Z}}{A}=\frac{A-\Hx{Z}}{A}=1-\frac{\Hx{Z}}{A}.
+\]
+
+\textbf{第三步（收到右边）}：因为 $A\ge w=\Hx{X,Z}$，所以 $\dfrac{1}{A}\le\dfrac{1}{w}$，从而
+\[
+\frac{\Hx{Z}}{A}\ \le\ \frac{\Hx{Z}}{\Hx{X,Z}}
+\quad\Longrightarrow\quad
+1-\frac{\Hx{Z}}{A}\ \ge\ 1-\frac{\Hx{Z}}{\Hx{X,Z}}
+=\frac{\Hx{X,Z}-\Hx{Z}}{\Hx{X,Z}}
+=\frac{\Hx{X|Z}}{\Hx{X,Z}}.
+\]
+（第二次放缩：注意被减数变大，整体变小，方向仍是“往下压”。）
+
+\textbf{连起来}：
+\[
+\frac{\Hx{X|Y}}{\Hx{X,Y}}+\frac{\Hx{Y|Z}}{\Hx{Y,Z}}
+\ \ge\ 1-\frac{\Hx{Z}}{A}
+\ \ge\ 1-\frac{\Hx{Z}}{\Hx{X,Z}}
+=\frac{\Hx{X|Z}}{\Hx{X,Z}}.\qquad\blacksquare
+\]
+\end{calc}
+
+\begin{qa}{(b) 为什么长这样？有没有直观解释？}
+有。$\dfrac{\Hx{X|Y}}{\Hx{X,Y}}$ 落在 $0$ 与 $1$ 之间，可以理解成“\textbf{把 $X$ 的不确定性按它和 $Y$ 的联合总量归一化}”，是“$X$ 离 $Y$ 有多远”的相对度量。这条不等式说的就是：这种归一化的“距离”也满足三角不等式（$X\to Y\to Z$ 的绕路不会比直达更短）。所以它本质上是第3章互信息的“三角不等式”。
+\end{qa}
+
+%====================== 2.7 ======================
+\section{2.7\quad 模 2 和}
+
+\begin{defbox}{题目（教材 P43）}
+设 $X$ 和 $Y$ 的联合分布如下表，随机变量 $Z=X\oplus Y$（$\oplus$ 为模 2 和）。试求（单位 bit）：
+（1）$\Hx{X},\Hx{Y}$；（2）$\Hx{X|Y},\Hx{Y|X},\Hx{X|Z}$；（3）$\Hx{X,Y,Z}$。
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|cc}
+\toprule
+ & $Y=0$ & $Y=1$\\
+\midrule
+$X=0$ & $1/3$ & $1/3$\\
+$X=1$ & $1/3$ & $0$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{defbox}
+
+\begin{idea}{$\oplus$ 是什么}
+模 2 加就是“\textbf{相同得 0，不同得 1}”：
+\[
+0\oplus0=0,\qquad 0\oplus1=1,\qquad 1\oplus0=1,\qquad 1\oplus1=0 .
+\]
+它在信息论里到处出现（因为“两个 bit 是否相同”正好是这个运算）。
+\end{idea}
+
+\begin{calc}{第（1）问：先补全表格的边缘}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|cc|c}
+\toprule
+ & $Y=0$ & $Y=1$ & 行和 $=p(x)$\\
+\midrule
+$X=0$ & $1/3$ & $1/3$ & $\mathbf{2/3}$\\
+$X=1$ & $1/3$ & $0$ & $\mathbf{1/3}$\\
+\midrule
+列和 $=p(y)$ & $\mathbf{2/3}$ & $\mathbf{1/3}$ & $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+（行和、列和都是 $\frac13+\frac13=\frac23$ 和 $\frac13$。检查：$p(x)$ 之和 $\frac23+\frac13=1$ ✓）
+
+于是
+\[
+\Hx{X}=-\frac23\lb\frac23-\frac13\lb\frac13
+=0.667\times0.585+0.333\times1.585=0.390+0.528=0.918\bit,
+\]
+\[
+\boxed{\ \Hx{X}=\Hx{Y}=0.918\bit\ }
+\]
+（这里 $-\lb\frac23=0.585$、$-\lb\frac13=1.585$。注意两个边缘分布一模一样，所以两个熵相等。）
+
+顺带记下有用的量：联合熵按“3 个非零且相等的格子”直接得
+\[
+\Hx{X,Y}=\lb3\approx1.585\bit .
+\]
+\end{calc}
+
+\begin{calc}{第（2）问之一：$\Hx{X|Y}$ 与 $\Hx{Y|X}$}
+\textbf{方法 A（最快，用链式法则）}：
+\[
+\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}=1.585-0.918=0.667\bit ,
+\]
+\[
+\Hx{Y|X}=\Hx{X,Y}-\Hx{X}=1.585-0.918=0.667\bit .
+\]
+
+\textbf{方法 B（用定义验算，卷面上写这个更有说服力）}：
+已知 $Y=0$（概率 $\frac23$）时，$X$ 的条件分布是
+\[
+p(X=0|Y=0)=\frac{p(0,0)}{p(Y=0)}=\frac{1/3}{2/3}=\frac12,\qquad
+p(X=1|Y=0)=\frac{1/3}{2/3}=\frac12,
+\]
+所以 $\Hx{X|Y=0}=1\bit$（一半一半，最猜不准）。
+已知 $Y=1$（概率 $\frac13$）时，$X$ 只能是 0：
+\[
+p(X=0|Y=1)=\frac{1/3}{1/3}=1,\qquad p(X=1|Y=1)=0,\qquad \Hx{X|Y=1}=0\bit .
+\]
+加权：
+\[
+\boxed{\ \Hx{X|Y}=\frac23\times1+\frac13\times0=\frac23\approx0.667\bit\ }
+\]
+（$\Hx{Y|X}$ 同理也是 $\frac23$，因为表关于对角线对称。）
+\end{calc}
+
+\begin{calc}{第（2）问之二：$\Hx{X|Z}$（老师说出错最多的一问，务必按顺序写）}
+\textbf{第一步：求 $Z=X\oplus Y$ 的分布}。逐格算，把同 $z$ 的概率并起来：
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|c|c|l}
+\toprule
+$(x,y)$ & 概率 & $z=x\oplus y$ & 备注\\
+\midrule
+$(0,0)$ & $1/3$ & $0$ & 相同$\Rightarrow0$\\
+$(0,1)$ & $1/3$ & $1$ & 不同$\Rightarrow1$\\
+$(1,0)$ & $1/3$ & $1$ & 不同$\Rightarrow1$\\
+$(1,1)$ & $0$ & $0$ & 该格概率为 0，忽略\\
+\bottomrule
+\end{tabular}
+\end{center}
+\[
+p(Z=0)=\frac13+0=\frac13,\qquad p(Z=1)=\frac13+\frac13=\frac23 .
+\]
+（检查：$\frac13+\frac23=1$ ✓。\textbf{这一步最容易错}——很多人会写成 $\frac12,\frac12$，或者忘了那个概率为 0 的格子。）
+
+\textbf{第二步：分别算每个 $z$ 值下的条件熵}。
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item $Z=0$：只有 $(0,0)$ 能产生 $Z=0$，此时 $X$ 必为 0，故 $\Hx{X|Z=0}=-\lb1=0$。
+  \item $Z=1$：来自 $(0,1)$ 与 $(1,0)$，各概率 $\frac13$，条件概率各为
+        $\dfrac{1/3}{2/3}=\dfrac12$，故 $\Hx{X|Z=1}=-\frac12\lb\frac12\times2=1\bit$。
+\end{itemize}
+
+\textbf{第三步：加权}（漏了这步就全错）：
+\[
+\boxed{\ \Hx{X|Z}=\frac13\times0+\frac23\times1=\frac23\approx0.667\bit\ }
+\]
+
+\textbf{第四步（检验）}：$\I{X;Z}=\Hx{X}-\Hx{X|Z}=0.918-0.667=0.251\bit$；
+而 $\I{X;Y}=\Hx{X}-\Hx{X|Y}=0.918-0.667=0.251\bit$，两者相等——这是因为 $Z$ 是 $(X,Y)$ 的一一对应变换（知道 $X,Z$ 就能反推 $Y$），所以 $X$ 从 $Z$ 得到的信息与从 $Y$ 得到的一样多。\textbf{这个自检很值钱。}
+\end{calc}
+
+\begin{calc}{第（3）问：$\Hx{X,Y,Z}$}
+\textbf{关键认识}：$Z$ 完全由 $X,Y$ 算出来（$Z=X\oplus Y$），所以\textbf{知道 $X,Y$ 之后，$Z$ 没有任何不确定性}：
+\[
+\Hx{Z|X,Y}=0 .
+\]
+由链式法则
+\[
+\Hx{X,Y,Z}=\Hx{X,Y}+\Hx{Z|X,Y}=\Hx{X,Y}+0=\lb3\approx1.585\bit .
+\]
+\[
+\boxed{\ \Hx{X,Y,Z}=1.585\bit\ }
+\]
+\textbf{一句话总结这问}：\textbf{“多加一个由已知量算出来的变量，熵不变”}。这条结论（确定性函数不增熵）能秒杀很多题。
+\end{calc}
+
+\subsection{2.7 答案汇总}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c|c|c}
+\toprule
+所求 & 表达式 & 数值 (bit)\\
+\midrule
+$\Hx{X}$，$\Hx{Y}$ & $-\frac23\lb\frac23-\frac13\lb\frac13$ & $0.918$\\
+$\Hx{X,Y}$ & $\lb3$ & $1.585$\\
+$\Hx{X|Y}$，$\Hx{Y|X}$ & $\Hx{X,Y}-\Hx{Y}$ & $0.667$\\
+$\Hx{X|Z}$ & $\frac13\cdot0+\frac23\cdot1$ & $0.667$\\
+$\Hx{X,Y,Z}$ & $\Hx{X,Y}$（因 $Z=f(X,Y)$） & $1.585$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%====================== 证明 ======================
+\section{补充题\quad 证明 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$}
+
+\begin{defbox}{题目}
+证明：$\Hx{X,Y}\le\Hx{X}+\Hx{Y}$，并说明等号成立的条件。（教材参考：P32 定理 2.4.2）
+\end{defbox}
+
+\subsection*{证法一（条件熵，最标准，只需两行）}
+\begin{calc}{手把手}
+\textbf{第一步}：链式法则
+\[
+\Hx{X,Y}=\Hx{X}+\Hx{Y|X}.
+\]
+\textbf{第二步}：条件不增熵 $\Hx{Y|X}\le\Hx{Y}$。
+\textbf{第三步}：代入
+\[
+\Hx{X,Y}=\Hx{X}+\Hx{Y|X}\le\Hx{X}+\Hx{Y}.\qquad\blacksquare
+\]
+\textbf{等号条件}：$\Hx{Y|X}=\Hx{Y}$，即“知道 $X$ 对猜 $Y$ 毫无帮助”，也就是 $X,Y$ \textbf{相互独立}。
+\end{calc}
+
+\subsection*{证法二（从定义硬算，用到 $\ln t\le t-1$）}
+\begin{calc}{手把手（这是教材的思路，步骤多一点但很漂亮）}
+\textbf{第一步：把两边的差写出来。}
+\[
+\Hx{X,Y}-\Hx{X}-\Hx{Y}
+=-\sum_{x,y}p(x,y)\lb p(x,y)+\sum_{x,y}p(x,y)\lb p(x)+\sum_{x,y}p(x,y)\lb p(y).
+\]
+（技巧：后两项之所以能这么写，是因为
+$\sum_{x,y}p(x,y)\lb p(x)=\sum_x\lb p(x)\sum_y p(x,y)=\sum_x p(x)\lb p(x)=-\Hx{X}$，
+即边缘分布可以“补上一个求和号”而不改变值。）
+
+\textbf{第二步：合并成一条 log。} 由 $\lb a+\lb b-\lb c=\lb\frac{ab}{c}$，
+\[
+\Hx{X,Y}-\Hx{X}-\Hx{Y}=\sum_{x,y}p(x,y)\lb\frac{p(x)p(y)}{p(x,y)} .
+\]
+
+\textbf{第三步：用不等式 $\ln t\le t-1$。}
+对每个格子取 $t=\frac{p(x)p(y)}{p(x,y)}>0$，则 $\ln t\le t-1$。又 $\lb t=\frac{\ln t}{\ln2}$，所以
+\begin{align*}
+\Hx{X,Y}-\Hx{X}-\Hx{Y}
+&=\frac{1}{\ln2}\sum_{x,y}p(x,y)\ln\frac{p(x)p(y)}{p(x,y)}\\
+&\le\frac{1}{\ln2}\sum_{x,y}p(x,y)\left[\frac{p(x)p(y)}{p(x,y)}-1\right]\\
+&=\frac{1}{\ln2}\left[\sum_{x,y}p(x)p(y)-\sum_{x,y}p(x,y)\right]
+=\frac{1}{\ln2}(1-1)=0 .
+\end{align*}
+（最后一步用了两次归一：$\sum_{x,y}p(x)p(y)=1$、$\sum_{x,y}p(x,y)=1$。）
+
+\textbf{第四步：结论与等号条件。}
+故 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$。等号成立需要 $\ln t=t-1$ 对每个非零格子成立，而这只在 $t=1$ 时发生，即
+\[
+p(x,y)=p(x)p(y)\ \ \text{对一切}\ (x,y),
+\]
+也就是 $X,Y$ 相互独立。$\blacksquare$
+\end{calc}
+
+\begin{idea}{三种证法一张表（考试任选，推荐证法一）}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{l|l|l}
+\toprule
+证法 & 用到的工具 & 适合什么时候用\\
+\midrule
+证法一 & 链式法则 + 条件不增熵 & 卷面最省地方，首选\\
+证法二 & $\ln t\le t-1$（对数不等式） & 题目要求“从定义证明”时\\
+证法三 & 互信息非负 $\I{X;Y}\ge0$ & 与第3章内容连贯，一句话搞定\\
+\bottomrule
+\end{tabular}
+\end{center}
+证法三就一行：$\Hx{X}+\Hx{Y}-\Hx{X,Y}=\I{X;Y}\ge0$。
+\textbf{推广}：$n$ 个变量时 $\Hx{X_1,\dots,X_n}\le\sum_i\Hx{X_i}$，等号当且仅当诸变量相互独立。
+\end{idea}
+
+%====================== 2.10 ======================
+\section{2.10\quad 连续型随机变量的熵}
+
+\begin{defbox}{题目（教材 P43--44）}
+设 $X$ 为 $[-1,1]$ 上的均匀分布随机变量，试求 $\Hc{X}$，$\Hc{X^2}$，$\Hc{X^3}$。（作业要求：计算 $\Hc{X}$ 与 $\Hc{X^2}$。）
+\end{defbox}
+
+\begin{idea}{先把“微分熵”想成什么}
+连续情形没法说“取到某个具体值的概率”（那是 0），只能用\textbf{密度函数} $p(x)$ 描述，并且
+\[
+\Hc{X}=-\int_{-\infty}^{+\infty}p(x)\lb p(x)\,dx .
+\]
+\textbf{它就是把离散的 $-\sum p\lb p$ 换成 $-\int p\lb p$}：求和变积分、概率变密度。
+两点必须记住：\textbf{①它可以为负；②它只用来比较“相对不确定度”，不是真的信息量}。
+\end{idea}
+
+\subsection*{(1) $\Hc{X}$}
+\begin{calc}{手把手}
+$X$ 在 $[-1,1]$ 上均匀，密度是“区间长度的倒数”：
+\[
+p(x)=\frac{1}{1-(-1)}=\frac12,\qquad -1\le x\le 1 .
+\]
+于是在 $[-1,1]$ 上 $p(x)$ 是常数 $\frac12$，可以提到积分号外：
+\begin{align*}
+\Hc{X}&=-\int_{-1}^{1}\frac12\lb\frac12\,dx
+=-\lb\frac12\int_{-1}^{1}\frac12\,dx\\
+&=-\lb\frac12\times\underbrace{1}_{\text{密度在范围内的积分}=1}
+=\lb2=1\bit .
+\end{align*}
+\[
+\boxed{\ \Hc{X}=1\bit\ }
+\]
+\textbf{一般结论（要背）}：$X\sim U(a,b)\Rightarrow\Hc{X}=\lb(b-a)$。本题 $b-a=2$，所以 $\lb2=1$。
+\end{calc}
+
+\subsection*{(2) $\Hc{X^2}$（老师说 log 积分最容易错，所以每一步都写全）}
+\begin{calc}{第一步：求 $Y=X^2$ 的密度（不能直接说它是均匀的！）}
+\textbf{方法：先求分布函数 $F_Y(y)=P(Y\le y)$，再求导。}
+\[
+F_Y(y)=P(X^2\le y)=P(-\sqrt y\le X\le\sqrt y).
+\]
+$X$ 在 $[-1,1]$ 上均匀，落在任意区间 $[a,b]\subset[-1,1]$ 的概率就是“区间长度除以 2”，所以
+\[
+F_Y(y)=\frac{\sqrt y-(-\sqrt y)}{2}=\frac{2\sqrt y}{2}=\sqrt y,\qquad 0<y\le1 .
+\]
+求导（$\sqrt y=y^{1/2}$，导数是 $\frac12y^{-1/2}$）：
+\[
+\boxed{\ p_Y(y)=\frac{d}{dy}\sqrt y=\frac{1}{2\sqrt y},\qquad 0<y\le1\ }
+\]
+\textbf{验算}：$\int_0^1\frac{1}{2\sqrt y}dy=\bigl[\sqrt y\bigr]_0^1=1$ ✓（密度积分应为 1）。
+\textbf{注意}：这个密度在 $y\to0^+$ 时趋向无穷大（不是均匀分布！），这就是下面熵为负的根源。
+\end{calc}
+
+\begin{calc}{第二步：算积分}
+\begin{align*}
+\Hc{X^2}&=-\int_0^1\frac{1}{2\sqrt y}\lb\frac{1}{2\sqrt y}\,dy
+=\int_0^1\frac{1}{2\sqrt y}\lb\bigl(2\sqrt y\bigr)dy .
+\end{align*}
+把对数拆开：$\lb(2\sqrt y)=\lb2+\lb\sqrt y=1+\frac12\lb y$（因为 $\lb y^{1/2}=\frac12\lb y$）。所以
+\begin{align*}
+\Hc{X^2}&=\underbrace{\int_0^1\frac{1}{2\sqrt y}\cdot1\,dy}_{=1}
++\frac12\underbrace{\int_0^1\frac{1}{2\sqrt y}\lb y\,dy}_{\text{待算}} .
+\end{align*}
+第一个积分就是“密度积分”，等于 1。
+第二个积分用关键公式
+\[
+\int_0^1 y^{a-1}\ln y\,dy=-\frac{1}{a^2}.
+\]
+这里取自然对数时要小心：$\lb y=\frac{\ln y}{\ln2}$，且 $\frac{1}{2\sqrt y}=\frac12y^{-1/2}$ 对应 $a=\frac12$：
+\[
+\int_0^1\frac{1}{2\sqrt y}\lb y\,dy
+=\frac{1}{2\ln2}\int_0^1 y^{-1/2}\ln y\,dy
+=\frac{1}{2\ln2}\cdot\left(-\frac{1}{(1/2)^2}\right)
+=\frac{1}{2\ln2}\cdot(-4)=-\frac{2}{\ln2}.
+\]
+代回去：
+\[
+\Hc{X^2}=1+\frac12\left(-\frac{2}{\ln2}\right)=1-\frac{1}{\ln2}=1-\lb e\approx1-1.4427=-0.443\bit .
+\]
+\[
+\boxed{\ \Hc{X^2}=1-\lb e\approx-0.443\bit\ }
+\]
+\textbf{为什么是负数？}因为 $X^2$ 的概率高度集中在 0 附近（密度在那里爆炸），不确定性其实比“单位区间上的均匀分布”还小，算出来的“相对熵”就成了负的。
+\end{calc}
+
+\subsection*{(3) $\Hc{X^3}$（用变换公式最省力）}
+\begin{calc}{手把手}
+若 $Y=g(X)$ 中 $g$ 是\textbf{一一对应}（单调），则
+\[
+\Hc{Y}=\Hc{X}+\E\bigl[\lb|g'(X)|\bigr].
+\]
+$g(x)=x^3$ 在 $[-1,1]$ 上单调递增，$g'(x)=3x^2$，故
+\[
+\Hc{X^3}=\Hc{X}+\E\bigl[\lb(3X^2)\bigr]=1+\lb3+\E\bigl[\lb X^2\bigr].
+\]
+再算 $\E[\lb X^2]=2\E[\lb|X|]$：
+\[
+\E[\lb|X|]=\int_{-1}^{1}\frac12\lb|x|\,dx=\int_0^1\lb x\,dx
+=\frac{1}{\ln2}\int_0^1\ln x\,dx=\frac{1}{\ln2}\times(-1)=-\lb e .
+\]
+（用了 $\int_0^1\ln x\,dx=-1$，这也是前面那个公式取 $a=1$ 的情形。）
+所以 $\E[\lb X^2]=-2\lb e$，从而
+\[
+\Hc{X^3}=1+\lb3-2\lb e=\lb6-2\lb e\approx2.585-2.885=-0.300\bit .
+\]
+\[
+\boxed{\ \Hc{X^3}=\lb6-2\lb e\approx-0.300\bit\ }
+\]
+\end{calc}
+
+\subsection{2.10 答案汇总与易错点}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{c|c|c}
+\toprule
+所求 & 精确值 & 数值 (bit)\\
+\midrule
+$\Hc{X}$ & $\lb2$ & $1.000$\\
+$\Hc{X^2}$ & $1-\lb e$ & $-0.443$\\
+$\Hc{X^3}$ & $\lb6-2\lb e$ & $-0.300$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{qa}{三个最容易丢分的点}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{把 $X^2$ 当均匀分布}。它\textbf{不是}！必须用 $F_Y(y)=\sqrt y$ 求导得到 $p_Y(y)=\frac{1}{2\sqrt y}$。
+  \item \textbf{log 与 ln 混用}。所有 $\lb$ 都要写成 $\frac{\ln}{\ln2}$；$\ln2=0.6931$、$\lb e=1.4427$。丢了 $\ln 2$ 结果会差得离谱。
+  \item \textbf{关键积分记错}。请背：$\displaystyle\int_0^1 y^{a-1}\ln y\,dy=-\frac{1}{a^2}$（本题 $a=\frac12$ 得 $-4$；$a=1$ 得 $-1$）。它在本章会反复出现。
+\end{enumerate}
+\end{qa}
+
+\vspace{4pt}
+\begin{center}
+\rule{0.9\textwidth}{0.4pt}\\[2pt]
+{\small 本份作业完。全卷自检清单：每题概率和是否为 1？条件熵是否按 $p(y)$ 加权？单位是否写了 bit？}
+\end{center}
+
+\end{document}

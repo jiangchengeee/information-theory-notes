@@ -1,0 +1,254 @@
+\section{先补地基：这门课到底在算什么}
+
+\begin{idea}{一句话说明这门课在干什么}
+信息论就是在回答一个问题：\textbf{“一条消息值多少信息？”}而且它要给这个“多少”一个能算的数字，单位叫 bit。
+整本书所有公式，都是围绕“怎么算这个数字、及这个数字有什么用”展开的。
+\end{idea}
+
+\begin{qa}{我完全没听过课，现在最该先弄懂什么？}
+只要弄懂下面这条“主线”，剩下都是它的变形：
+\[
+\underbrace{p(x)}_{\text{这件事发生的概率}}
+\ \longrightarrow\
+\underbrace{I(x)=-\lb p(x)}_{\text{这件事发生告诉了你多少信息}}
+\ \longrightarrow\
+\underbrace{\Hx{X}=\sum_x p(x)I(x)}_{\text{平均每件事告诉你的信息}}
+\]
+说得再白一点：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item $p(x)$：这件事有\textbf{多可能}发生（0 到 1 之间的一个数）。
+  \item $I(x)$：这件事\textbf{一旦告诉你}，你获得了多少信息（越好猜的信息越少，越意外的信息越多）。
+  \item $\Hx{X}$：把上面每条信息的“收获”按它发生的可能性\textbf{加权平均}，就是“平均每次能听到多少信息”。
+\end{enumerate}
+本讲先把 $p(x)$ 这一层的地基打好；下一讲再说 $I(x)$，再下一讲说 $\Hx{X}$。
+\end{qa}
+
+\subsection{概率 $p(x)$：可能性的度量}
+
+\subsubsection*{随机试验与样本点}
+
+先看几个熟悉的例子：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{l|l|l}
+\toprule
+试验 & 所有可能结果（样本点） & 每个结果的概率\\
+\midrule
+掷一颗骰子 & $1,2,3,4,5,6$ & 各 $1/6$\\
+抛一枚公平硬币 & 正面、反面 & 各 $1/2$\\
+明天天气 & 晴、阴、雨 & 例如 $0.5,\ 0.25,\ 0.25$\\
+从 10 个数字里随机发一个 & $0,1,2,\dots,9$ & 各 $1/10$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{概率 $p(x)$ 就是“结果 $x$ 出现的可能性”}，满足两条铁律：
+
+\begin{defbox}{概率的两条铁律（做题时用来检查自己有没有算错）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{非负}：$0\le p(x)\le 1$，即每个概率都不小于 0、不大于 1；
+  \item \textbf{归一}：所有可能结果的概率\textbf{加起来必须正好等于 1}，即
+        $\displaystyle\sum_{x}p(x)=1$。
+\end{enumerate}
+例：$p(1)=p(2)=\cdots=p(6)=\tfrac16$，六个 $\tfrac16$ 加起来是 $1$，合格。
+如果你算出一组概率加起来是 $0.9$ 或 $1.1$，那一定算错了——这是考场上最快发现错误的方法。
+\end{defbox}
+
+\subsubsection*{随机变量 $X$：把结果贴个数字标签}
+
+\textbf{随机变量只是一个“把结果翻译成数字”的标签}，不是真的要解方程。例如：
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 掷骰子，$X$ = 朝上的点数，则 $X$ 取值 $1,2,\dots,6$；
+  \item 抛硬币，定义 $X=0$ 表示“反面”、$X=1$ 表示“正面”，则 $X$ 取值 $0,1$；
+  \item 掷两颗骰子，$X$ = 点数之和，则 $X$ 取值 $2,3,\dots,12$（注意不是每个值等可能！）。
+\end{itemize}
+大写的 $X$ 表示“这个还没发生的随机结果”，小写的 $x$ 表示“其中某一个具体取值”。所以
+$p(x)=P(X=x)$ 就是“$X$ 恰好取到 $x$ 的概率”。
+
+\begin{calc}{手把手算：两颗骰子之和 $Y$ 的分布表}
+两颗骰子独立，各自 $1\sim6$ 等可能，共 $6\times 6=36$ 种等可能情况。数一数“和为 $y$”有几种情况（记为 $c_y$）：
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|ccccccccccc}
+\toprule
+和 $y$ & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12\\
+\midrule
+情况数 $c_y$ & 1 & 2 & 3 & 4 & 5 & 6 & 5 & 4 & 3 & 2 & 1\\
+概率 $p(y)=c_y/36$ & $\frac1{36}$ & $\frac2{36}$ & $\frac3{36}$ & $\frac4{36}$ & $\frac5{36}$ & $\frac6{36}$ & $\frac5{36}$ & $\frac4{36}$ & $\frac3{36}$ & $\frac2{36}$ & $\frac1{36}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+检查归一：$1+2+3+4+5+6+5+4+3+2+1=36$，而 $36\times\frac{1}{36}=1$，合格。
+
+\emph{读法示范}：$p(7)=\frac{6}{36}=\frac16\approx0.167$ 是最大的一个（因为凑成 7 的方式最多：$1+6,2+5,3+4,4+3,5+2,6+1$），而 $p(2)=\frac{1}{36}$ 是最小的。这说明\textbf{“和是 7”比“和是 2”好猜得多}——这一点下一讲会变成具体的 bit 数。
+\end{calc}
+
+\subsection{联合分布、边缘分布、条件概率}
+
+这是本章最容易混的三样东西，但区别其实就是“看表格的角度不同”。
+
+\subsubsection*{联合分布 $p(x,y)$}
+
+把两个随机变量放在一起：$p(x,y)=P(X=x\ \text{且}\ Y=y)$，意思是“$X$ 取 $x$ \textbf{同时} $Y$ 取 $y$ 的概率”。
+
+\begin{calc}{一张联合分布表长什么样（这张表后面作业里要用）}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|cc}
+\toprule
+ & $Y=0$ & $Y=1$\\
+\midrule
+$X=0$ & $1/3$ & $1/3$\\
+$X=1$ & $1/3$ & $0$\\
+\bottomrule
+\end{tabular}
+\end{center}
+读法：$p(0,0)=\frac13$、$p(0,1)=\frac13$、$p(1,0)=\frac13$、$p(1,1)=0$。
+四格加起来 $\frac13+\frac13+\frac13+0=1$，合格。
+
+注意 $p(1,1)=0$ 是很有信息量的一句话：它表示“\textbf{不可能同时出现 $X=1$ 和 $Y=1$}”，即一旦 $X=1$，$Y$ 就必定是 0。这种“确定性关联”是后面算条件熵的关键。
+\end{calc}
+
+\subsubsection*{边缘分布 $p(x)$：把表的一行（或一列）加起来}
+
+只知道 $X$ 的分布、不管 $Y$ 时，就把同一行的数加起来：
+\[
+p(x)=\sum_{y}p(x,y).
+\]
+上面那张表：$p(X=0)=\frac13+\frac13=\frac23$，$p(X=1)=\frac13+0=\frac13$；同理 $p(Y=0)=\frac23$，$p(Y=1)=\frac13$。
+
+\begin{idea}{“边缘”这个词怎么理解}
+把所有行的数加起来，写在表格最右边一列——就像写在纸的\textbf{边缘}上，所以叫边缘分布。中文里也叫“边际分布”。
+\end{idea}
+
+\subsubsection*{条件概率 $p(x|y)$：已经知道 $Y$ 之后的概率}
+
+$p(x|y)$ 读作“\textbf{在 $Y=y$ 的条件下，$X=x$ 的概率}”。算法只有一个：
+\[
+p(x|y)=\frac{p(x,y)}{p(y)} .
+\]
+\begin{calc}{手把手算：用上面那张表求条件概率}
+已知 $Y=0$：$p(Y=0)=\frac23$，于是
+\[
+p(X=0|Y=0)=\frac{p(0,0)}{p(Y=0)}=\frac{1/3}{2/3}=\frac12,\qquad
+p(X=1|Y=0)=\frac{p(1,0)}{p(Y=0)}=\frac{1/3}{2/3}=\frac12 .
+\]
+也就是“知道 $Y=0$ 之后，$X$ 是 0 还是 1 各占一半，完全猜不准”。
+
+已知 $Y=1$：$p(Y=1)=\frac13$，于是
+\[
+p(X=0|Y=1)=\frac{p(0,1)}{p(Y=1)}=\frac{1/3}{1/3}=1,\qquad
+p(X=1|Y=1)=\frac{p(1,1)}{p(Y=1)}=\frac{0}{1/3}=0 .
+\]
+也就是“知道 $Y=1$ 之后，$X$ 必定是 0，一点不用猜了”。
+
+\emph{体会一下}：同样是问 $X$，知道 $Y=0$ 时你还得猜（50\% 对 50\%），知道 $Y=1$ 时你完全确定。\textbf{“还要不要猜、要猜多少”就是下一讲要量化的东西。}
+\end{calc}
+
+\begin{defbox}{独立性：这门课反复用到的“最好情况”}
+若对一切 $x,y$ 都有
+\[
+p(x,y)=p(x)\,p(y),
+\]
+就称 $X$ 与 $Y$ \textbf{相互独立}，意思就是“$Y$ 的信息对猜 $X$ 毫无帮助”。
+两个等价说法（后面会证明，可以先记着）：
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item 独立 $\iff$ $p(x|y)=p(x)$（知道 $Y$ 后 $X$ 的概率一点没变）；
+  \item 独立 $\iff$ $\I{X;Y}=0$（互信息为零，第5讲讲）。
+\end{itemize}
+上面那张表\textbf{不独立}：因为 $p(0,0)=\frac13$ 而 $p(X=0)p(Y=0)=\frac23\times\frac23=\frac49\ne\frac13$。
+\end{defbox}
+
+\subsection{期望 $\E[\cdot]$：其实就是“加权平均”}
+
+这是全书出现频率最高的运算，但它只是“按概率加权求平均”：
+
+\begin{defbox}{期望的定义}
+若 $X$ 取值为 $x_1,\dots,x_n$，概率为 $p(x_i)$，则对任意函数 $f$：
+\[
+\E\bigl[f(X)\bigr]=\sum_{i=1}^{n}p(x_i)\,f(x_i).
+\]
+\textbf{人话}：把每个可能值算出来的 $f(x_i)$，按它出现的概率加权，加起来。
+\end{defbox}
+
+\begin{calc}{例子：掷骰子的平均点数}
+\[
+\E[X]=\sum_{x=1}^{6}\frac16\cdot x=\frac16(1+2+3+4+5+6)=\frac{21}{6}=3.5 .
+\]
+注意 $3.5$ 根本不是骰子的任何一个面——\textbf{平均值可以不等于任何可能取值}，它只是“长期来看的平均”。这一点很重要，因为熵也是这种“平均”，也常常不是某个具体取值的信息量。
+\end{calc}
+
+\begin{qa}{为什么到处都是“加权平均”？}
+因为信息论关心的是\textbf{长期的、平均的表现}：一条消息传一次可能很意外也可能很平淡，但传一千万次，平均每次花多少 bit 才是工程上关心的数字（决定要买多贵的线路、多大的硬盘）。所以本书几乎所有核心量都是期望。
+\end{qa}
+
+\subsection{对数 $\lb$：这本课唯一的“新数学”}
+
+全书约定：$\lb$ 表示\textbf{以 2 为底的对数}，即 $\lb n$ 表示“2 的几次方等于 $n$”。
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|ccccccccc}
+\toprule
+$n$ & 1 & 2 & 4 & 8 & 16 & 3 & 5 & 6 & 10\\
+\midrule
+$\lb n$ & 0 & 1 & 2 & 3 & 4 & 1.585 & 2.322 & 2.585 & 3.322\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+这些数字怎么来的：$2^1=2$ 所以 $\lb2=1$；$2^2=4$ 所以 $\lb4=2$；$2^3=8$ 所以 $\lb8=3$。
+不是 2 的整数次方的就不整齐（比如 $\lb 3\approx1.585$ 表示 $2^{1.585}\approx3$），考试时直接写近似值即可。
+
+\begin{defbox}{三个必须记住的对数性质}
+\[
+\lb(xy)=\lb x+\lb y,\qquad
+\lb\frac{x}{y}=\lb x-\lb y,\qquad
+\lb(x^{k})=k\lb x .
+\]
+含意：\textbf{对数把乘法变成加法}。这正是为什么信息量要用对数来定义——两条独立消息的“总信息量”应该等于两条各自信息量之和（加法），而对数正好把“概率相乘”变成“信息量相加”。
+\end{defbox}
+
+\begin{qa}{为什么一定要用 log，用别的函数不行吗？}
+这正是教材 2.3 节“熵函数的唯一性”在证明的事：只要你承认“信息量应满足几条常识要求”（概率越小信息越大、两条独立消息的信息量应相加），那么\textbf{能用的函数只有对数这一类}，别的函数都通不过检验。所以 log 不是随便选的，是被“逼”出来的——第2讲会给出这个推导。
+\end{qa}
+
+\subsection{本讲符号总表（贴在桌上用）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{l|l|l}
+\toprule
+符号 & 读作 & 意思\\
+\midrule
+$X$ & “随机变量 X” & 一个还没确定的随机结果\\
+$x$ & “某个取值 x” & $X$ 的某一个具体取值\\
+$p(x)$ & “x 的概率” & $X=x$ 的可能性，$0\le p(x)\le1$\\
+$p(x,y)$ & “x 和 y 的联合概率” & $X=x$ 且 $Y=y$ \textbf{同时}发生的概率\\
+$p(y)=\sum_x p(x,y)$ & “边缘分布” & 只看 $Y$、不管 $X$ 时的分布\\
+$p(x|y)$ & “给定 y 时 x 的条件概率” & 已知 $Y=y$ 后，$X=x$ 的概率 $=\frac{p(x,y)}{p(y)}$\\
+$\E[f(X)]$ & “f(X) 的期望” & 按概率加权的平均值\\
+$\lb n$ & “log 以 2 为底 n” & $2^{\lb n}=n$\\
+$H(X)$ & “X 的熵” & 平均信息量 / 平均不确定性（第3讲）\\
+$H(X|Y)$ & “给定 Y 后 X 的条件熵” & 知道 $Y$ 之后，$X$ 还剩下多少不确定性（第4讲）\\
+$I(X;Y)$ & “X 与 Y 的互信息” & 知道 $Y$ 帮你在 $X$ 上省下多少不确定性（第5讲）\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{exam}{第1讲：考试怎么用}
+这一讲本身不会单独出题，但它是后面所有计算的工具。考场上最常用的两招：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{拿到题先画分布表}。给联合分布的题，第一件事就是把 $2\times2$、$3\times3$ 的表填出来，并把行和列的和加在边缘上——后面不管要求什么熵，都从这张表出发。
+  \item \textbf{随时用“加起来等于 1”查错}。如果某一步算出的条件概率加起来不等于 1，立刻回头找错，不要往下算。
+\end{enumerate}
+\end{exam}
+
+\begin{qa}{自测：你真的会了吗（有答案）}
+\textbf{问}：设 $p(X=0,Y=0)=0.1$，$p(X=0,Y=1)=0.4$，$p(X=1,Y=0)=0.3$，$p(X=1,Y=1)=0.2$。求 $p(X=0)$、$p(Y=1)$、$p(X=0|Y=1)$，并判断 $X,Y$ 是否独立。
+
+\textbf{答}：$p(X=0)=0.1+0.4=0.5$；$p(Y=1)=0.4+0.2=0.6$；
+$p(X=0|Y=1)=\dfrac{p(0,1)}{p(Y=1)}=\dfrac{0.4}{0.6}=\dfrac23$。
+检验独立性：$p(X=0)p(Y=1)=0.5\times0.6=0.3$，而 $p(0,1)=0.4\ne0.3$，故\textbf{不独立}。
+\end{qa}

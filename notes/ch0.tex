@@ -1,0 +1,81 @@
+% 第0部分：复习总纲（本文件由主文档直接 \input）
+\section{复习范围与总纲}
+
+\begin{defbox}{本课程复习范围（依据老师课件）}
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|l|c}
+\toprule
+章 & 内容 & 复习地位\\
+\midrule
+第1章 & 信息论方法概述、信息论的应用 & 了解（概念题）\\
+第2章 & 信源与熵 & \textbf{重点}\\
+第3章 & 互信息 & \textbf{重点}\\
+第4章 & 离散信源的无错编码 & \textbf{重点}\\
+第5章 & 离散无记忆信道的编码理论 & \textbf{重点}\\
+第6、7、10章 & 线性码、密码学引论等 & 略（不考）\\
+第8章 & 最大熵原理与最小鉴别信息原理 & 掌握\\
+第9章 & 组合信息与算法信息 & 掌握\\
+\bottomrule
+\end{tabular}
+\end{center}
+全课程的对数底统一取 $2$，熵与信息量单位统一为 \textbf{bit}；若题目改用自然对数或十进制对数，只需把结果除以 $\ln 2$ 或 $\lb 10$ 换算。
+\end{defbox}
+
+\begin{keypoint}{全书最重要的一张“熵关系图”（务必默写）}
+\begin{align*}
+&\text{链式法则：}\quad \Hx{X,Y}=\Hx{X}+\Hx{Y|X}=\Hx{Y}+\Hx{X|Y}\\
+&\text{条件熵：}\quad \Hx{X|Y}=\Hx{X,Y}-\Hx{Y}\\
+&\text{互信息：}\quad \I{X;Y}=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}=\Hx{X}+\Hx{Y}-\Hx{X,Y}\\
+&\text{条件互信息：}\quad \I{X;Y|Z}=\Hx{X|Z}-\Hx{X|Y,Z}\\
+&\hphantom{\text{条件互信息：}}\quad =\Hx{X|Z}+\Hx{Y|Z}-\Hx{X,Y|Z}\\
+&\text{基本不等式：}\quad \Hx{X|Y}\le\Hx{X}\le\Hx{X,Y}\le\Hx{X}+\Hx{Y}\\
+&\hphantom{\text{基本不等式：}}\quad 0\le\I{X;Y}\le\min\{\Hx{X},\Hx{Y}\}\\
+&\text{独立：}\quad X\perp Y\iff \Hx{X,Y}=\Hx{X}+\Hx{Y}\iff \I{X;Y}=0\\
+&\text{确定性函数：}\quad Y=f(X)\Rightarrow \Hx{Y|X}=0,\ \Hx{X,Y}=\Hx{X},\ \I{X;Y}=\Hx{Y}
+\end{align*}
+\end{keypoint}
+
+\subsection*{一学期五次书面作业（含讲评要点）速览}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\small
+\begin{tabular}{c|l|p{6.6cm}}
+\toprule
+次 & 作业题目 & 讲评要点（老师课件原话要点）\\
+\midrule
+1 & 第2章 P43：2.1、2.2、2.4、2.7、2.10，\\ & 及证明 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$ & 2.7(2) 中 $\Hx{X|Z}$ 错的较多，$Z$ 的分布易求错；2.10(2) log 积分易求错；2.4 基本都对；2.2 思路基本都对、写法不一样\\
+\midrule
+2 & 第3章 P54：3.2、3.3、3.7、3.10 & 3.2 大部分同学都对；3.3 整体做得很好；3.7 极少数同学有问题或缺问；3.10 见课件\\
+\midrule
+3 & 第4章 P93：4.1、4.2(1)、4.4、4.12 & 4.2 计算有错误；4.4 编码要画树，少部分三元编码错误；4.12(1) 转移矩阵写错，(2)(3) 基本都对，(4) 三个状态分别编码，(5) 状态编码、平均码长\\
+\midrule
+4 & 第5章 P142：5.3(1)(2)、5.11，\\ & 补充：8 位码 10011100 偶校验构造汉明码 & 5.11 极大似然概率乘错；汉明码易在第 7、10 位出错，务必用校验方程验算\\
+\midrule
+5 & 第9章 P213：习题 9.2 & 组合信息 / 算法信息的基本计算\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{求熵、求互信息}：第一步\textbf{必写概率分布表}（联合表最保险）→ 第二步用链式法则拆成单变量或条件熵 → 第三步代数值。凡是“已知 $A$ 后”的一律是条件熵；“$A$ 与 $B$ 共同”的一律是联合熵。
+  \item \textbf{求信道容量}：先判断信道是否（强）对称——若是，$C=\lb|X|-H(\text{行})$，最佳输入为等概；若不是，用迭代算法或按 $C=\max_{p(x)}\I{X;Y}$ 定义直接算（此时常用拉格朗日乘子）。
+  \item \textbf{求编码（Huffman/Shannon/Fano）}：概率排序→合并最小两个（或按公式分段）→\textbf{必须画码树}→写出码字表→算平均码长 $\bar L$、熵 $H$、效率 $\eta=H/\bar L$、冗余度 $1-\eta$。
+  \item \textbf{构造汉明码}：$2^r\ge n+1$ 定校验位数→校验位放在 $2^0,2^1,2^2,2^3,\dots$ 位→偶校验方程组→逐位代入→用伴随式定位纠错。
+  \item \textbf{证明题}：几乎所有熵的不等式都能由三条基本不等式推出——
+        （i）$\Hx{X|Y}\le\Hx{X}$；（ii）$\Hx{X,Y}\le\Hx{X}+\Hx{Y}$；（iii）$\I{X;Y}\ge 0$。
+        遇到“归一化”的比较（如第2章 2.4(b)），统一分母后再放缩。
+\end{enumerate}
+
+\begin{warning}{最高频的六个失分点（据课件作业讲评汇总）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 条件熵\textbf{不对称}：$\Hx{X|Y}\neq\Hx{Y|X}$（第2章 2.1 就考这一点）。
+  \item 求 $\Hx{X|Z}$ 时把 $Z$ 的分布\textbf{求错}——$Z$ 常常是 $X,Y$ 的模 2 和或函数，要先求 $Z$ 的分布（第2章 2.7(2) 错得最多）。
+  \item 连续熵的 \textbf{log 积分}算错，特别是 $\displaystyle\int_0^1 y^{a-1}\ln y\,dy=-\frac{1}{a^2}$（第2章 2.10）。
+  \item 定长/变长编码界限的\textbf{方向}记反（$R>H$ 可行，$R<H$ 不可行）。
+  \item 变长编码\textbf{不画码树}、三元编码（$r=3$）时补位规则出错（第4章 4.4、4.12）。
+  \item 汉明码的\textbf{校验位位置}与\textbf{偶校验方程}混乱，导致码字与校验方程互相矛盾（第5章补充题）。
+\end{enumerate}
+\end{warning}

@@ -1,0 +1,238 @@
+\section{联合熵与条件熵：两个变量一起看}
+
+\begin{idea}{这一讲要回答三个问题}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item 如果一次同时告诉你 $X$ 和 $Y$ 两个值，这份“打包消息”值多少 bit？——\textbf{联合熵 $H(X,Y)$}
+  \item 如果已经告诉了你 $Y$，再告诉你 $X$ 还值多少 bit？——\textbf{条件熵 $H(X|Y)$}
+  \item 这两者与单个的 $H(X)$、$H(Y)$ 之间是什么关系？——\textbf{链式法则}
+\end{enumerate}
+只要把这三个问题算清楚，第2章的大半分数就到手了（作业 2.1、2.7 全是这一讲的内容）。
+\end{idea}
+
+\subsection{联合熵 $H(X,Y)$}
+
+\begin{defbox}{定义}
+\begin{align*}
+\Hx{X,Y}&=\E\bigl[-\lb p(X,Y)\bigr]
+=-\sum_{x}\sum_{y}p(x,y)\lb p(x,y)\\
+&=\sum_{x}\sum_{y}p(x,y)\lb\frac{1}{p(x,y)} .
+\end{align*}
+\textbf{人话}：“把 $X$ 和 $Y$ \textbf{同时}告诉你”这份打包消息平均值多少 bit，也就是两个变量的\textbf{总不确定性}。
+\end{defbox}
+
+\begin{calc}{手把手算联合熵（就用这张 2×2 表，务必跟着算一遍）}
+联合分布表：
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|cc|c}
+\toprule
+ & $Y=0$ & $Y=1$ & 行和（$X$ 的边缘）\\
+\midrule
+$X=0$ & $1/3$ & $1/3$ & $2/3$\\
+$X=1$ & $1/3$ & $0$ & $1/3$\\
+\midrule
+列和（$Y$ 的边缘） & $2/3$ & $1/3$ & $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{第一步：列出所有非零格子的 $p$ 与 $-\lb p$。}（$p(1,1)=0$，按约定 $0\lb0=0$，直接略去。）
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|c|c|c}
+\toprule
+格子 & $p(x,y)$ & $-\lb p(x,y)$ & 乘积\\
+\midrule
+$(0,0)$ & $1/3$ & $\lb3\approx1.585$ & $0.528$\\
+$(0,1)$ & $1/3$ & $1.585$ & $0.528$\\
+$(1,0)$ & $1/3$ & $1.585$ & $0.528$\\
+\midrule
+合计 & & & $\Hx{X,Y}\approx1.585$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{第二步：加起来。}
+\[
+\Hx{X,Y}=3\times\frac13\times\lb3=\lb3\approx1.585\bit .
+\]
+（技巧：三个格子概率都是 $\frac13$，所以直接乘 3。更通用地说，若三个非零格概率均等，“打包不确定性”就是 $\lb3$。）
+\end{calc}
+
+\begin{qa}{为什么这里 $H(X,Y)=\lb3$ 这么“整”？}
+因为联合分布里只有 3 个等可能的组合，等于“从 3 个组合里等可能挑一个”，按第3讲结论，熵就是 $\lb3$。
+\textbf{反过来说}：只要你在表上看到“$k$ 个非零且相等的格子”，联合熵立刻就是 $\lb k$，不用一个个算。这个小技巧在考场上能省一两分钟。
+\end{qa}
+
+\subsection{条件熵 $H(X|Y)$：知道 $Y$ 之后还剩多少不确定性}
+
+\begin{defbox}{定义（分两步看最清楚）}
+\textbf{第一步}：给定某个具体的 $Y=y$，此时 $X$ 的条件分布是 $p(x|y)$，它的熵叫\textbf{条件熵（给定 $y$）}：
+\[
+\Hx{X|Y=y}=-\sum_{x}p(x|y)\lb p(x|y).
+\]
+\textbf{第二步}：$y$ 本身是随机的，各种 $y$ 出现的概率不同，所以加权平均：
+\[
+\boxed{\ \Hx{X|Y}=\sum_{y}p(y)\,\Hx{X|Y=y}\ }.
+\]
+\end{defbox}
+
+\begin{calc}{手把手算条件熵（继续用那张表）}
+\textbf{（1）先算 $Y=0$ 的情形。}已知 $Y=0$（概率 $\frac23$），条件分布上一讲算过：
+\[
+p(X=0|Y=0)=\frac{p(0,0)}{p(Y=0)}=\frac{1/3}{2/3}=\frac12,\qquad
+p(X=1|Y=0)=\frac{1/3}{2/3}=\frac12 .
+\]
+这是“一半一半”，所以
+\[
+\Hx{X|Y=0}=-\frac12\lb\frac12-\frac12\lb\frac12=\frac12+\frac12=1\bit .
+\]
+
+\textbf{（2）再算 $Y=1$ 的情形。}已知 $Y=1$（概率 $\frac13$）：
+\[
+p(X=0|Y=1)=\frac{p(0,1)}{p(Y=1)}=\frac{1/3}{1/3}=1,\qquad
+p(X=1|Y=1)=\frac{0}{1/3}=0 .
+\]
+完全确定，所以
+\[
+\Hx{X|Y=1}=-1\lb1=0\bit .
+\]
+
+\textbf{（3）加权平均}（这一步千万别漏，很多同学直接写 $1$ 就错了）：
+\[
+\Hx{X|Y}=p(Y=0)\cdot1+p(Y=1)\cdot0
+=\frac23\times1+\frac13\times0=\frac23\approx0.667\bit .
+\]
+
+\textbf{（4）对照检查。}原来 $\Hx{X}=-\frac23\lb\frac23-\frac13\lb\frac13=0.918$ bit；
+知道 $Y$ 之后剩下 $0.667$ bit。所以知道 $Y$ 帮你省下了
+\[
+0.918-0.667=0.251\bit
+\]
+的不确定性——这个差值就是第5讲的“互信息”。\textbf{记住这个“省下来的差额”的说法，它是整本书的灵魂。}
+\end{calc}
+
+\begin{qa}{为什么“条件熵”要加权平均，而不能直接把各个 $\Hx{X|Y=y}$ 加起来？}
+因为不同的 $y$ 出现的频率不一样。如果 $Y=1$ 这种情况极其罕见（概率 0.001），那它对“长期平均”的影响就微乎其微。所以必须按 $p(y)$ 加权。\textbf{一句话：条件熵 = 各种情况下的剩余不确定性，按该情况出现的概率加权平均。}
+\end{qa}
+
+\subsection{链式法则：拆开算的两个方向}
+
+\begin{defbox}{链式法则（本章第一公式，必背）}
+\[
+\boxed{\ \Hx{X,Y}=\Hx{X}+\Hx{Y|X}=\Hx{Y}+\Hx{X|Y}\ }
+\]
+\textbf{人话翻译（第一式）}：要把“$X$ 和 $Y$ 同时告诉你”的不确定性拆开算，可以这样分两步——
+\textbf{先告诉 $X$}（这份消息值 $\Hx{X}$），\textbf{再告诉 $Y$}（这时你已经知道 $X$ 了，所以 $Y$ 只值 $\Hx{Y|X}$）。两份加起来就是打包的总不确定性。
+\end{defbox}
+
+\begin{calc}{用刚才的数验证链式法则（考场上的验算手段）}
+右边：$\Hx{X}+\Hx{Y|X}=0.918+0.667=1.585$；左边：$\Hx{X,Y}=1.585$。对上。
+
+顺带一个变形（后面做作业常用）：
+\[
+\Hx{X|Y}=\Hx{X,Y}-\Hx{Y},\qquad \Hx{Y|X}=\Hx{X,Y}-\Hx{X}.
+\]
+代进去：$\Hx{X|Y}=1.585-0.918=0.667$ ✓，$\Hx{Y|X}=1.585-0.918=0.667$ ✓。
+\textbf{注意}：这次两个值恰好相等，是因为这张表的结构特殊（行和与列和一模一样）。\textbf{一般情形下两者不相等}，这是作业 2.1 最重要的考点。
+\end{calc}
+
+\subsection{两条最重要的不等式}
+
+\begin{defbox}{不等式 1：条件不增熵（知道得越多，越不糊涂）}
+\[
+\Hx{X|Y}\le\Hx{X},\qquad \Hx{Y|X}\le\Hx{Y}.
+\]
+\textbf{人话}：多知道一个信息，只会让你对 $X$ 更确定，绝不会更糊涂。
+\textbf{等号成立条件}：$X$ 与 $Y$ 独立（知道了 $Y$ 等于白知道）。
+\end{defbox}
+
+\begin{qa}{疑点：上一讲我算出来“知道 $Y=0$ 之后 $X$ 的信息量反而变大了”，是不是矛盾？}
+不矛盾，而且这是极好的问题。区别在于“\textbf{一条事件}”和“\textbf{平均}”：
+\begin{itemize}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+  \item 单条事件的条件自信息 $I(x|y)=-\lb p(x|y)$ 可能比 $I(x)$ 大（当 $p(x|y)<p(x)$ 时）；
+  \item 但\textbf{平均以后}（即条件熵 $\Hx{X|Y}$）一定不大于 $\Hx{X}$。
+\end{itemize}
+所以在卷子上写“因为 $p(x|y)$ 可能小于 $p(x)$，所以条件熵更大”是\textbf{错误}的；正确的说法永远是“条件熵不超过原熵”。
+\end{qa}
+
+\begin{defbox}{不等式 2：次可加性（作业要求证明的那一条）}
+\[
+\boxed{\ \Hx{X,Y}\le\Hx{X}+\Hx{Y}\ }
+\]
+\textbf{人话}：两个变量“打包”的不确定性，不会超过“分别算再相加”。为什么？因为分开算时，你把“$Y$ 和 $X$ 可能重复的部分”算了两遍（$\Hx{Y|X}\le\Hx{Y}$ 正是这个意思）。
+\textbf{等号成立条件}：$X$ 与 $Y$ 相互独立。
+\textbf{一句话证明}：
+\[
+\Hx{X,Y}=\Hx{X}+\Hx{Y|X}\ \overset{\Hx{Y|X}\le\Hx{Y}}{\le}\ \Hx{X}+\Hx{Y}.
+\]
+（作业里要求完整证明，我会在《作业一详解》里给出三种证法。）
+\end{defbox}
+
+\begin{calc}{用具体数字体会“打包比分开省”}
+本题：$\Hx{X,Y}=1.585$，而 $\Hx{X}+\Hx{Y}=0.918+0.918=1.836$。
+确实 $1.585<1.836$，省下了 $0.251$ bit —— 正好是刚才算出的“知道 $Y$ 省下的不确定性”！
+所以有一个非常重要的恒等式（第5讲再正式出现）：
+\[
+\Hx{X}+\Hx{Y}-\Hx{X,Y}=\I{X;Y}
+\quad(\text{互信息}).
+\]
+\end{calc}
+
+\subsection{把作业 2.7 的“新变量”先演练一遍}
+
+作业 2.7 会给你上面那张表，再定义 $Z=X\oplus Y$（$\oplus$ 是\textbf{模 2 加}：两个相同为 0，不同为 1），让你求 $\Hx{X|Z}$ 之类。这里先演示怎么求 $Z$ 的分布——老师说这一步错得最多。
+
+\begin{calc}{手把手：求 $Z=X\oplus Y$ 的分布}
+逐格算 $z=x\oplus y$：
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{c|c|c|c}
+\toprule
+$(x,y)$ & 概率 & $z=x\oplus y$ & 说明\\
+\midrule
+$(0,0)$ & $1/3$ & $0\oplus0=0$ & 相同 $\Rightarrow0$\\
+$(0,1)$ & $1/3$ & $0\oplus1=1$ & 不同 $\Rightarrow1$\\
+$(1,0)$ & $1/3$ & $1\oplus0=1$ & 不同 $\Rightarrow1$\\
+$(1,1)$ & $0$ & $1\oplus1=0$ & 这一格概率为 0，不影响\\
+\bottomrule
+\end{tabular}
+\end{center}
+把 $z$ 相同的概率并起来：
+\[
+p(Z=0)=\frac13+0=\frac13,\qquad p(Z=1)=\frac13+\frac13=\frac23 .
+\]
+（检查：$\frac13+\frac23=1$ ✓。）
+
+于是 $\Hx{Z}=-\frac13\lb\frac13-\frac23\lb\frac23=0.528+0.390=0.918$ bit。
+
+\textbf{接下去求 $\Hx{X|Z}$ 的套路}：分别看 $Z=0$、$Z=1$ 时 $X$ 的条件分布：
+$Z=0$ 只可能来自 $(0,0)$（概率 $\frac13$），此时 $X$ 必为 0，故 $\Hx{X|Z=0}=0$；
+$Z=1$ 来自 $(0,1)$ 与 $(1,0)$ 各 $\frac13$，条件分布为 $(\frac12,\frac12)$，故 $\Hx{X|Z=1}=1$ bit。
+加权：
+\[
+\Hx{X|Z}=\frac13\times0+\frac23\times1=\frac23\bit .
+\]
+\textbf{注意别踩的坑}：有人直接把 $\Hx{X|Z}$ 写成 $1$（忘了加权）或写成 $0$（只看了 $Z=0$ 的情形）。\textbf{一定要“分别算 + 加权”。}
+\end{calc}
+
+\begin{exam}{第4讲：考试怎么用}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{给联合分布表求各种熵}的标准流程（照这个顺序写，稳）：
+        “① 补全表格边缘 → ② 算 $\Hx{X},\Hx{Y}$（各自一维）→ ③ 算 $\Hx{X,Y}$（对各非零格）→ ④ 用链式法则得条件熵 → ⑤ 用 $\Hx{X}+\Hx{Y}-\Hx{X,Y}$ 得互信息”。
+  \item \textbf{求 $\Hx{X|Z}$ 这类“新变量”题}：诀窍是“先求 $Z$ 的分布 → 再对每个 $Z$ 值求条件分布 → 最后加权”。老师说这一步最容易错，一定要把三小步都写在卷面上。
+  \item \textbf{常见陷阱}：
+        （i）$\Hx{X|Y}\ne\Hx{Y|X}$；
+        （ii）条件熵要加权；
+        （iii）概率为 0 的格子按 $0\lb0=0$ 略去，不要写“无穷大”；
+        （iv）$Z$ 是 $X,Y$ 的确定性函数时，$\Hx{Z|X,Y}=0$、$\Hx{X,Y,Z}=\Hx{X,Y}$（这条能秒杀很多题）。
+\end{enumerate}
+\end{exam}
+
+\begin{qa}{自测：（有答案）}
+\textbf{问}：设 $p(0,0)=0.25$，$p(0,1)=0.25$，$p(1,0)=0.25$，$p(1,1)=0.25$（就是“独立且各半”）。求 $\Hx{X},\Hx{Y},\Hx{X,Y},\Hx{X|Y}$，并说明为什么 $\Hx{X,Y}=\Hx{X}+\Hx{Y}$。
+
+\textbf{答}：边缘都是 $(0.5,0.5)$，故 $\Hx{X}=\Hx{Y}=1$ bit；联合四个格各 $0.25$，故 $\Hx{X,Y}=\lb4=2$ bit；
+$\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}=2-1=1$ bit。
+这里 $X,Y$ 独立，故 $\Hx{X|Y}=\Hx{X}$，于是 $\Hx{X,Y}=1+1=2$，等号成立——正是次可加性的等号条件。
+\end{qa}

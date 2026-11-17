@@ -1,0 +1,406 @@
+\section{第 5 章\quad 离散无记忆信道的编码理论}
+
+本章两条主线：\textbf{信道容量} $C$（一个信道最多能传多少信息）与\textbf{信道编码}（如何接近无差错地传）。容量部分（5.1、5.4、5.5）考计算与对称性判别，编码部分（5.2、5.3、5.6）考概念、定理条件和汉明码构造。
+
+\subsection{信道模型与信道容量}
+
+\subsubsection{模型、定义与性质}
+
+信道用前向转移概率 $q(y|x)$ 描述，输入 $X\in\mathcal{A}=\{0,1,\dots,K-1\}$，输出 $Y\in\mathcal{B}=\{0,1,\dots,J-1\}$。
+
+\begin{defbox}{定义 5.1.1（离散无记忆信道 DMC）}
+若对任何 $N$ 有 $q_N(\mathbf{y}|\mathbf{x})=\prod_{n=1}^{N}q(y_n|x_n)$（式 (5.1.1)），则称\textbf{离散无记忆信道}，记 $\{\mathcal{A};q(y|x);\mathcal{B}\}$；若 $q(y_n|x_n)$ 与 $n$ 无关（式 (5.1.2)），则称\textbf{平稳}，记 $\{\mathcal{A};q(y);\mathcal{B}\}$。
+\end{defbox}
+
+输入分布为 $\{p_k=\p{X=k}\}$ 时，输出分布 $w_j=\p{Y=j}=\sum_k p_k\,q(j|k)$（式 (5.1.3)），且
+\begin{equation*}
+\I{X;Y}=\sum_k\sum_j p_k\,q(j|k)\log\frac{q(j|k)}{w_j}
+=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}.
+\end{equation*}
+
+\begin{defbox}{定义 5.1.2（信道容量）}
+$C=\max_{\{p_k\}}\I{X;Y}$，单位 bit/符号（式 (5.1.4)）；使 $\I{X;Y}=C$ 的输入分布称为\textbf{最佳输入分布}。有记忆（平稳）情形推广为 $C=\lim_{N\to\infty}\max\I{X_1\cdots X_N;Y_1\cdots Y_N}$（式 (5.1.5)），式 (5.1.4) 为其特例。
+\end{defbox}
+
+\begin{keypoint}{容量的四条性质（必背）}
+(a) 非负：$C\ge0$；\ (b) $C\le\lb|\mathcal{A}|=\lb K$（因 $\I{X;Y}\le\Hx{X}\le\lb K$）；\ (c) $C\le\lb|\mathcal{B}|=\lb J$（因 $\I{X;Y}\le\Hx{Y}$），故二元信道恒有 $C\le1$ bit；\ (d) $\I{P;Q}$ 关于输入分布 $P$ 上凸、关于 $Q$ 凸，故 $P\mapsto\I{X;Y}$ 的极大值\textbf{唯一存在且就是最大值} ---- 这是 $C$ 一定能达到、以及 K-T 条件与迭代算法的依据。
+\end{keypoint}
+
+\begin{thmbox}{定理 5.1.1（式 (5.1.5) 的由来）}
+对 DMC 恒有 $\I{X_1\cdots X_N;Y_1\cdots Y_N}\le\sum_{n=1}^N\I{X_n;Y_n}$（式 (5.1.6)），输入无记忆时取等号；若还平稳则各 $\I{X_n;Y_n}=\I{X;Y}$，式 (5.1.5) 退化为 (5.1.4)。
+\end{thmbox}
+
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+信道 & 参数 & 容量（bit/符号）\\
+\midrule
+无噪（一一对应） & $|\mathcal{A}|=|\mathcal{B}|=K$ & $C=\lb K$（无噪二元 $C=1$）\\
+二元对称 BSC & 错误概率 $p$ & $C=1-\Hx{p}$\\
+二元删除 BEC & 删除概率 $p$ & $C=1-p$\\
+$K$ 元对称（强对称） & 正确 $1-p$，其余各 $\frac{p}{K-1}$ & $C=\lb K-\Hx{p}-p\lb(K-1)$\\
+一般对称（弱对称） & 行、列均可排列 & $C=\lb J+\sum_j q(j|k)\lb q(j|k)=\lb J-\Hx{\text{行}}$\\
+复制信道（例 5.1.2） & 26 字母，各以 $1/2$ 复制或后移 & $C=\lb26-1=\lb13$\\
+$\mathrm{mod}\,K$ 加法 & $Y=(X+Z)\bmod K$，$X\perp Z$ & $C=\lb K-\Hx{Z}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{BSC 的标准推导}（务必会写）：$\I{X;Y}=\Hx{Y}-\Hx{Y|X}=\Hx{Y}-\Hx{p}\le1-\Hx{p}$，输入等概时 $Y$ 也等概、$\Hx{Y}=1$ 取到上界，故 $C=1-\Hx{p}$。同理无噪二元 $C=1$；$\mathrm{mod}K$ 信道 $\Hx{Y|X}=\Hx{Z}$，等概输入时 $Y$ 等概，故 $C=\lb K-\Hx{Z}$；复制信道 $\I{X;Y}=\Hx{Y}-1\le\lb26-1=\lb13$，等概时取等。
+
+\begin{example}{准对称信道：为什么不能套 $\lb J-\Hx{\text{行}}$}
+$\mathcal{B}$ 可分割为 $B_1,\dots,B_T$，使每个列子阵既行可排列又列可排列，则称\textbf{准对称}。例如 $Q=\begin{pmatrix}1-p&p&0\\0&p&1-p\end{pmatrix}$，$B_1=\{0,2\},\ B_2=\{1\}$。由\textbf{定理 5.1.3}准对称信道在\textbf{输入等概}时达到容量，故只能按定义算：$w=(\frac{1-p}{2},p,\frac{1-p}{2})$，
+\begin{equation*}
+C=\I{X=0;Y}=(1-p)\lb2+p\lb1=1-p .
+\end{equation*}
+而 $\lb J-\Hx{\text{行}}=\lb3-\Hx{p}=0.863\ (p=0.2)\ne0.8$，\textbf{该公式只适用于对称（弱对称）信道}。
+\end{example}
+
+\subsubsection{定理 5.1.2（K-T 条件）与“列方程求容量”模板}
+
+\begin{thmbox}{定理 5.1.2（容量定理）}
+输入分布 $P^*=(p_0^*,\dots,p_{K-1}^*)$ 使 $\I{P,Q}=C$ 的充要条件是：存在常数 $C$，使
+\begin{equation}
+\I{X=k;Y}=C\ \ (\forall k,\ p_k^*>0),\qquad
+\I{X=k;Y}\le C\ \ (\forall k,\ p_k^*=0),\tag{5.1.8,5.1.9}
+\end{equation}
+其中 $\I{X=k;Y}=\sum_{j}q(j|k)\log\frac{q(j|k)}{w_j}$（式 (5.1.10)）为“输入固定为 $k$”时可传的平均互信息。
+\end{thmbox}
+
+直观上：$\I{X;Y}=\sum_kp_k\I{X=k;Y}$ 是加权平均；提高 $\I{X=k;Y}$ 大的字母的概率会使 $w_j$ 接近 $\p{Y=j}$、从而压低该字母的 $\I{X=k;Y}$，反复调整后所有被用字母的 $\I{X=k;Y}$ 拉平即达 $C$；$\I{X=k;Y}<C$ 的字母“不值得使用”，令 $p_k=0$。
+
+\begin{example}{非对称 $2\times2$ 信道（作业 5.3 型题模板）}
+设 $Q=\begin{pmatrix}1/2&1/2\\1/4&3/4\end{pmatrix}$，求 $C$ 与最佳输入分布。
+
+\textbf{解}：设 $p_0=p$，则 $w_0=\frac{p+1}{4},\ w_1=\frac{3-p}{4}$，
+$\I{X=0;Y}=\frac12\lb\frac{2}{p+1}+\frac12\lb\frac{2}{3-p}$，
+$\I{X=1;Y}=\frac14\lb\frac{1}{p+1}+\frac34\lb\frac{3}{3-p}$。
+令二者相等并化为自然对数，得
+\begin{equation*}
+4\ln2-\ln(p+1)+\ln(3-p)=3\ln3
+\ \Longrightarrow\ \frac{3-p}{p+1}=\frac{27}{16}
+\ \Longrightarrow\ p^*=\frac{21}{43}\approx0.4884,
+\end{equation*}
+回代 $C=\frac12\lb\frac{2}{64/43}+\frac12\lb\frac{2}{108/43}\approx0.0488$ bit/符号。
+
+\textbf{四步套路}：(1) 先判对称性；(2) 设 $p$，写出 $w_j$ 与各 $\I{X=k;Y}$；(3) 令其相等解 $p$；(4) \textbf{验证} $0<p_k<1$，若落在边界说明最大值在边界上取得，须回到边界逐一比较（共 $2^K-2$ 个）。
+\end{example}
+
+\subsubsection{转移概率可逆时的解析求法}
+
+设 $K=J$、$Q$ 非奇异且最佳分布各分量 $>0$。记 $\beta_j=C+\lb w_j$，由 (5.1.8)(5.1.10) 得线性方程组
+\begin{equation}
+Q\boldsymbol{\beta}=\mathbf{b},\quad b_k=\sum_j q(j|k)\lb q(j|k)
+\ \Longrightarrow\ \boldsymbol{\beta}=Q^{-1}\mathbf{b},\quad
+C=\lb\sum_j2^{\beta_j},\quad w_j=2^{\beta_j-C}.\tag{5.1.24}
+\end{equation}
+再由 $\mathbf{w}=\mathbf{p}Q$ 反解 $\mathbf{p}=\mathbf{w}Q^{-1}$ 并验证 $p_k>0$；否则须改用迭代法或边界枚举。
+
+\subsubsection{Blahut--Arimoto 迭代（书上写法）}
+
+记 $q_{jk}=q(j|k)$、$w_j^{(n)}=\sum_kp_k^{(n)}q_{jk}$，\textbf{反向（后验）概率} $q_{jk}^{(n)}=\frac{p_k^{(n)}q_{jk}}{w_j^{(n)}}$（式 (5.1.25)，表示已知输出时对输入的概率分布）。取初值 $p_k^{(0)}=1/K$，交替迭代：
+\begin{align}
+&\text{(i)}\quad w_j^{(n)}=\sum_{k}p_k^{(n)}q_{jk},\qquad
+q_{jk}^{(n)}=\frac{p_k^{(n)}q_{jk}}{w_j^{(n)}};\tag{5.1.40}\\
+&\text{(ii)}\quad S_k^{(n)}=\exp_2\Bigl(\sum_{j}q_{jk}^{(n)}\lb q_{jk}\Bigr)
+=2^{\sum_j q_{jk}^{(n)}\lb q_{jk}};\tag{5.1.44}\\
+&\text{(iii)}\quad p_k^{(n+1)}=\frac{S_k^{(n)}}{\sum_{k'}S_{k'}^{(n)}};\qquad
+\text{(iv)}\quad C^{(n+1)}=\I{P^{(n+1)},\Phi^{(n)}}=\lb\sum_kS_k^{(n)}.\tag{5.1.41,5.1.42}
+\end{align}
+理论依据（定理 5.1.4--5.1.6）：$\I{P,\Phi}\ge\I{P,Q}$ 且等号仅当 $\Phi=Q^*$，故 $C=\max_P\max_\Phi\I{P,\Phi}$（二重极大）；固定 $\Phi$ 时关于 $P$ 的极大由 (iii) 给出；若 $P^{(0)}$ 各分量非零，则 $|C^{(n)}-C|\to0$，且 $\sum_n|C-C^{(n+1)}|\le\sum_kp_k^*\lb\frac{p_k^*}{p_k^{(0)}}<\infty$（式 (5.1.43)），通常以相邻两次之差小于给定精度作为终止条件。\textbf{直观}：每步提高 $\I{X=k;Y}$ 大的字母的概率、压低小的，最终拉平 ---- 与定理 5.1.2 一致。
+
+\subsubsection{最佳输入 / 输出分布的唯一性}
+
+\begin{thmbox}{定理 5.1.7、5.1.8}
+(a) 达到容量时的\textbf{输出}分布唯一，任何导致该输出分布的输入分布都达到 $C$。\ (b) \textbf{输入}分布一般不唯一：若 $P_1,P_2$ 都达 $C$，则 $\lambda P_1+(1-\lambda)P_2$ 也达 $C$（凸性）；极端例：BSC 取 $p=1/2$ 时任何输入分布都有 $\I{X;Y}=C=1$。\ (c) 若在达到 $C$ 的输入分布中“零概率字母数取到最大”，则非零概率值唯一，且非零概率字母数 $M\le J$。
+\end{thmbox}
+
+\subsection{信道编码与联合典型序列}
+
+\textbf{分组码}：输入序列每 $L$ 个字母一组，每组对应一个码字，码字字母取自信道字母表 $\mathcal{A}$（含 $s$ 个字母 $\alpha_1,\dots,\alpha_s$）；$M$ 个消息对应 $M$ 个码字，码 $\mathcal{C}$ 的大小 $|\mathcal{C}|=M$。码率
+\begin{equation*}
+R=\frac1N\log_s|\mathcal{C}|\ \ (\text{bit/字母，}s=2\ \text{时}),\qquad
+p(\mathbf{d}|\mathbf{c})=\prod_{n=1}^{N}p(d_n|c_n).
+\end{equation*}
+（后者即式 (5.2.1)，由信道无记忆性得出。）
+码率必 $<1$：发送矢量空间中只有一小部分可取作码字，其余必须\textbf{禁用}，这正是抗干扰能力所付的代价（冗余度）。冗余度越大，检错纠错能力越强，效率越低。
+
+\textbf{译码}：把接收矢量空间划为 $M$ 个互不相交的子集 $Y_1,\dots,Y_M$，$\mathbf{d}\in Y_m\Rightarrow g(\mathbf{d})=\mathbf{c}_m$；
+$P_e=\sum_{\mathbf{c}}p(\mathbf{c})p(\text{error}|\mathbf{c})=\sum_{\mathbf{c}}p(\mathbf{c})\sum_{\mathbf{d}\notin g^{-1}(\mathbf{c})}p(\mathbf{d}|\mathbf{c})$（式 (5.2.2)(5.2.3)）。
+
+\begin{thmbox}{两个译码准则}
+(a) \textbf{理想（最佳）译码}：$p\bigl(g(\mathbf{d})|\mathbf{d}\bigr)=\max_{\mathbf{c}}p(\mathbf{c}|\mathbf{d})$（式 (5.2.6)），使平均差错概率最小，但依赖输入分布 $p(\mathbf{c})$。\ (b) \textbf{极大似然译码}：$p\bigl(\mathbf{d}|g(\mathbf{d})\bigr)=\max_{\mathbf{c}}p(\mathbf{d}|\mathbf{c})$（式 (5.2.7)），只依赖信道。\ (c) \textbf{码字等概}时 $p(\mathbf{c}|\mathbf{d})\propto p(\mathbf{d}|\mathbf{c})$，两种准则\textbf{等价}。\ (d) 若取 $P_{\max}=\max_{\mathbf{c}}p(\text{error}|\mathbf{c})$，则 $P_e\le P_{\max}$，且与输入分布无关。
+\end{thmbox}
+
+\begin{defbox}{定义 5.2.1（联合典型序列）}
+设 $\p{\mathbf{x},\mathbf{y}}=\prod_n\p{x_n,y_n}$。若给定 $\varepsilon>0$ 满足
+$\bigl|-\frac1N\lb\p{\mathbf{x}}-\Hx{X}\bigr|<\varepsilon$、$\bigl|-\frac1N\lb\p{\mathbf{y}}-\Hx{Y}\bigr|<\varepsilon$、$\bigl|-\frac1N\lb\p{\mathbf{x},\mathbf{y}}-\Hx{X,Y}\bigr|<\varepsilon$（式 (5.2.12)--(5.2.14)），则称 $(\mathbf{x},\mathbf{y})$ 为\textbf{联合典型序列}，全体记为 $G$；此时 $\p{\mathbf{x},\mathbf{y}}\approx2^{-N\Hx{X,Y}}$，$\p{\mathbf{x}}\approx2^{-N\Hx{X}}$，$\p{\mathbf{y}}\approx2^{-N\Hx{Y}}$。
+\end{defbox}
+
+\begin{thmbox}{定理 5.2.1（联合 AEP）}
+对任意小 $\varepsilon>0$，$N$ 充分大时序列对集合可分成 $G$ 与 $\bar G$：(1) $P[(\mathbf{X},\mathbf{Y})\in G]>1-\varepsilon$，$P[(\mathbf{X},\mathbf{Y})\in\bar G]<\varepsilon$；(2) $|G|\le2^{N(\Hx{X,Y}+\varepsilon)}$，$|G|\ge(1-\varepsilon)2^{N(\Hx{X,Y}-\varepsilon)}$；(3) 若 $(\mathbf{X}',\mathbf{Y}')$ 相互独立且边缘分布与 $(\mathbf{X},\mathbf{Y})$ 相同，则
+\begin{equation*}
+P\bigl[(\mathbf{X}',\mathbf{Y}')\in G\bigr]\le2^{-N(\I{X;Y}-3\varepsilon)} .
+\end{equation*}
+\end{thmbox}
+
+\textbf{意义}：$N$ 大时，接收矢量几乎只与“发送码字”构成联合典型对；它与别的码字联合典型的概率约为 $2^{-N\I{X;Y}}$。因此只要码字数 $M\lesssim 2^{N\I{X;Y}}$，取“与接收矢量联合典型的码字”作译码输出即可获得极低误码率 ---- 这就是正定理的概率论核心，也解释了条件 $R<C$ 的来历。
+
+\subsection{信道编码定理}
+
+\begin{thmbox}{定理 5.3.1（正定理）}
+设 DMC 容量为 $C$，$R<C$ 为任一正数，则 $\forall\varepsilon>0$，存在码长 $N$、码字数 $M=s^{NR}$ 的分组码，使其\textbf{最大}差错概率 $P_{\max}<\varepsilon$。
+\end{thmbox}
+
+Shannon 证明四要点（简答常考）：(1) 可靠通信指 $P_e$ 可任意小但非 $0$；(2) 传的是符号序列，多次使用信道以用大数定律；(3) 用\textbf{随机编码}造码书；(4) 算随机码书上的\textbf{平均}差错概率，故必存在一个码书不劣于平均值。
+
+随机编码：各码字母按 $\{p(\alpha_i)\}$ 独立抽取，得 $M\times N$ 矩阵，$p(\mathcal{C})=\prod_{m,n}p(c_{mn})$（式 (5.3.3)）。消息等概、采用联合典型译码，令 $E_m=\{(\mathbf{c}_m,\mathbf{Y})\in G\}$，则
+\begin{equation}
+\bar P_e\le P(E_1)+\sum_{m=2}^{M}P(E_m)\le\varepsilon+(M-1)s^{-N(\I{X;Y}-3\varepsilon)}\le2\varepsilon,\tag{5.3.6,5.3.7}
+\end{equation}
+只要 $R<\I{X;Y}-3\varepsilon$；把输入分布取成达到容量的分布即得 $R<C$。又因平均差错概率 $<2\varepsilon$，故存在某码书差错概率 $\le2\varepsilon$；删去“差”码字（保留一半以上）可使\textbf{最大}差错概率 $\le4\varepsilon$，速率只降到 $R-1/N$，$N\to\infty$ 时仍趋于 $C$。
+
+\subsubsection{Fano 不等式与逆定理}
+
+\begin{thmbox}{Fano 不等式（教材式 (5.3.8)，照此书写）}
+$X$ 取值于码 $\mathcal{C}$（$|\mathcal{C}|=M$），$Y$ 为接收矢量，$g$ 为任一译码准则，$P_e$ 为平均译码差错概率，则
+\begin{equation}
+\Hx{X|Y}\le\Hx{P_e}+P_e\lb(M-1),\tag{5.3.8}
+\end{equation}
+常用推论（因 $\Hx{P_e}\le1$）：$\Hx{X|Y}\le1+P_e\lb M$（式 (5.3.15)）。
+\end{thmbox}
+
+证明路线：固定 $\mathbf{d}$ 后 $H(p'_1,\dots,p'_M)=H(p'_1)+p'_1\lb(M-1)$（熵函数分组原则）与熵的极大性，再对 $\mathbf{d}$ 取平均。
+
+\textbf{引理 5.3.1}：无记忆、无反馈时无论输入分布如何，$\I{\mathbf{X};\mathbf{Y}}\le\sum_{i=1}^N\I{X_i;Y_i}\le NC$（式 (5.3.13)）。
+
+\begin{thmbox}{定理 5.3.3（弱逆定理）与 5.3.4（强逆定理）}
+设 DMC 容量为 $C$，$\{\mathcal{C}_n\}$ 为 $(s^{nR},n)$ 码且码字等概，平均差错概率 $P_e(n)$。若 $R>C$，则 $\exists\delta>0$ 使 $\forall n$，$P_e(n)\ge\delta$（式 (5.3.14)）；进一步（强逆）$P_e(n)\to1$。
+\end{thmbox}
+
+证明：$M=s^{nR}$、$\Hx{X}=\lb M$，故 $\lb M-\Hx{\mathbf{X}|\mathbf{Y}}=\I{\mathbf{X};\mathbf{Y}}\le nC$，与 Fano 不等式 (5.3.15) 联立得
+\begin{equation*}
+P_e(n)\ \ge\ 1-\frac{nC+1}{\lb M}=1-\frac{C+1/n}{R},
+\end{equation*}
+取 $R=C+\epsilon$ 即得 $\delta$；且 $R>C$ 时右端恒正，故 $P_e(n)$ 不可能趋于 $0$。
+
+\begin{thmbox}{定理 5.3.5（信源--信道联合编码定理）}
+设 $X_1,X_2,\dots$ 为有限字母表 $V$ 上满足 AEP 的随机序列。若 $\Hx{X}<C$，则存在联合编码使 $P_e^{(n)}\to0$；反之若 $\Hx{X}>C$，则不可能以任意小差错概率传送消息。
+\end{thmbox}
+
+要点：正方向只传典型集 $A_\varepsilon^{(n)}$（$|A_\varepsilon^{(n)}|\le2^{n(\Hx{X}+\varepsilon)}$），只需 $M=2^{n(\Hx{X}+\varepsilon)}$ 个标号，$\Hx{X}+\varepsilon=R<C$ 即可靠，$P_e^{(n)}\le2\varepsilon$。反方向用 Fano：$\Hx{V^n|V'^n}\le1+P_e^{(n)}n\lg|V|$ 与 $\Hx{V^n}\le(1+P_e^{(n)}n\lg|V|)+nC$，若 $P_e^{(n)}\to0$ 则 $C\ge\Hx{V}$。\textbf{结论}：$\Hx{X}\le C$ 是可靠传输的\textbf{充要条件}。
+
+\begin{warning}{对数的底}
+式 (5.3.8)(5.3.15) 的底一般取码字母表大小 $s$（二元码取 $2$，即得 $\Hx{X|Y}\le1+P_e\lb M$）。做题先声明底，否则 $C$ 与 $R$ 单位不一致直接判错。
+\end{warning}
+
+\subsection{高斯信道}
+
+模型 $Y_i=X_i+Z_i$，$Z_i\sim N(0,N)$ 独立于 $X_i$；无输入限制时容量可任意大，故须加\textbf{功率限制} $\frac1n\sum_i\E X_i^2\le P$。
+
+\begin{defbox}{定义 5.4.1 与容量公式}
+$C=\max_{p(x):\E X^2\le P}\I{X;Y}$（式 (5.4.1)）。由 $\I{X;Y}=\Hc{Y}-\Hc{Z}$、$\Hc{Z}=\frac12\lb(2\pi eN)$、$\E Y^2=P+N\Rightarrow\Hc{Y}\le\frac12\lb\bigl(2\pi e(P+N)\bigr)$，
+\begin{equation}
+C=\frac12\lb\Bigl(1+\frac PN\Bigr)\ \text{(bit/符号)},\tag{5.4.5,5.4.6}
+\end{equation}
+当且仅当 $X\sim N(0,P)$ 达到容量（\textbf{定理 5.4.1} 任一 $R<C$ 可达；\textbf{定理 5.4.2} $R>C$ 不可达）。
+\end{defbox}
+
+\textbf{带宽 / 功率受限}（工程形式，记结论）：带宽 $W$、单边噪声谱密度 $N_0$，按采样定理每秒 $2W$ 个样本、$N=N_0W$，则
+\begin{equation*}
+C=W\lb\Bigl(1+\frac{P}{N_0W}\Bigr)\ \text{bit/s}\quad(\text{Shannon--Hartley}).
+\end{equation*}
+功率受限（$W$ 大、$P$ 小）时 $C\approx\frac{P}{N_0\ln2}\approx1.44\frac{P}{N_0}$，容量取决于功率而与带宽无关；带宽受限时 $C\approx W\lb\frac{P}{N_0W}$，随带宽近线性增长。注意 $\frac12$ 来自实信道，\textbf{复基带}每复符号为 $\lb(1+P/N)$。
+
+\subsection{级联与并联信道}
+
+\textbf{级联}：前级输出即后级输入，$X\to Y\to Z$ 为马氏链，$\p{z|x,y}=\p{z|y}\Rightarrow\I{X;Z|Y}=0$，故
+$\I{X;Y}=\I{X;Z}+\I{X;Y|Z}\ge\I{X;Z}$（式 (5.5.2)--(5.5.5)），同理 $\I{Y;Z}\ge\I{X;Z}$。于是
+\begin{equation*}
+\boxed{\,C_{\text{级联}}\le\min\{C_1,C_2\}\,}
+\end{equation*}
+（一般不是等号，级联越多容量越趋于零）。总矩阵 $Q=Q_1Q_2\cdots Q_N$（式 (5.5.7)），求出后按 \S5.1 求容量。$\I{X;Z}\le\I{X;Y}$ 与 $\I{X;Z}\le\I{Y;Z}$ 又称\textbf{数据处理定理}：任何处理都会损失信息。
+
+\textbf{例 5.5.1}（$N$ 个相同 BSC 级联）：$Q_1=\begin{pmatrix}1-\epsilon&\epsilon\\\epsilon&1-\epsilon\end{pmatrix}$，对角化得
+$\epsilon_N=\frac12\bigl[1-(1-2\epsilon)^N\bigr]$，等效仍为 BSC，$C_N=1-\Hx{\epsilon_N}\to0$（$N\to\infty$ 时 $Q_N\to\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$，输出与输入无关）。
+
+\begin{center}\small
+\begin{tabular}{@{}p{1.9cm}p{4.4cm}p{8.9cm}@{}}
+\toprule
+类型 & 结构 & 容量结论\\
+\midrule
+输入并接 & 各子信道共用同一输入 $X$，输出为矢量 $\mathbf{Y}$ &
+$\I{X;\mathbf{Y}}=\I{X;Y_1}+\I{X;Y_2|Y_1}+\cdots\ge\max_nC_n$，且 $C\le\lb|\mathcal{X}|$（$N$ 个相同 BSC 并接时 $\le1$ bit）；可靠性高（多次测量）、效率低\\
+并用 & 各子信道输入输出相互独立，并联使用 &
+$\I{\mathbf{X};\mathbf{Y}}\le\sum_n\I{X_n;Y_n}$，$X_n$ 独立时取等，故 $C=\sum_{n=1}^NC_n$\\
+和信道 & 每次只用一个子信道（$Q$ 为分块对角） &
+$C=\lb\sum_{n=1}^N2^{C_n}$，各子信道使用概率 $p_n(C)=2^{\,C_n-C}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+和信道式的来由：K-T 条件给 $\I{X_n=k_n;Y}=C_n+\lb\frac{1}{p_n(C)}=C$，即 $p_n(C)=2^{C_n-C}$，再由 $\sum_np_n(C)=1$ 得 $C=\lb\sum_n2^{C_n}$。
+
+\begin{keypoint}{组合信道速记}
+级联取\textbf{最小}（$\le\min$）；并用\textbf{相加}（$\sum C_n$）；和信道是“\textbf{指数和的对数}”（$2^C=\sum_n2^{C_n}$，类似自由能）；输入并接 $\le\lb|\mathcal{X}|$。
+\end{keypoint}
+
+\subsection{信道编码实例}
+
+\subsubsection{重复码}
+
+BSC（$p<1/2$）上每符号重复 3 次、按多数原则译码：
+\begin{equation*}
+P_e=\binom32p^2(1-p)+p^3=3p^2(1-p)+p^3,\qquad R=\frac13 .
+\end{equation*}
+重复 $2n+1$ 次则 $P_e=\sum_{i=n+1}^{2n+1}\binom{2n+1}{i}p^i(1-p)^{2n+1-i}\to0$（弱大数定律），但 $R=\frac{1}{2n+1}\to0$：\textbf{可靠性以效率为代价}。$p=0.01$ 时 $P_e=3(0.01)^2(0.99)+10^{-6}\approx2.98\times10^{-4}$，$R=1/3$（教材 p.142 印作 $0.00259$，与该式不符，请以公式为准）。
+
+\subsubsection{汉明码}
+
+在 $\mathrm{GF}(2)=\{0,1\}$（模 2 运算）上的向量空间 $V(n,2)$ 中，$(n,k)$ \textbf{线性分组码}由一个 $k\times n$ 的\textbf{生成矩阵} $G$（行满秩）定义：$\mathbf{c}=aG\ (a\in V(k,2))$，$\mathcal{C}$ 即 $G$ 的 $k$ 个行向量张成的子空间。若 $G=[I_k\,|\,P]$ 则为\textbf{系统码}（码字前 $k$ 位即消息）。教材的 $(7,4)$ 汉明码：
+\begin{equation*}
+G=\begin{pmatrix}1&0&0&0&0&1&1\\0&1&0&0&1&0&1\\0&0&1&0&1&1&0\\0&0&0&1&1&1&1\end{pmatrix},
+\qquad
+T=\begin{pmatrix}0&0&0&1&1&1&1\\0&1&1&0&0&1&1\\1&0&1&0&1&0&1\end{pmatrix}.
+\end{equation*}
+$T$ 的三行线性无关、两两正交且与 $G$ 每行正交（如 $(1000011)\cdot(0001111)=0$），故 $T$ 生成 $\mathcal{C}$ 的正交补，$\mathcal{C}=\{\mathbf{v}:\mathbf{v}T^{T}=\mathbf{0}\}$，$T$ 称\textbf{校验矩阵}（一般记 $H$），$\dim\mathcal{C}=7-3=4$。
+
+\begin{defbox}{伴随式（校验子）译码}
+接收 $\mathbf{x}=\mathbf{c}\oplus\mathbf{e}_i$（第 $i$ 位错）时
+$\mathbf{s}=\mathbf{x}T^{T}=\mathbf{c}T^{T}\oplus\mathbf{e}_iT^{T}=\mathbf{e}_iT^{T}=T$ 的第 $i$ 列；而 $T$ 的第 $i$ 列恰为 $i$ 的二进制表示，故 $\mathbf{s}=\mathbf{0}$ 表示无错，$\mathbf{s}\ne\mathbf{0}$ 时其十进制值就是\textbf{出错位置} ---- 既检错又纠一位错，这就是汉明码的思想。
+\end{defbox}
+
+\textbf{例}（教材）：消息 $a=1011$，$\mathbf{c}=aG=(1011010)$（模 2），前 4 位即消息；若第 5 位出错得 $\mathbf{x}=1011110$，则 $\mathbf{s}$ 等于 $T$ 的第 5 列 $(1,0,1)^{T}=5$，把第 5 位取反即纠错。
+
+\textbf{性能}：$(7,4)$ 码 $R=4/7$，能纠 1 位错，$P_e=1-(1-p)^7-7p(1-p)^6$，$p=0.01$ 时 $\approx2.03\times10^{-3}$；三次重复码 $R=1/3$ 而 $P_e\approx2.98\times10^{-4}$，汉明码以高得多的码率换取同量级的差错率 ---- 这就是“好码”。
+
+\begin{keypoint}{纠错能力与最小距离（必背）}
+$d_{\min}=\min_{\mathbf{c}\ne\mathbf{c}'}d(\mathbf{c},\mathbf{c}')$（线性码 $=$ 最小非零码字重量）。则
+\begin{align*}
+\text{可检 }e\text{ 位错}&\iff d_{\min}\ge e+1,\qquad
+\text{可纠 }t\text{ 位错}\iff d_{\min}\ge2t+1,\\
+\text{纠 }t\text{ 同时检 }e\ (e\ge t)&\iff d_{\min}\ge t+e+1 .
+\end{align*}
+$(7,4)$ 汉明码的 $T$ 的 7 列恰为全部非零 3 维向量、互不相同，故 $d_{\min}=3$、$t=1$。一般 $(n,k)$ 汉明码：$n-k=r$，$n=2^r-1$，$k=2^r-1-r$，$d_{\min}=3$，$R=1-\frac{r}{2^r-1}$。BSC 上\textbf{极大似然译码等价于取与 $\mathbf{Y}$ 汉明距离最小的码字}（作业 5.10）。
+\end{keypoint}
+
+\subsection{重点例题：由 8 位信息码构造汉明码（答题模板）}
+
+\begin{example}{题：某信源编码后的 8 位二进制码为 $10011100$（最高位为 1），采用偶校验方式，为该码构造汉明码}
+\textbf{流程}：求 $r$ $\to$ 排位置 $\to$ 写偶校验方程组 $\to$ 代入求校验位 $\to$ 写码字 $\to$ 伴随式纠错。
+
+\medskip
+\textbf{(a) 求校验位个数 $r$。}设信息位 $k=8$、校验位 $r$ 个，总码长 $n=k+r$。$r$ 位校验值要能唯一区分“无错”和 $n$ 个可能的出错位置，故须
+\begin{equation*}
+2^r\ \ge\ n+1=k+r+1 .
+\end{equation*}
+$r=3$：$2^3=8<8+3+1=12$，不够；$r=4$：$2^4=16\ge8+4+1=13$，足够。故 $\boxed{r=4,\ n=k+r=12}$，即 $(12,8)$ 汉明码，冗余度 $1/3$、码率 $R=8/12=2/3$。
+
+\medskip
+\textbf{(b) 确定校验位位置。}位置号按 $1\sim12$ 编号，位置号为 $2$ 的幂者放校验位 $C_1,C_2,C_4,C_8$，其余放信息位 $D_1\sim D_8$（与信息码自高到低对应）：
+
+\begin{center}\small
+\begin{tabular}{@{}l*{12}{c}@{}}
+\toprule
+位置 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12\\
+\midrule
+内容 & $C_1$ & $C_2$ & $D_1$ & $C_4$ & $D_2$ & $D_3$ & $D_4$ & $C_8$ & $D_5$ & $D_6$ & $D_7$ & $D_8$\\
+信息码 & & & 1 & & 0 & 0 & 1 & & 1 & 1 & 0 & 0\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+\textbf{(c) 列偶校验方程组。}每个校验位负责“位置号二进制展开中含该位”的所有位置：$C_1$ 管奇数位，$C_2$ 管位置号第 2 位为 1 者，$C_4$ 管第 3 位为 1 者，$C_8$ 管第 4 位为 1 者。偶校验 $\Rightarrow$ 每组 $1$ 的个数为偶数，即每组异或为 $0$：
+\begin{align*}
+(1,3,5,7,9,11):&\quad C_1\oplus D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7=0,\\
+(2,3,6,7,10,11):&\quad C_2\oplus D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7=0,\\
+(4,5,6,7,12):&\quad C_4\oplus D_2\oplus D_3\oplus D_4\oplus D_8=0,\\
+(8,9,10,11,12):&\quad C_8\oplus D_5\oplus D_6\oplus D_7\oplus D_8=0,
+\end{align*}
+即 $C_i$ 为本组信息位的异或：
+\begin{align*}
+C_1&=D_1\oplus D_2\oplus D_4\oplus D_5\oplus D_7,&
+C_2&=D_1\oplus D_3\oplus D_4\oplus D_6\oplus D_7,\\
+C_4&=D_2\oplus D_3\oplus D_4\oplus D_8,&
+C_8&=D_5\oplus D_6\oplus D_7\oplus D_8 .
+\end{align*}
+
+\medskip
+\textbf{(d) 代入信息码求校验位，写出码字。}$10011100\Rightarrow(D_1,\dots,D_8)=(1,0,0,1,1,1,0,0)$，逐个异或：
+\begin{align*}
+C_1&=1\oplus0\oplus1\oplus1\oplus0=1, &
+C_2&=1\oplus0\oplus1\oplus1\oplus0=1,\\
+C_4&=0\oplus0\oplus1\oplus0=1, &
+C_8&=1\oplus1\oplus0\oplus0=0 .
+\end{align*}
+按位置填入，得 12 位汉明码字
+\begin{equation*}
+\boxed{\ \mathbf{c}=C_1C_2D_1C_4D_2D_3D_4C_8D_5D_6D_7D_8=111100101100\ }
+\end{equation*}
+即 $\mathbf{c}=(1,1,1,1,0,0,1,0,1,1,0,0)$。
+
+\medskip
+\textbf{自校验（答卷务必写，保证账目平衡）}：四组中 $1$ 的个数分别为
+$(1,1,0,1,1,0)\to4$、$(1,1,0,1,1,0)\to4$、$(1,0,0,1,0)\to2$、$(0,1,1,0,0)\to2$，全为偶数，方程组成立，与“偶校验”一致。
+
+\medskip
+\textbf{纠错（伴随式定位）}：接收端按同样四组求偶校验得伴随式 $\mathbf{s}=(s_8s_4s_2s_1)$：$\mathbf{s}=(0000)$ 无错；$\mathbf{s}\ne\mathbf{0}$ 时把 $\mathbf{s}$ 当二进制读出，\textbf{其十进制值就是出错位的位置}，取反即纠错；$\mathbf{s}$ 指向 $1,2,4,8$ 说明校验位本身出错，同样取反。
+\textbf{验算示范}：第 $7$ 位错（收到 $111100001100$）$\Rightarrow$ 四组异或为 $1,1,1,0$，$\mathbf{s}=(0111)_2=7$；第 $10$ 位错（收到 $111100101000$）$\Rightarrow\mathbf{s}=(1010)_2=10$。$12$ 个单错位置对应 $12$ 个互不相同的非零伴随式，故能纠全部一位错（$d_{\min}=3$）。
+
+\medskip
+\textbf{变式（课件原题）}：信息码 $11101100$ 同法得 $C_1=C_2=1,\ C_4=C_8=0$，码字 $\mathbf{c}=111011001100$。
+\end{example}
+
+\begin{warning}{本类题的四个扣分点}
+(1) $2^r\ge n+1$ 必须用 $n=k+r$ 检验（常误写 $2^r\ge k+1$ 而取 $r=3$）；(2) 校验位位置是 $1,2,4,8$，位置号\textbf{从 1 开始}；(3) 偶校验写“异或 $=0$”，奇校验写“异或 $=1$”；(4) 写完必须回代验算，并说明伴随式十进制值 $=$ 错误位号。
+\end{warning}
+
+\subsection{本章作业与讲评}
+
+\begin{example}{作业 5.3（教材 p.142）}
+\textbf{原题}：计算如下所示离散无记忆信道的容量：(1)(2)(3)(4)，各给一个信道矩阵。
+
+（扫描件中四个矩阵为竖排小号分数，OCR 后元素与下标严重失真，抄题请对照教材 p.142--143 原图。可辨认要点：$(1)(2)$ 为不含参数的小型数值矩阵（元素形如 $1/2,\,1/4,\,1/3,\,3/4$），$(3)(4)$ 含 $1-\varepsilon$ 型元素，其中一题注明“所有 $q(y|x)$ 相同”，属强对称/均匀信道。）
+
+\textbf{思路（按题型分流）}：
+\begin{enumerate}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
+  \item \textbf{先判对称性}：各行是否同一组元素的排列？各列是否也是？行列都可排列 $\Rightarrow$ 对称（弱对称），直接用 $C=\lb J-\Hx{\text{行}}$；若行形如 $(1-p,\frac{p}{K-1},\dots)$ 用 $C=\lb K-\Hx{p}-p\lb(K-1)$；“所有 $q(y|x)$ 相同”的多半是这类或 $C=\lb K-\Hx{Z}$ 的 $\mathrm{mod}K$ 加法信道。
+  \item \textbf{准对称}：找出子集划分 $B_1,\dots,B_T$，取\textbf{等概输入}算 $\I{X=k;Y}$（各 $k$ 应相等）即为 $C$。
+  \item \textbf{非对称小矩阵}（$2\times2$、$3\times3$）：按 \S5.1.2 的模板设 $p$，写 $w_j$ 与各 $\I{X=k;Y}$，令其相等解 $p$，回代得 $C$；必须验证 $0<p_k<1$，否则退回边界枚举（$2^K-2$ 个）。
+  \item \textbf{规模大或只需估答}：写 Blahut--Arimoto 三式并说明收敛性；或用 $C\le\lb K$、$C\le\lb J$ 给上下界。
+\end{enumerate}
+\textbf{答案要点}：答案形如“$\lb(\text{某分式})$”或“$\lb J-\Hx{\text{行}}$”的数值；必须标注单位 bit/符号，并给出对应最佳输入分布（对称/准对称即为等概分布）。
+\end{example}
+
+\begin{example}{作业 5.11（教材 p.143）}
+\textbf{原题}：设有 DMC，转移矩阵为
+\begin{equation*}
+\bigl(q(y|x)\bigr)=\begin{pmatrix}
+\dfrac12&\dfrac13&\dfrac16\\[4pt]
+\dfrac16&\dfrac12&\dfrac13\\[4pt]
+\dfrac13&\dfrac16&\dfrac12
+\end{pmatrix},
+\end{equation*}
+若输入概率为 $\p{x}=(0.5,\,0.25,\,0.25)$，试确定\textbf{最佳译码规则}与\textbf{极大似然译码规则}，并计算相应的平均差错率。
+
+\textbf{思路}（讲评重点：两种规则比的不是同一个量）：
+\begin{enumerate}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
+  \item 先列\textbf{联合概率} $p(x_i,y_j)=p(x_i)q(y_j|x_i)$ ---- 这是“最佳译码”要比较的量；
+  \item \textbf{最佳（理想）译码}：逐个 $y_j$ 取 $\arg\max_i p(x_i,y_j)$，$P_e=1-\sum_j\max_ip(x_i,y_j)$；
+  \item \textbf{极大似然译码}：逐个 $y_j$ 只比\textbf{似然} $q(y_j|x_i)$（\textbf{不乘} $p(x_i)$！课件点出“极大似然概率乘错”），$P_e=1-\sum_jp\bigl(g(y_j)\bigr)q\bigl(y_j|g(y_j)\bigr)$；
+  \item 码字不等概时两规则一般不同，且恒有 $P_{\text{最佳}}\le P_{\text{ML}}$。
+\end{enumerate}
+\textbf{答案要点}：联合概率矩阵
+$\bigl(p(x_i,y_j)\bigr)=\begin{pmatrix}\frac14&\frac16&\frac1{12}\\[2pt]\frac1{24}&\frac18&\frac1{12}\\[2pt]\frac1{12}&\frac1{24}&\frac18\end{pmatrix}$。\textbf{最佳译码}按列取最大：$y_1\to x_1(\frac14)$，$y_2\to x_1(\frac16)$，$y_3\to x_3(\frac18)$，故 $P_{\text{最佳}}=1-(\frac14+\frac16+\frac18)=\frac{11}{24}\approx0.4583$。\textbf{极大似然}按列取 $q$ 最大（每行最大值 $1/2$ 都在对角线上）：$y_j\to x_j$，故 $P_{\text{ML}}=1-(\frac12\cdot\frac12+\frac14\cdot\frac12+\frac14\cdot\frac12)=\frac12=0.5$。最佳译码确实更优（$11/24<1/2$）。\emph{顺带}：该矩阵行、列均为彼此的排列，属对称信道，$C=\lb3-\Hx{\frac12,\frac13,\frac16}\approx0.1258$ bit/符号，最佳输入为等概分布。
+\end{example}
+
+\begin{example}{补充题（汉明码，课件作业第 3 题）}
+\textbf{原题要点}：某信源编码后的 8 位二进制码（最高位为 1），采用偶校验方式，为该码构造汉明码。
+
+\textbf{完整解法见 \S5.7}：本笔记取信息码 $10011100$，得 $\mathbf{c}=111100101100$；课件例题取 $11101100$，得 $\mathbf{c}=111011001100$。四组校验方程、回代验算与伴随式纠错示范均在该节，考场照抄步骤即可。课件讲评另提示：可用“第 $7$ 位、第 $10$ 位出错”验证伴随式定位（对应 $\mathbf{s}=7$ 与 $\mathbf{s}=10$）。
+\end{example}
+
+\begin{keypoint}{考前 10 分钟速览}
+$C=\max_{p(x)}\I{X;Y}$；$C\le\min\{\lb|\mathcal X|,\lb|\mathcal Y|\}$；对称 $C=\lb J-\Hx{\text{行}}$、强对称 $C=\lb K-\Hx{p}-p\lb(K-1)$、BSC $1-\Hx{p}$、BEC $1-p$、$\mathrm{mod}K$ 为 $\lb K-\Hx{Z}$；K-T 条件 (5.1.8)(5.1.9)；迭代三式 (5.1.40)(5.1.41)(5.1.44)；Fano $\Hx{X|Y}\le\Hx{P_e}+P_e\lb(M-1)$；$R<C$ 可达、$R>C$ 不可达、$\Hx{X}<C\iff$ 可靠传输；高斯 $C=\frac12\lb(1+P/N)$；级联 $\le\min$、并用 $\sum$、和信道 $\lb\sum2^{C_n}$；重复码 $3p^2(1-p)+p^3$；汉明码 $d_{\min}=3$、伴随式 $=$ 错位号。
+\end{keypoint}

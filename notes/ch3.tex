@@ -1,0 +1,329 @@
+% ==================== 第3章 互信息（教材 P45–P55，OCR 页 p058–p068）====================
+% 本文件只含 \section 及以下层级。若主文档按章连续编号，可删除下一行。
+\setcounter{section}{2}
+
+\section{第 3 章\quad 互信息}
+
+\begin{keypoint}{本章考点地图（先看这个）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt]
+  \item 主线：\textbf{事件互信息}（可正可负）$\Rightarrow$ \textbf{平均互信息}（恒非负）
+        $\Rightarrow$ 条件 / 联合互信息 $\Rightarrow$ 链式法则 $\Rightarrow$ 非负性、极值性、
+        上凸 / 下凸、数据处理 $\Rightarrow$ 连续情形。
+  \item 三条必背恒等式：$\I{X;Y}=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}=\Hx{X}+\Hx{Y}-\Hx{X,Y}$；
+        $\I{X;YZ}=\I{X;Y}+\I{X;Z|Y}$；
+        $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}=\I{X;Y;Z}$。
+  \item 证明题统一套路：\textbf{把互信息全换成 $H$ 的加减 $\to$ 抵消 $\to$ 只剩非负量}。
+        两个反直觉点：事件互信息可为负而平均互信息不可为负；条件化必使\emph{熵}减小，
+        却可能使\emph{互信息}增大（除非马尔可夫链）。
+\end{enumerate}
+\end{keypoint}
+
+% ==================================================================
+\subsection{事件的互信息}
+
+设输入、输出随机变量为 $X,Y$，取值集 $A=\{a_1,\dots,a_K\}$、$B=\{b_1,\dots,b_J\}$，
+联合概率 $\p{a_i,b_j}$，则
+$\p{b_j|a_i}=\p{a_i,b_j}/\p{a_i}$，$\p{a_i|b_j}=\p{a_i,b_j}/\p{b_j}$。
+
+\begin{defbox}{定义 3.1.1（事件 / 符号之间的互信息）及其要点}
+事件 $\{Y=b_j\}$ 的出现对于事件 $\{X=a_i\}$ 的出现的\textbf{互信息量}定义为
+\[
+\I{a_i;b_j}=\lb\frac{\p{a_i|b_j}}{\p{a_i}}
+=\lb\frac{\p{a_i,b_j}}{\p{a_i}\p{b_j}}
+=\lb\frac{\p{b_j|a_i}}{\p{b_j}}=\I{b_j;a_i},
+\]
+底取 $2$ 时单位为 bit，取 $\mathrm{e}$ 时为 nat。要点：
+\begin{enumerate}[leftmargin=1.6em,itemsep=0pt,topsep=1pt]
+  \item \textbf{对称性}（3.1.2）：$\I{a_i;b_j}=\I{b_j;a_i}$。
+  \item \textbf{可正、可负、可为零}：若 $a_i$ 使 $b_j$ 的可能性增大
+        （$\p{b_j|a_i}>\p{b_j}$），则 $\I{b_j;a_i}>0$；反之 $<0$；独立则为 $0$。
+        特别地，$\I{a_i;a_i}=-\lb\p{a_i}=I(a_i)$——自信息是互信息的特例。
+  \item \textbf{上界}（3.1.3、3.1.4）：因 $\p{a_i|b_j}\le1$、$\p{b_j|a_i}\le1$，
+        $\I{a_i;b_j}\le I(a_i)$ 且 $\le I(b_j)$，即 $\I{X;Y}\le\Hx{X}$、$\le\Hx{Y}$ 的
+        事件级原型。
+  \item \textbf{与自信息的关系}：记 $I(a_i|b_j)=-\lb\p{a_i|b_j}$（条件自信息）、
+        $I(a_i,b_j)=-\lb\p{a_i,b_j}$（联合自信息），则
+        $\I{a_i;b_j}=I(a_i)-I(a_i|b_j)=I(b_j)-I(b_j|a_i)
+        =I(a_i)+I(b_j)-I(a_i,b_j)$，即定理 3.2.1、3.2.2 的事件级原型；
+        独立时 $I(a_i,b_j)=I(a_i)+I(b_j)$。
+\end{enumerate}
+\end{defbox}
+
+\begin{defbox}{定义 3.1.2（条件互信息）及其可加性}
+对三随机变量联合空间 $\{XYZ,\ A\times B\times C,\ \p{a_i,b_j,c_k}\}$ 定义
+\[
+\I{a_i;b_j|c_k}=\lb\frac{\p{a_i|b_j,c_k}}{\p{a_i|c_k}}
+=\lb\frac{\p{a_i,b_j|c_k}}{\p{a_i|c_k}\,\p{b_j|c_k}}=\I{b_j;a_i|c_k},
+\]
+并可推广到 $N$ 个随机变量。把一个对数拆成两段即得\textbf{可加性}（3.1.12、3.1.13）：
+$\I{a_i;b_j,c_k}=\I{a_i;b_j}+\I{a_i;c_k|b_j}
+=\I{b_j;a_i}+\I{c_k;a_i,b_j}$。符号次序为 $,$ 最紧、$;$ 次之、$|$ 最松
+（故 $\I{X;Y,Z|W}$ 中 $Y,Z$ 先结合）。
+\end{defbox}
+
+% ==================================================================
+\subsection{平均互信息及其与熵的关系}
+
+\begin{defbox}{定义 3.1.3（平均互信息）}
+$X$ 与 $Y$ 之间的互信息定义为单个事件互信息的数学期望：
+\[
+\I{X;Y}=\E\big[I(a_i;b_j)\big]
+=\sum_{i=1}^{K}\sum_{j=1}^{J}\p{a_i,b_j}\,\lb\frac{\p{a_i,b_j}}{\p{a_i}\p{b_j}},
+\qquad \I{X;Y}=\I{Y;X},
+\]
+它\textbf{完全由}输入分布 $p(a_i)$ 与转移矩阵 $\big[p(b_j|a_i)\big]_{K\times J}$ 决定（3.1.16）：
+\[
+\I{X;Y}=\sum_{i=1}^{K}\p{a_i}\sum_{j=1}^{J}\p{b_j|a_i}\lb\frac{\p{b_j|a_i}}{\p{b_j}},
+\qquad \p{b_j}=\sum_{i=1}^{K}\p{a_i}\,\p{b_j|a_i}.
+\]
+\end{defbox}
+
+\begin{thmbox}{三种等价定义（考试首选熵和式）}
+\begin{align*}
+\I{X;Y}
+&=\sum_{i,j}\p{a_i,b_j}\lb\frac{\p{a_i,b_j}}{\p{a_i}\p{b_j}}
+&&\text{（期望定义 3.1.3）}\\
+&=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}
+&&\text{（熵差定义 3.2.1）}\\
+&=\Hx{X}+\Hx{Y}-\Hx{X,Y}
+&&\text{（熵和定义 3.2.2）}
+\end{align*}
+不少教材直接用后两式作为平均互信息的定义。
+\end{thmbox}
+
+\begin{thmbox}{定理 3.2.1、3.2.2 的证明}
+\begin{align*}
+\Hx{X}-\Hx{X|Y}
+&=-\sum_{i}\p{a_i}\lb\p{a_i}+\sum_{i,j}\p{a_i,b_j}\lb\p{a_i|b_j}\\
+&=\sum_{i,j}\p{a_i,b_j}\lb\frac{\p{a_i,b_j}}{\p{a_i}\p{b_j}}=\I{X;Y},\\
+\I{X;Y}&=\sum_{i,j}\p{a_i,b_j}\big[\lb\p{a_i,b_j}-\lb\p{a_i}-\lb\p{b_j}\big]\\
+&=-\Hx{X,Y}+\Hx{X}+\Hx{Y}.
+\end{align*}
+第一式表明互信息 $=$ 先验不确定度 $-$ 后验不确定度；第二式即熵和式，一行秒证。
+\end{thmbox}
+
+\begin{keypoint}{定理 3.2.3（七条基本关系，考前默写）}
+\begin{enumerate}[leftmargin=1.7em,itemsep=0pt,topsep=1pt]
+  \item $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$（次可加性，等号 $\iff X\perp Y$）；
+  \item $\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}$，\ $\Hx{Y|X}=\Hx{X,Y}-\Hx{X}$；
+  \item $\I{X;Y}=\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}$；
+  \item $\I{X;Y}=\I{Y;X}$；
+  \item $\I{X;Y}=\Hx{X}+\Hx{Y}-\Hx{X,Y}$；
+  \item $\I{X;Y}\ge0$（与事件互信息不同，\textbf{平均互信息恒非负}）；
+  \item $\I{X;X}=\Hx{X}$。
+\end{enumerate}
+\textbf{文氏图记忆}：两圆交叠 $=\I{X;Y}$，$X$ 的月牙 $=\Hx{X|Y}=\Hx{X}-\I{X;Y}$，
+$Y$ 的月牙 $=\Hx{Y|X}=\Hx{Y}-\I{X;Y}$，并集 $=\Hx{X,Y}=\Hx{X}+\Hx{Y}-\I{X;Y}$，
+对称差 $=\Hx{X|Y}+\Hx{Y|X}=\Hx{X}+\Hx{Y}-2\I{X;Y}$。
+\end{keypoint}
+
+% ==================================================================
+\subsection{多个随机变量的互信息}
+
+\begin{defbox}{3.3.1、3.3.2\quad 两组随机变量的互信息与条件互信息}
+$X$ 与随机向量 $(Y,Z)$ 之间的\textbf{联合互信息}为
+\begin{align*}
+\I{X;YZ}&=\Hx{X}-\Hx{X|YZ}=\Hx{YZ}-\Hx{YZ|X}\\
+&=\Hx{X}+\Hx{YZ}-\Hx{X,Y,Z},\qquad \I{X;YZ}=\I{YZ;X},
+\end{align*}
+它刻画 $X$ 与 $(Y,Z)$ 的统计依赖程度。在已知 $Z$ 的条件下（式 3.3.3）：
+\[
+\I{X;Y|Z}=\sum_{i,j,k}\p{a_i,b_j,c_k}\,
+\lb\frac{\p{a_i,b_j|c_k}}{\p{a_i|c_k}\,\p{b_j|c_k}} .
+\]
+\end{defbox}
+
+\begin{thmbox}{条件互信息的四个恒等式（3.3.4–3.3.8）与链式法则}
+\begin{align*}
+\I{X;Y|Z}
+&=\Hx{X|Z}-\Hx{X|YZ}=\Hx{Y|Z}-\Hx{Y|XZ}\\
+&=\Hx{X|Z}+\Hx{Y|Z}-\Hx{X,Y|Z}\\
+&=\Hx{X,Z}+\Hx{Y,Z}-\Hx{X,Y,Z}-\Hx{Z}\ \ge0 ,
+\end{align*}
+末式由 $\Hx{X|Z}=\Hx{X,Z}-\Hx{Z}$、$\Hx{X,Y|Z}=\Hx{X,Y,Z}-\Hx{Z}$ 代入得到。
+\textbf{链式法则}（3.3.9–3.3.11）：
+\begin{align*}
+\I{X;YZ}
+&=\Hx{X}-\Hx{X|YZ}
+=\big[\Hx{X}-\Hx{X|Y}\big]+\big[\Hx{X|Y}-\Hx{X|YZ}\big]\\
+&=\I{X;Y}+\I{X;Z|Y}=\I{X;Z}+\I{X;Y|Z},
+\end{align*}
+一般地 $\I{XY;UVW}=\I{XY;W}+\I{XY;V|W}+\I{XY;U|VW}$。
+口诀：\textbf{$(Y,Z)$ 提供的信息 $=$ $Y$ 提供的 $+$ 已知 $Y$ 后 $Z$ 额外提供的}。
+\end{thmbox}
+
+\begin{defbox}{3.3.3\quad 三个随机变量之间的互信息（3.3.12–3.3.14）}
+\[
+\I{X;Y;Z}=\sum_{i,j,k}\p{a_i,b_j,c_k}\,
+\lb\frac{\p{a_i,b_j,c_k}\;\p{a_i}\;\p{b_j}\;\p{c_k}}
+{\p{a_i,b_j}\;\p{b_j,c_k}\;\p{c_k,a_i}}
+=\I{X;Y}-\I{X;Y|Z},
+\]
+且 $\I{X;Y;Z}=\I{Y;Z}-\I{Y;Z|X}=\I{Z;X}-\I{Z;X|Y}$。
+\textbf{警告}：$\I{X;Y;Z}$ \textbf{没有物理意义}，可正、可负、可为零，不能理解为
+"三变量共同携带的信息"；它只是推导关系式的代数工具（作业 3.2、3.3、3.10 全靠它）。
+\end{defbox}
+
+\begin{example}{例 3.3.1：$X$ 与 $Z$ 统计独立 $\Rightarrow$ $\I{X;Y}\le\I{X;YZ}$}
+$X\perp Z$ 故 $\I{X;Z}=0$，由链式法则 $\I{X;YZ}=\I{X;Z}+\I{X;Y|Z}=\I{X;Y|Z}$；
+又 $\I{X;YZ}=\I{X;Y}+\I{X;Z|Y}$，两式相减得
+$\I{X;Y|Z}=\I{X;Y}+\I{X;Z|Y}\ge\I{X;Y}$，故 $\I{X;Y}\le\I{X;Y|Z}=\I{X;YZ}$。
+\textbf{含义}：与 $X$ 独立的 $Z$ 作"条件"反而能\emph{增大}互信息（条件化对熵与对互信息
+的作用方向完全不同）。
+\end{example}
+
+% ==================================================================
+\subsection{互信息函数的性质}
+
+把互信息看成输入分布 $\mathbf{P}=(p_1,\dots,p_K)$（$p_i=\p{a_i}$）与条件概率矩阵
+$\mathbf{Q}=\big[q(b_j|a_k)\big]_{K\times J}$ 的二元函数：
+\[
+\I{X;Y}=I(\mathbf{P},\mathbf{Q})
+=\sum_{i=1}^{K}\sum_{j=1}^{J}p_i\,q(b_j|a_i)\,
+\lb\frac{q(b_j|a_i)}{\sum_{k=1}^{K}p_k\,q(b_j|a_k)} .
+\]
+
+\begin{thmbox}{性质 3.4.1（非负性）与性质 3.4.2（极值性）}
+\textbf{非负性}：$\I{X;Y}\ge0$，等号成立 $\iff X$ 与 $Y$ 统计独立
+（$\p{a_i,b_j}=\p{a_i}\p{b_j}$ 对一切 $i,j$）。
+\textbf{证}：令 $a_{ij}=\p{a_i,b_j}$、$b_{ij}=\p{a_i}\p{b_j}$，则
+$\sum_{i,j}a_{ij}=\sum_{i,j}b_{ij}=1$；由 log-sum 不等式
+$\sum_{k}a_k\lb\frac{a_k}{b_k}\ge\big(\sum_k a_k\big)\lb
+\frac{\sum_k a_k}{\sum_k b_k}$（$a_k,b_k\ge0$，等号 $\iff a_k/b_k$ 为常数），
+把下标 $k$ 换成数对 $(i,j)$，右端 $=0$ 即得。等价说法：
+$\I{X;Y}=D\big(\p{X,Y}\,\big\|\,\p{X}\p{Y}\big)$ 是 KL 散度。
+
+\textbf{极值性}：$\I{X;Y}\le\Hx{X}$ 且 $\I{X;Y}\le\Hx{Y}$，即
+$\I{X;Y}\le\min\{\Hx{X},\Hx{Y}\}$；等号 $\iff\Hx{X|Y}=0$（$X$ 由 $Y$ 完全确定
+$\iff$ 转移矩阵每列只有一个非零元）。\textbf{证}：
+$\I{X;Y}=\Hx{X}-\Hx{X|Y}\le\Hx{X}$，同法 $\le\Hx{Y}$。
+\end{thmbox}
+
+\begin{thmbox}{性质 3.4.3（凸性）}
+固定 $\mathbf{Q}$ 时 $I(\mathbf{P},\mathbf{Q})$ 是 $\mathbf{P}$ 的\textbf{上凸}（教材称凹函数）；
+固定 $\mathbf{P}$ 时是 $\mathbf{Q}$ 的\textbf{下凸}（凸函数）。记
+$\mathbf{P}_\lambda=\lambda\mathbf{P}_1+(1-\lambda)\mathbf{P}_2$、
+$\mathbf{Q}_\lambda=\lambda\mathbf{Q}_1+(1-\lambda)\mathbf{Q}_2$，则
+\begin{align*}
+I(\mathbf{P}_\lambda,\mathbf{Q})&\ge\lambda I(\mathbf{P}_1,\mathbf{Q})
+ +(1-\lambda)I(\mathbf{P}_2,\mathbf{Q}),\\
+I(\mathbf{P},\mathbf{Q}_\lambda)&\le\lambda I(\mathbf{P},\mathbf{Q}_1)
+ +(1-\lambda)I(\mathbf{P},\mathbf{Q}_2).
+\end{align*}
+\textbf{用途}：上凸性保证信道容量 $C=\max_{\mathbf{P}}I(\mathbf{P},\mathbf{Q})$ 的最大值存在
+且唯一（第 4 章求容量的理论基础）；下凸性用于对转移矩阵求极小极大。\\[2pt]
+\textbf{性质 3.4.4（数据处理定理，即作业 3.10）}：若 $X\to Y\to Z$ 为马尔可夫链
+（$\p{z|x,y}=\p{z|y}$，等价于 $\I{X;Z|Y}=0$），则 $\I{X;Z}\le\I{X;Y}$ 且
+$\I{X;Z}\le\I{Y;Z}$——不经手原始数据的任何加工都不会增加信息量，级联处理的总效果
+不超过第一级（证明见作业 3.10）。
+\end{thmbox}
+
+\begin{thmbox}{性质 3.4.3 的证明思路：引入辅助随机变量 $Z$}
+记 $J_k=I(\mathbf{P}_k,\mathbf{Q})$、$I_k=I(\mathbf{P},\mathbf{Q}_k)$，两问都靠同一个恒等式
+$\I{X;Y|Z}=\I{X;Y}-\I{X;Y;Z}=\I{X;Y}-\I{Z;Y}+\I{Z;Y|X}$（把"概率混合"写成条件互信息）。\\
+\textbf{(1) 上凸}：取 $Z$ 与 $\mathbf{Q}$ 无关，$p(d_1)=\lambda$ 时输入分布取 $\mathbf{P}_1$、
+$p(d_2)=1-\lambda$ 时取 $\mathbf{P}_2$，则 $(X,Y)$ 的无条件分布恰为
+$\mathbf{P}_\lambda\mathbf{Q}$，于是
+$\lambda J_1+(1-\lambda)J_2=\I{X;Y|Z}
+=\I{X;Y}-\I{Z;Y}+\underbrace{\I{Z;Y|X}}_{=0}\le\I{X;Y}=I(\mathbf{P}_\lambda,\mathbf{Q})$，
+其中 $\I{Z;Y|X}=0$（给定 $X$ 后 $Z$ 与 $Y$ 独立）。\\
+\textbf{(2) 下凸}：改取 $Z$ 与 $X$ 无关，$p(c_1)=\lambda$ 时用 $\mathbf{Q}_1$、$p(c_2)=1-\lambda$
+时用 $\mathbf{Q}_2$，则无条件转移为 $\mathbf{Q}_\lambda$，同理
+$\lambda I_1+(1-\lambda)I_2=\I{X;Y}-\underbrace{\I{X;Z}}_{=0}+\I{X;Z|Y}
+\ge\I{X;Y}=I(\mathbf{P},\mathbf{Q}_\lambda)$。
+\end{thmbox}
+
+% ==================================================================
+\subsection{连续型随机变量的互信息}
+
+设 $X,Y$ 为连续型随机变量，密度 $p_X(x)$、$p_Y(y)$，联合密度 $p_{XY}(x,y)$，且
+$p_X(x)=\int p_{XY}(x,y)\,dy$、$p_Y(y)=\int p_{XY}(x,y)\,dx$（积分限均为
+$-\infty$ 到 $+\infty$）。
+
+\begin{defbox}{定义 3.5.1（连续互信息，式 3.5.4–3.5.6）}
+\begin{align*}
+\I{X;Y}&=\E_{XY}\big[I(x;y)\big]
+=\iint\p{x,y}\,\lb\frac{\p{x,y}}{\p{x}\p{y}}\,dx\,dy,\\
+\I{X;Y|Z}&=\iiint\p{x,y,z}\,
+\lb\frac{\p{x,y|z}}{\p{x|z}\,\p{y|z}}\,dx\,dy\,dz,\\
+\I{XY;Z}&=\iiint\p{x,y,z}\,
+\lb\frac{\p{x,y,z}}{\p{x,y}\,\p{z}}\,dx\,dy\,dz,
+\end{align*}
+定义形式与离散情形完全平行（求和换积分）。\textbf{性质与两个陷阱}：(1) $\I{X;Y}\ge0$，$\I{X;Y}=\I{Y;X}$，
+$\I{X;Y|Z}=\I{Y;X|Z}$，$\I{XY;Z}=\I{X;Z}+\I{Y;Z|X}=\I{Y;Z}+\I{X;Z|Y}$；
+(2) 熵关系式形式不变 $\I{X;Y}=\Hc{X}-\Hc{X|Y}=\Hc{X}+\Hc{Y}-\Hc{X,Y}$，但 $\Hc{}$ 是
+\textbf{差分熵}——可为负（$X\sim\mathcal{U}[0,a]$ 时 $\Hc{X}=\lb a$，$a<1$ 即为负），
+互信息却恒非负；(3) $\Hc{aX+b}=\Hc{X}+\lb|a|$ 会平移，但\textbf{互信息在可逆（一一）
+变换下不变}：$\I{f(X);g(Y)}=\I{X;Y}$——有物理意义的是互信息而非差分熵。
+\end{defbox}
+
+% ==================================================================
+\subsection{本章作业与讲评（3.2、3.3、3.7、3.10）}
+
+\begin{keypoint}{老师讲评原话（作业总评）}
+第三章作业 \textbf{3.2、3.3、3.7、3.10}：3.2 大部分同学都对；3.3 整体做得很好；
+3.7 极少数同学有问题或缺问；3.10 见 PPT（数据处理定理）。
+四道题的共同武器只有一件：$\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$。
+\end{keypoint}
+
+\begin{example}{作业 3.2：求证 $\I{X;Y}\ge\I{X;Y|Z}$ 的核心恒等式}
+\begin{align*}
+\I{X;Y}-\I{X;Y|Z}
+&=\big[\Hx{X}-\Hx{X|Y}\big]-\big[\Hx{X|Z}-\Hx{X|YZ}\big]\\
+&=\big[\Hx{X}-\Hx{X|Z}\big]-\big[\Hx{X|Y}-\Hx{X|YZ}\big]\\
+&=\I{X;Z}-\I{X;Z|Y}=\I{X;Y;Z}.
+\end{align*}
+故待证不等式等价于 $\I{X;Z}\ge\I{X;Z|Y}$。
+\textbf{必须写清条件（本节最易失分处）}：(1) 若 $\I{X;Z|Y}=0$（$X\to Y\to Z$ 马尔可夫），
+则 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}\ge0$，不等式成立；(2) 若 $X\perp Z$ 则 $\I{X;Z}=0$，
+方向相反，$\I{X;Y}\le\I{X;Y|Z}$（例 3.3.1），书后习题 3.1 就是反例：$X,Y$ 独立等概取
+$\{0,1\}$、$Z=X\oplus Y$ 时 $\I{X;Y}=0\bit$ 而 $\I{X;Y|Z}=1\bit$；(3) 无条件恒成立的
+只有 $\I{X;Y}\ge\I{X;YZ}=\I{X;Y}+\I{X;Z|Y}$（因 $\I{X;Z|Y}\ge0$）。
+标准答题格式：写恒等式 $\to$ 点明所用假设 $\to$ 用非负性收尾。
+\end{example}
+
+\begin{example}{作业 3.3：求证 $\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}$（课堂原推导）}
+\begin{align*}
+\I{Y;Z|X}&=\Hx{Y|X}+\Hx{Z|X}-\Hx{Y,Z|X}\\
+&=\Hx{Y|X}+\big[\Hx{Z,X}-\Hx{X}\big]-\big[\Hx{X,Y,Z}-\Hx{X}\big]\\
+&=\Hx{Y|X}+\Hx{Z,X}-\Hx{X,Y,Z},
+\end{align*}
+移项即得 $\Hx{X,Y,Z}=\Hx{Y|X}+\Hx{Z,X}-\I{Y;Z|X}$。
+\textbf{技巧全部在此}：$\Hx{Z|X}=\Hx{X,Z}-\Hx{X}$ 与 $\Hx{Y,Z|X}=\Hx{X,Y,Z}-\Hx{X}$
+各减一个 $\Hx{X}$，两个 $\Hx{X}$ 恰好抵消——凡"补一个变量进去"的题都用这一招。
+\end{example}
+
+\begin{example}{作业 3.7：$Z=X+Y$ 且 $X\perp Y$ 的八问}
+\textbf{共同前提}：$X=Z-Y$、$Y=Z-X$、$Z=X+Y$ 都是确定性函数关系，故（八问的钥匙）
+\begin{align*}
+&\Hx{X|Y,Z}=\Hx{Y|X,Z}=\Hx{Z|X,Y}=0,\\
+&\Hx{Z|X}=\Hx{Y|X}=\Hx{Y},\qquad \Hx{Z|Y}=\Hx{X|Y}=\Hx{X}.
+\end{align*}
+\begin{enumerate}[label=(\arabic*),leftmargin=1.8em,itemsep=0pt,topsep=1pt]
+  \item $\Hx{X}\le\Hx{Z}$：$\Hx{Z}=\Hx{Z|Y}+\I{Y;Z}=\Hx{X}+\I{Y;Z}\ge\Hx{X}$。
+  \item $\Hx{Y}\le\Hx{Z}$：$\Hx{Z}=\Hx{Z|X}+\I{X;Z}=\Hx{Y}+\I{X;Z}\ge\Hx{Y}$。
+  \item $\Hx{X,Y}\ge\Hx{Z}$：$Z$ 是 $(X,Y)$ 的函数，$\Hx{Z|X,Y}=0$，故 $\Hx{Z}\le\Hx{X,Y}$。
+  \item $\I{X;Z}=\Hx{Z}-\Hx{Z|X}=\Hx{Z}-\Hx{Y}$（同理 $\I{Y;Z}=\Hx{Z}-\Hx{X}$）。
+  \item $\I{X,Y;Z}=\Hx{Z}-\Hx{Z|X,Y}=\Hx{Z}$。
+  \item $\I{X;Y,Z}=\Hx{X}-\Hx{X|Y,Z}=\Hx{X}$。
+  \item $\I{Y;Z|X}=\Hx{Y|X}-\Hx{Y|X,Z}=\Hx{Y}-0=\Hx{Y}$。
+  \item $\I{X;Y|Z}=\Hx{X|Z}-\Hx{X|Y,Z}=\Hx{X|Z}$，同法 $\I{X;Y|Z}=\Hx{Y|Z}$，
+        故 $\Hx{X|Z}=\Hx{Y|Z}$。
+\end{enumerate}
+\textbf{易错点}：第 (4)(6)(7)(8) 问直接用"某条件熵 $=0$"消项，不要重复展开。
+\end{example}
+
+\begin{example}{作业 3.10：数据处理定理（PPT 原推导）}
+信号 $X$ 经处理器 A 得 $Y$，$Y$ 再经处理器 B 得 $Z$，A、B 分别独立地处理 $X$、$Y$，故
+$\p{z|x,y}=\p{z|y}$，即 $X\to Y\to Z$ 构成马尔可夫链，从而 $\I{X;Z|Y}=0$。
+由三变量互信息恒等式
+$\I{X;Y;Z}=\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}=\I{X;Z}-0=\I{X;Z}$，
+即 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}$；再由互信息的\textbf{非负性} $\I{X;Y|Z}\ge0$ 便得
+\[
+\I{X;Z}\le\I{X;Y}.
+\]
+\textbf{等价写法}（链式法则）：$\I{X;Y,Z}=\I{X;Y}+\I{X;Z|Y}=\I{X;Y}$，又
+$\I{X;Y,Z}=\I{X;Z}+\I{X;Y|Z}$，两式相减同样得 $\I{X;Y}-\I{X;Z}=\I{X;Y|Z}\ge0$。
+\textbf{物理含义}：中间处理只会丢掉关于 $X$ 的信息，绝不会凭空造出信息；级联的
+处理级数越多，保留的信息单调不增（由对称性还有 $\I{X;Z}\le\I{Y;Z}$）。
+\end{example}

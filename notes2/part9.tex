@@ -1,0 +1,421 @@
+\section{最大熵原理与最小鉴别信息原理}
+
+\begin{idea}{开场：这一讲解决什么问题}
+前几讲的 $p(a_k)$ 都是\textbf{题目给好}的。现实恰恰相反——\textbf{分布不知道}，手上只有几条零碎情报（"平均长度 $5.02$ mm""方差是 $3$"）。于是问题来了：\emph{和这几条情报相符的分布有无穷多个，我该挑哪一个？}
+
+第 8 章给两条互相呼应的挑法：\textbf{最大熵原理}（手上没有"老经验"时用，Jaynes 1957）和\textbf{最小鉴别信息原理}（手上有一个先验分布时用）。本讲讲清它们\emph{是什么、为什么合理、怎么算}，以及配套的\textbf{鉴别信息}怎么手算——这片是简答题高发区。
+\end{idea}
+
+\subsection{先把符号翻译成人话}
+
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+符号 & 念法 & 人话 \\
+\midrule
+$X$，$a_k$ & "随机变量 X""第 $k$ 个取值" & 还没定下来的结果，和它的第 $k$ 种可能（掷骰子的点数） \\
+$p(a_k)$ & "p of a-k" & $X$ 取到 $a_k$ 的概率，$\sum_k p(a_k)=1$ \\
+$\Hx{X}$ & "H of X" & 平均不确定性 = 平均信息量，单位 bit \\
+$\E f(X)$ & "$f(X)$ 的期望" & 把 $f(a_k)$ 按概率加权平均：$\sum_k f(a_k)\p{a_k}$ \\
+约束 & constraint & "已知的那几条情报"，都写成某个期望等于常数 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+熵就是"每个结果的不确定度 $-\lb\p{a_k}$ 按概率加权平均"：$\Hx{X}=-\sum_k\p{a_k}\lb\p{a_k}$。概率越小越意外、信息量越大，所以熵 = 平均意外程度。这条你早就知道，本讲不重复。
+
+\subsection{最大熵原理：情报不全时选最"散"的那个分布}
+
+\textbf{硬币的例子。} 掷一枚硬币，不知道是否均匀，只测到"平均正面率是 $0.6$"。这条情报把唯一自由度用光了：$p(\text{正})=0.6$、$p(\text{反})=0.4$，熵
+\begin{align*}
+\Hx{X}=-0.6\lb 0.6-0.4\lb 0.4=0.6\times0.7370+0.4\times1.3219=0.4422+0.5288=0.9710\bit ,
+\end{align*}
+这就是最大熵解。真正需要"挑"的是\emph{约束比自由度少}的情形。
+
+\textbf{骰子的例子（教材例 8.1.2）。} 掷骰子，只知道点数平均值是 $4.5$，即 $\sum_{k=1}^{6}k\,f_k=4.5$。可行解有无穷多个（均匀分布均值只有 $3.5$，不合格；把概率往大点数挪一点就合格，挪法无数）。按最大熵原理挑出来的解是
+
+\begin{center}\small
+\begin{tabular}{lcccccc}
+\toprule
+点数 $a_k$ & 1 & 2 & 3 & 4 & 5 & 6 \\
+\midrule
+$p(a_k)$ & 0.0543 & 0.0788 & 0.1142 & 0.1654 & 0.2398 & 0.3476 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+当场验两件事：\textbf{(1) 满足情报}——按点数加权求和
+$1\times0.0543+2\times0.0788+3\times0.1142+4\times0.1654+5\times0.2398+6\times0.3476
+=0.0543+0.1576+0.3426+0.6616+1.1990+2.0856=4.5007\approx4.5$，合格。\textbf{(2) 熵是多少}——$\Hx{X}=-\sum_k\p{a_k}\lb\p{a_k}\approx2.327\bit$（教材此处印 $1.61358$，是按\emph{自然对数}算的：$2.327\times\ln 2=1.6133$，同一个数、不同单位；答题按题目要求的底走）。
+
+\begin{defbox}{最大熵原理（Jaynes, 1957）}
+在只掌握部分信息（只有若干约束）的情况下要对分布作推断时，应取\textbf{满足全部约束、但熵值最大}的那个分布。这是唯一"不偏不倚"的选择，别的选择都等于偷偷添加了额外的约束或假设。数学上是一个约束优化问题：
+\begin{align*}
+\max_{p}\ &\Hx{X}=-\sum_{k=1}^{K}\p{a_k}\lb\p{a_k}\\
+\text{s.t.}\ &\sum_{k=1}^{K}\p{a_k}f_m(a_k)=C_m,\quad m=1,2,\dots,M;
+\qquad \sum_{k=1}^{K}\p{a_k}=1,\ \ \p{a_k}\ge 0 .
+\end{align*}
+\end{defbox}
+
+\textbf{人话}：把情报翻译成函数 $f_m$ 和常数 $C_m$——给了均值就取 $f_1(a_k)=a_k$，再给二阶矩就取 $f_2(a_k)=a_k^2$；然后在所有满足这几条式子的分布里，挑\emph{平均不确定性最大}的那个。
+
+\textbf{为什么合理}：凡是没有被情报约束到的方向，我们没有理由偏向任何一边；熵最大的分布恰是对这些方向"最不表态"的分布。教材 8.1.2 用\textbf{熵集中定理}把它做实：熵稍小于最大值的可行解，个数少到可忽略——教材对上面的掷骰子例算出，$95\%$ 的可行解满足 $1.609\le H\le H_{\max}$、$99.99\%$ 满足 $1.602\le H\le H_{\max}$（与 $1.61358$ 同单位）。所以最大熵解是\emph{最保险}的解。
+
+不过要记住：只有"仅归一约束"时最大熵解才均匀。掷骰子例里均匀分布均值只有 $3.5$，\emph{根本不满足} $4.5$ 这条情报，压根不在可行解集合里——最大熵是"在可行解里挑熵最大的"，不是"在所有分布里挑熵最大的"。
+
+\subsection{怎么算出来：拉格朗日乘子法}
+
+直接令 $\partial\Hx{X}/\partial\p{a_k}=0$ 是解不出来的：$p$ 之间被"和为 1""加权和等于 $C_m$"绑着，动一个别的都得跟着动。标准套路是\textbf{把约束"罚"进目标函数}：引入 $M+1$ 个待定乘子 $\beta,\lambda_1,\dots,\lambda_M$，构造
+
+\begin{align*}
+F=\Hx{X}-\beta\Bigl(\sum_{k}\p{a_k}-1\Bigr)-\sum_{m=1}^{M}\lambda_m\Bigl(\sum_{k}\p{a_k}f_m(a_k)-C_m\Bigr),
+\end{align*}
+
+对每个 $\p{a_k}$ 求偏导并令其为零（底取 $e$）：
+
+\begin{align*}
+\frac{\partial F}{\partial \p{a_k}}=-\ln\p{a_k}-1-\beta-\sum_{m=1}^{M}\lambda_m f_m(a_k)=0
+\;\Longrightarrow\;
+\log \p{a_k}=-1-\beta-\sum_{m=1}^{M}\lambda_m f_m(a_k),
+\end{align*}
+
+于是离散情形的最大熵解（教材式 8.1.7）是
+
+\begin{align*}
+\boxed{\;\p{a_k}=e^{\,-1-\beta-\sum_{m=1}^{M}\lambda_m f_m(a_k)}\;}
+\end{align*}
+
+\textbf{人话}：每个概率都长成"$e$ 的某个线性组合次方"。$f_m$ 决定\emph{形状}——给均值则指数上是 $x$ 的一次式，概率按指数型升或降；给方差则带平方，概率成钟形。$\beta,\lambda_1,\dots,\lambda_M$ 这 $M+1$ 个常数不神秘：\textbf{由那 $M+1$ 个约束方程（$M$ 条情报 $+$ 归一）唯一确定}。不必会解这个方程组（一般要数值解），但要会\emph{写出形式}和\emph{数未知数个数}。
+
+连续情形（求和换积分）形式一模一样：$p(x)=\exp\bigl(-\lambda_0-\sum_m\lambda_m f_m(x)\bigr)$，其中 $-\lambda_0$ 顶替了 $-1-\beta$。教材提醒：此时严格说叫"微分熵最大原理"，但习惯上仍称最大熵原理。底数取 $e$ 或 $2$ 只差一个固定因子，会被归一化吸进 $\beta$，分布形状不变。
+
+\subsection{三个必须背的结论（每个配一句为什么）}
+
+\begin{center}\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.22\textwidth}>{\raggedright\arraybackslash}p{0.21\textwidth}>{\raggedright\arraybackslash}p{0.20\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}}
+\toprule
+已知情报 & 最大熵分布 & 熵值 & 为什么 \\
+\midrule
+只有"概率和为 1" & 均匀 $p(a_k)=1/K$ & $\Hx{X}=\lb K$ &
+熵在概率全相等时最大，边界（某个 $p=1$）处为 $0$ \\
+只给均值 $\E X$ & 连续：指数；离散非负整数：几何 & 见下 &
+$f_1(x)=x$，指数上是线性的 \\
+给均值与方差 & 正态 $N(\mu,\sigma^2)$ & $\Hc{X}=\tfrac12\lb(2\pi e\sigma^2)$ &
+$f_1=x,f_2=x^2$，指数上是二次式，配方即高斯 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{(a) 只有"总和为 1"这一约束 $\Rightarrow$ 均匀分布，$\Hx{X}=\lb K$。}
+为什么：$-\sum p\lb p$ 是凹函数，在"概率全相等"这个中心取最大；一旦某个 $p(a_k)=1$（其余全 $0$），熵就跌到 $0$。所以没有别的约束时，"最散"就是"最平"。连续版：$X$ 落在 $[a,b]$ 上时 $p(x)=1/(b-a)$，$\Hc{X}=\lb(b-a)$。
+
+\textbf{(b) 只给定均值 $\Rightarrow$ 指数分布（离散时是几何分布）。}
+为什么：$M=1$、$f_1(x)=x$，代进解式就是 $p(x)\propto e^{-\lambda_1x}$——正是"指数型衰减"。具体地：取非负整数、$\E X=m$ 时是几何分布 $p_k=(1-\theta)\theta^k$，其中 $\theta=\frac{m}{1+m}$（因为几何分布均值是 $\frac{\theta}{1-\theta}$，解出来就是它）；$x\ge0$、$\E X=\mu$ 时 $p(x)=e^{-x/\mu}/\mu$，$\Hc{X}=\log_2(e\mu)$。
+
+\textbf{(c) 给定均值与方差 $\Rightarrow$ 正态分布，$\Hc{X}=\frac12\lb(2\pi e\sigma^2)$。}
+为什么：$M=2$、$f_1=x$、$f_2=x^2$，指数上是 $-\lambda_1x-\lambda_2x^2$，二次式配方必然得到 $e^{-(x-\mu)^2/(2\sigma^2)}$ 的形状。注意熵里只有 $\sigma^2$、没有 $\mu$：\emph{搬动钟形的位置不改变不确定性，把钟形拉胖才改变}——方差翻倍，熵增加 $\tfrac12$ bit。
+
+\begin{idea}{和第 6 讲（连续熵最大熵定理）的关系}
+第 6 讲在\textbf{微分熵}框架下已证过这三条（支撑集固定 $\to$ 均匀；只给均值 $\to$ 指数；给均值与方差 $\to$ 高斯，$H_c=\frac12\lb(2\pi e\sigma^2)$）。第 8 章做的是把它们\emph{收进同一个框架}：一个统一解 $p(a_k)=e^{-1-\beta-\sum_m\lambda_mf_m(a_k)}$，代入不同 $f_m$ 就分别退化；再补上"为什么该选熵最大的"（不偏不倚 $+$ 熵集中）。所以\textbf{第 6 讲那三条是本讲结论的特例}——问"最大熵原理与前面最大熵定理的关系"，答这一句即可。
+\end{idea}
+
+\subsection{鉴别信息：两个分布"差多远"}
+
+先看它从哪冒出来。真实分布是 $P_1$，你以为分布是 $P_2$，于是照 $P_2$ 设计码字（码长 $-\lb p_2(a_k)$）。真实数据服从 $P_1$，实际平均码长为 $\bar L=-\sum_k p_1(a_k)\lb p_2(a_k)$；若一开始就知道 $P_1$，最优也只要熵 $\Hx{X}_{P_1}=-\sum_{k}p_1\lb p_1$。差多少？
+
+\begin{align*}
+\bar L-\Hx{X}_{P_1}=-\sum_{k}p_1\lb p_2+\sum_{k}p_1\lb p_1=\sum_{k}p_1(a_k)\lb\frac{p_1(a_k)}{p_2(a_k)} .
+\end{align*}
+
+\begin{defbox}{鉴别信息（Kullback--Leibler 距离）}
+设 $X$ 在假设 $H_1,H_2$ 下的分布为 $P_1,P_2$，定义
+\begin{align*}
+D(P_1\|P_2)=\sum_{k=1}^{K}p_1(a_k)\lb\frac{p_1(a_k)}{p_2(a_k)}
+\qquad(\text{连续时求和换积分、}p\text{换密度}).
+\end{align*}
+别名：\textbf{相对熵、交叉熵、方向散度、Kullback--Leibler 距离}；教材用 Kullback 最早的名字"鉴别信息"。
+
+\textbf{人话}：\textbf{用分布 $P_2$ 去近似真实分布 $P_1$，平均每个符号要多付多少 bit}。它衡量的是\emph{两个分布之间的差异}，不是某个分布自己的不确定性。注意方向：$P_1$ 是"真相"，$P_2$ 是"你以为的（先验）"。
+\end{defbox}
+
+\begin{calc}{手算 $D(P_1\|P_2)$：$P_1=(0.5,0.5)$，$P_2=(0.9,0.1)$}
+\textbf{第 1 项}：$\frac{p_1}{p_2}=\frac{0.5}{0.9}=\frac59\approx0.5556$，$\lb 0.5556=\frac{\ln0.5556}{\ln2}=\frac{-0.5878}{0.6931}=-0.8480$，乘权重 $0.5\times(-0.8480)=-0.4240$。
+
+\textbf{第 2 项}：$\frac{p_1}{p_2}=\frac{0.5}{0.1}=5$，$\lb 5=\frac{\ln5}{\ln2}=\frac{1.6094}{0.6931}=2.3219$，乘权重 $0.5\times2.3219=1.1610$。
+
+\textbf{相加}：$D(P_1\|P_2)=-0.4240+1.1610=0.7370\approx0.737\bit$。
+
+\textbf{验证这个数}：按 $P_2$ 设计的理想码，在真实分布 $P_1$ 下平均码长 $=0.5\lb\frac{1}{0.9}+0.5\lb\frac{1}{0.1}=0.0760+1.6610=1.737\bit$，而按真相设计只要 $\Hx{X}_{P_1}=1\bit$，多付 $0.737\bit$——和 $D$ 完全一致，不是巧合。
+
+\textbf{反过来算一遍}（理解"不对称"的最好办法）：
+$D(P_2\|P_1)=0.9\lb\frac{0.9}{0.5}+0.1\lb\frac{0.1}{0.5}=0.9\times0.8480+0.1\times(-2.3219)=0.7632-0.2322=0.5310\approx0.531\bit$。
+同一对分布，一个方向 $0.737$、另一个方向 $0.531$，\textbf{不相等}。
+\end{calc}
+
+\begin{defbox}{鉴别信息的性质（简答题直接抄）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+\item \textbf{非负性}：$D\ge0$，且 $=0$ 当且仅当 $P_1=P_2$。为什么：由 $\ln x\le x-1$ 可得——\emph{用错分布永远不可能少付码长}。
+\item \textbf{不对称}：一般 $D(P_1\|P_2)\ne D(P_2\|P_1)$，故又叫\textbf{方向散度}（directed divergence）。例子就是上面 $0.737$ 对 $0.531$。
+\item \textbf{不满足三角不等式}：$D(P_1\|P_3)\le D(P_1\|P_2)+D(P_2\|P_3)$ 一般\emph{不}成立，所以它\textbf{不是真正的距离函数}，只是"差异程度"的度量。
+\item \textbf{凸性}：$D(P\|R)$ 对 $P$ 凸，$D(R\|P)$ 对 $P$ 也凸（教材性质 8.2.2）。这保证"求最小值"不会掉进局部最优——正是最小鉴别信息原理能用的根本原因。
+\item \textbf{散度是对称的}：$J(P_1,P_2)=D(P_1\|P_2)+D(P_2\|P_1)\ge0$ 且 $J(P_1,P_2)=J(P_2,P_1)$（上面的例子 $J=0.737+0.531=1.268\bit$），但它同样不满足三角不等式。
+\item 两条只记结论：随机变量\textbf{相互独立}时，联合鉴别信息等于各自的鉴别信息之和；但鉴别信息\textbf{没有分步可加性}，一般 $D(P_1\|P_2)\ne D(P_1\|P_3)+D(P_3\|P_2)$——这点与 Shannon 熵不同。
+\end{enumerate}
+\end{defbox}
+
+\begin{qa}{它叫"距离"，为什么又不能说它是距离？}
+真距离要满足非负、对称、三角不等式三条，$D$ 只满足第一条。标准答法：\emph{不是距离；它非负但不满足对称性与三角不等式，故称方向散度；两个方向相加得到的 $J$ 才对称。}
+\end{qa}
+
+\subsection{最小鉴别信息原理：手里有"老经验"时怎么办}
+
+现实问题常是：你对 $X$ 有个\textbf{老经验}（先验分布 $p(x)$），现在又做了新测量、得到若干约束 $\int qf_m\,dx=C_m$，要在满足约束的 $q$ 里挑一个当估计。
+
+\begin{defbox}{最小鉴别信息原理}
+设真实分布 $q(x)$ 未知，已知先验 $p(x)$、约束 $\int qf_m\,dx=C_m\ (m=1..M)$ 与 $\int q\,dx=1$。则应在\textbf{满足全部约束}的 $q$ 中，取使鉴别信息 $D(q\|p)=\int q\lb\frac{q}{p}\,dx$ \textbf{最小}者为估计。
+\end{defbox}
+
+\textbf{人话}：约束说"必须满足这几条"，先验说"大概长什么样"；两者都得照顾，就选\emph{离先验最近}（改动最少、多付信息最少）的那个可行解。这是关于函数 $q$ 的变分问题，用拉格朗日乘子解得
+
+\begin{align*}
+q(x)=p(x)\exp\Bigl(-\lambda_0-\sum_{m=1}^{M}\lambda_m f_m(x)\Bigr),
+\end{align*}
+
+$M+1$ 个常数由 $M+1$ 个约束确定。人话：\textbf{先验乘一个"约束修正因子"}——没约束时 $\lambda_m=0$，$q$ 就等于 $p$（老经验直接用，一点不改）。
+
+\begin{idea}{两条原理的关系（必考一句话）}
+先验取\textbf{等概率}（离散 $p(a_k)=1/K$）时，上式变成 $q(a_k)\propto\exp\bigl(-\sum_m\lambda_m f_m(a_k)\bigr)$——正是上一节的最大熵解（常数 $1/K$ 被并进归一化因子）。
+
+所以：\textbf{先验取均匀分布时，最小鉴别信息原理退化为最大熵原理}；反过来说，\textbf{最小鉴别信息原理是最大熵原理的推广}（教材 8.3 原话）。直觉也顺：均匀先验 $=$ "我没有任何偏爱"，此时"离先验最近"就等于"最不表态"，也就是"熵最大"。
+
+教材习题 8.4 的结论再加固一句：若 $p_1$ 是约束下的最大熵分布、$p_2$ 是任一满足同样约束的分布，则 $\Hx{X}_{p_1}-\Hx{X}_{p_2}=D(p_2\|p_1)\ge0$——最大熵分布的熵确实不小于任何可行解，它就是"离所有可行解最近"的那个。
+\end{idea}
+
+\subsection{考试怎么考}
+
+\begin{exam}{第 10 讲（第 8 章）的题型与答法}
+\textbf{一、简答题（背下来就能拿分）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+\item \emph{什么是最大熵原理}：只掌握部分信息（若干约束）时分布不唯一，应在满足全部约束的分布中选熵最大的那个（Jaynes 1957）；这是唯一不偏不倚的选择，别的选择等于额外加了假设。
+\item \emph{为什么合理}：熵集中定理——熵略小于最大值的可行解个数少到可忽略（掷骰子例 $95\%$ 的可行解落在 $H_{\max}-0.005$ 以内），故最大熵解最保险。
+\item \emph{三个典型结论}：只归一 $\to$ 均匀 $H=\lb K$；只给均值 $\to$ 指数（离散为几何）；给均值与方差 $\to$ 正态 $H_c=\frac12\lb(2\pi e\sigma^2)$。每条都要补一句"为什么"。
+\item \emph{鉴别信息的定义与性质}：定义式 $+$ 非负、不对称（方向散度）、不满足三角不等式、凸性 $+$ 散度 $J$ 对称。
+\item \emph{最小鉴别信息与最大熵的关系}：先验取均匀时前者退化为后者，故前者是推广。
+\end{enumerate}
+
+\textbf{二、计算题}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+\item \emph{给约束写最大熵分布}：用拉格朗日乘子写出 $p(a_k)=e^{-1-\beta-\sum_m\lambda_m f_m(a_k)}$，并说明"$\beta$ 与 $M$ 个 $\lambda_m$ 由 $M+1$ 个约束确定"；若再要求具体分布，就代 $f_m$ 判形状（一次式 $\to$ 指数/几何，二次式配方 $\to$ 高斯）。
+\item \emph{算 $D(P_1\|P_2)$}：两步——逐项算 $\lb\frac{p_1}{p_2}$，再按 $p_1$ 加权求和，写清 bit；顺手算反方向，顺势答"不对称"。
+\item \emph{用 $D$ 解释编码失配}：$\bar L-\Hx{X}_{P_1}=D(P_1\|P_2)$，这是第 11 讲的入口。
+\end{enumerate}
+
+\textbf{三、最容易丢分}：(1) 底数不声明；(2) $D$ 的方向写反——\textbf{权重永远挂在"真相"那一侧}；(3) 正态熵漏掉 $e$（是 $2\pi e\sigma^2$）；(4) 误以为"最大熵解一定是均匀分布"。
+\end{exam}
+
+\section{组合信息与算法信息}
+
+\begin{idea}{开场：干脆不用概率}
+前面一切（含上一讲）都建立在"有个概率分布"上。可现实里分布估不准；更极端的，\textbf{信号根本不是随机的}——一段程序代码、一个常数的小数展开，硬套随机模型，模型本身就错。
+
+1965 年 Kolmogorov 在《关于信息度量定义的三种方法》中指出，除统计信息外还有两条路：\textbf{组合信息}（从计数、枚举出发——\emph{数一数有多少种可能的序列}）与\textbf{算法信息}（从计算机程序出发——\emph{产生这个串的最短程序有多长}）。对应的编码是 \textbf{Fitingof 通用编码}和 \textbf{Lempel--Ziv 通用编码}。
+\end{idea}
+
+\subsection{自适应统计编码：分布不知道时怎么编码}
+
+第 4 讲的 Huffman 编码按"统计特性"造码书，故称统计编码。麻烦在于编码时\textbf{并不知道}真实分布：你拿猜的 $p(a_k)$ 造码书，而真实分布是 $g(a_k)$，这叫\textbf{统计失配}。失配要付多少钱？设码长取 $-\lb p(a_k)$，则
+
+\begin{align*}
+\bar L-\bar L^{*}=\sum_{k}g(a_k)\lb\frac{g(a_k)}{p(a_k)}=D\bigl(g\|p\bigr)\ \ge0 .
+\end{align*}
+
+\textbf{一句话：失配的代价正好是鉴别信息}——把分布估错，平均每个符号就多付 $D$ bit。这条把上一讲和第 4 章焊在一起，也是本章的出发点。
+
+\begin{center}\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.77\textwidth}}
+\toprule
+类型 & 一句话 \\
+\midrule
+静态编码 & 用一套\textbf{固定}的统计特性造码书；猜得准就最优，猜错就惨（多付 $D$）。\\
+半自适应 & 消息\textbf{扫两遍}：第一遍统计造码书，第二遍照码书编码。缺点是要把码书/统计特性一起传过去，还有两遍扫描的延时。\\
+自适应 & 只扫\textbf{一遍}，边统计边编码：每步都用"以往消息"的统计特性编下一段；收发两端握有相同历史，可各自把码书同步更新（核心是"能逐步更新的数据结构"）。\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+结论一句话：\textbf{自适应编码在任何情况下只略差于最佳静态编码，而静态编码在失配时会远劣于自适应编码。}
+
+\subsection{组合信息：不数概率，只数"有多少种"}
+
+\begin{idea}{核心思想}
+\textbf{如果不管概率，只数一数有多少种可能的序列，也能定义信息量。}
+
+道理很朴素：编码的本质是"给可能的情况\emph{编号}"，有 $N$ 种可能就得用 $\lb N$ 位二进制。于是\textbf{组合信息}定义为
+\begin{align*}
+H_c(X)=\lb N\qquad(\text{$N$ 为可能取值的个数}),
+\end{align*}
+下标 $c$ 是 Combination（组合），用以区别统计熵 $H(X)$；一般取底 2，单位仍是 bit。配套定义照搬 Shannon 的形式（但含义变了）：
+\begin{align*}
+H_c(X_1\cdots X_K)&=\textstyle\sum_{i}\lb N_i,\qquad
+H_c(Y\mid X=a)=\lb N(Y\mid a),\\
+I_c(X;Y)&=H_c(Y)-H_c(Y\mid X),
+\end{align*}
+$N(Y\mid a)$ 是"$X=a$ 时 $Y$ 可能取的值的个数"。\textbf{人话}：不给概率只数格子；知道 $X$ 后 $Y$ 的可能格子少了多少，就是 $X$ 的信息。
+\end{idea}
+
+教材表 9.1（$X,Y$ 各取 $1,2,3,4$，表里"$\surd$"表示该组合存在）：$\lb 4=2$，故 $I_c(X{=}1;Y)=2-\lb 4=0$，$I_c(X{=}2;Y)=2-\lb 3\approx0.415$，$I_c(X{=}3;Y)=2-\lb 2=1$，$I_c(X{=}4;Y)=2-\lb 1=2$。$X=1$ 时 $Y$ 仍有 $4$ 种可能，所以 $X=1$ 什么信息也没给；$X=4$ 时 $Y$ 只剩 $1$ 种，$X$ 把 $Y$ 全确定了。\textbf{提醒}：组合信息与统计信息性质\textbf{不一样}，\emph{不可}把 Shannon 的公式直接套过来（教材明确强调）。
+
+\subsubsection{组合数与典型序列}
+
+设字母表大小 $K$、序列长 $N$、第 $k$ 个字母出现 $N_k$ 次（频率 $f_k=N_k/N$），则"出现次数恰为这组 $N_k$"的序列个数是组合数
+
+\begin{align*}
+W=\frac{N!}{\prod_{k=1}^{K}N_k!},
+\qquad
+\lb W\ \approx\ N\Bigl(-\sum_{k=1}^{K}f_k\lb f_k\Bigr)=N\,H(f).
+\end{align*}
+
+"$\approx$"从哪来：由 Stirling 公式 $n!\approx\sqrt{2\pi n}\,(n/e)^n$ 代入，$\sqrt{\cdot}$ 那些因子变成 $N$ 的低阶项，主项就是 $N H(f)$。二元情形 $W=C(N,k)$，取 $k=\alpha N$ 得
+
+\begin{align*}
+\lb C(N,\alpha N)\ \approx\ N\,H_2(\alpha),\qquad
+H_2(\alpha)=-\alpha\lb\alpha-(1-\alpha)\lb(1-\alpha).
+\end{align*}
+
+\textbf{人话}：长 $N$ 的串里，"$1$ 的占比约为 $\alpha$"的序列大约有 $2^{NH_2(\alpha)}$ 个——这一堆叫\textbf{典型序列}；在这堆里指定一个，需要的位数就是 $\lb C(N,\alpha N)\approx N H_2(\alpha)$。
+
+\begin{calc}{数值体检：$N=6$、$\alpha=1/3$}
+\textbf{(1) 精确算}：$C(6,2)=\frac{6!}{2!\,4!}=\frac{6\times5}{2}=15$ 个。而 $2^3=8<15<16=2^4$，故 $\lb 15\in(3,4)$，实际 $\lb 15=\frac{\ln15}{\ln2}=\frac{2.7081}{0.6931}=3.9069\approx3.91$ bit。
+
+\textbf{(2) 公式算}：$H_2(1/3)=-\frac13\lb\frac13-\frac23\lb\frac23=\frac13\times1.5850+\frac23\times0.5850=0.5283+0.3900=0.9183$，于是 $N H_2(\alpha)=6\times0.9183=5.51$ bit。
+
+\textbf{(3) 对照}：$3.91$ 对 $5.51$，差 $1.6$ bit，不小。这不是算错：$\lb C(N,\alpha N)\approx NH_2(\alpha)$ 是 $N\to\infty$ 的\textbf{渐近}式（严格说是 $\frac{2^{NH_2(\alpha)}}{N+1}\le C\le 2^{NH_2(\alpha)}$ 这种量级估计），$N=6$ 太小，轮不到它准。所以小 $N$ 必须用精确的 $C(6,2)=15$ 与 $\lb 15\approx3.91$。
+\end{calc}
+
+\subsubsection{课件那个例子：把 \texttt{001001} 压成 \texttt{0011}}
+
+老师课件上原样的例子，考试很爱考这种"数一数、编个号"的题。本质只有一句：\textbf{编码 $=$ 在候选表里查位置，再把位置号写成二进制}。
+
+\begin{calc}{手把手：序列 \texttt{001001} 的组合编码}
+\textbf{第 1 步（数候选）}：$6$ 位二进制串总共 $2^6=64$ 个，但已知"恰好有 $2$ 个 $1$"，候选只有"$6$ 位里挑 $2$ 个位置放 $1$"的那些：
+\begin{align*}
+C(6,2)=\frac{6!}{2!\,4!}=\frac{6\times5}{2}=15\ \text{个}.
+\end{align*}
+
+\textbf{第 2 步（排序、编号，从 $0$ 开始）}：把这 $15$ 个串按字典序摆好，得下表。
+
+\begin{center}\small
+\begin{tabular}{clclcl}
+\toprule
+索引 & 序列 & 索引 & 序列 & 索引 & 序列 \\
+\midrule
+0 & \texttt{000011} & 5 & \texttt{001100} & 10 & \texttt{100001} \\
+1 & \texttt{000101} & 6 & \texttt{010001} & 11 & \texttt{100010} \\
+2 & \texttt{000110} & 7 & \texttt{010010} & 12 & \texttt{100100} \\
+3 & \texttt{\textbf{001001}} & 8 & \texttt{010100} & 13 & \texttt{101000} \\
+4 & \texttt{001010} & 9 & \texttt{011000} & 14 & \texttt{110000} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+查表：\texttt{001001} 在\textbf{索引 3}（从 $0$ 数：$0,1,2,3$，第四个）。
+
+\textbf{第 3 步（编号要多宽）}：$15$ 个候选，编号范围 $0\sim14$。因为 $2^3=8<15\le16=2^4$，至少 $4$ 位，即 $\lceil\lb 15\rceil=\lceil3.9069\rceil=4$ 位（$3$ 位只能表示 $0\sim7$，装不下 $15$ 个）。
+
+\textbf{第 4 步（号码转二进制）}：$3=0\times8+0\times4+1\times2+1\times1$，即四位二进制 \texttt{0011}。
+
+\textbf{结论}：\texttt{001001}（$6$ 位）$\to$ \texttt{0011}（$4$ 位）。\textbf{解码}：收到 \texttt{0011} 读成 $3$，查同一张表的索引 $3$，还原 \texttt{001001}；表格两端约定即可，不必传输。
+
+\textbf{一句提醒}：这里能省 \(2\) 位，是因为"恰好 $2$ 个 $1$"双方都知道。若没约定，还得额外传 $k$（$k$ 有 $7$ 种取法，约 $\lb 7\approx2.8$ 位），省下的就被吃掉了——这正是教材定理 9.3.4 中 $\log N+NH(k/N)$ 的来历：\textbf{先传 $k$，再传序号}。
+\end{calc}
+
+\subsection{Fitingof 通用编码：两步编号}
+
+把上面的思路用到任意信源，就是 Fitingof 编码。一句话：\textbf{统计各符号出现次数（得频率分布 $F$），再用组合数编出"同类里的第几个"}。三步：
+
+\textbf{(1)} 把序列切成若干长度 $N$ 的组（$N$ 足够大）。\textbf{(2)} 数出每组里各字母的出现次数 $N_k$、得频率分布 $F$；不同 $F$ 共 $W(K,N)=C_{N+K-1}^{\,N}$ 种，编"是哪种 $F$"需 $\lceil\lb W(K,N)\rceil$ bit。\textbf{(3)} 同一 $F$ 下序列仍有 $W(F)=\frac{N!}{\prod_kN_k!}$ 种，编"是其中第几个"需 $\lceil\lb W(F)\rceil$ bit。
+
+于是 $L=\lceil\lb W(F)\rceil+\lceil\lb W(K,N)\rceil$。它\textbf{压根没用统计特性}（只数次数），但教材定理 9.2.1 证明：任给 $\varepsilon>0$，$N$ 足够大时平均每符号码长可小于 $H(P)+\varepsilon$，故称\textbf{通用}编码。缺点是那个 $+\varepsilon$ 收得\emph{很慢}，有限码长下反而不如统计编码，工程上因此用得不多。
+
+\subsection{算法信息：最短程序有多长}
+
+\begin{defbox}{Kolmogorov 算法熵（复杂度）}
+\textbf{定义}：一个数据串的复杂性，就是\textbf{能产生这个数据串的最短二元程序的长度}。形式化地，设 $p$ 是"给定 $y$ 时让计算机 $C$ 输出 $x$"的二元程序、$l(p)$ 为其长度，则 $x$ 在条件 $y$ 下的条件算法熵为
+\begin{align*}
+K(x\mid y)=\min_{p:\,C(p,y)=x} l(p),
+\end{align*}
+无条件版记 $K(x)$；$y$ 提供的关于 $x$ 的信息记 $I(x;y)=K(x)-K(x\mid y)$。
+
+\textbf{人话}：越有规律 $\to$ 程序越短 $\to$ 复杂度越低；越没规律 $\to$ 只能"照抄" $\to$ 程序和数据一样长 $\to$ 复杂度越高。
+\end{defbox}
+
+严格说 $K$ 依赖具体计算机，但换一台通用 Turing 机只差一个与 $x$ 无关的常数（相当于多一段"仿真程序"前缀），故"计算机"理解为任意一台通用机即可。
+
+\begin{calc}{课件两个例子，把"复杂度"讲透}
+\textbf{串 A $=0101010101010101$}（$16$ 位，"$01$"重复 $8$ 次）。本来要 $16$ 位才能照抄，但你可以写个短程序 \texttt{print("01"*8)}：只有十几个字符，$8$ bit ASCII 也就一百来 bit，而且\textbf{与串长无关}（串变成 $1000$ 位，写成 \texttt{"01"*1000} 即可）。所以 $K(A)$ 很小，\textbf{算法复杂度低}。
+
+\textbf{串 B $=1001101001011010$}（$16$ 位，看着没什么规律）。想说清它只能照抄 \texttt{print("1001101001011010")}，程序里那段数据\textbf{和原串一样长}，$K(B)\approx$ 串长 $=16$ 位，\textbf{算法复杂度高}。
+
+\textbf{结论（反直觉但必须记住）}：\textbf{随机串反而复杂度最高}——"有规律"正是可压缩的来源，完全随机 $=$ 完全没规律 $=$ 只能照抄，一个字都省不掉。
+\end{calc}
+
+这个结论有定理撑腰。教材定理 9.3.3：复杂度小于 $k$ 的串总数少于 $2^k$——因为长度小于 $k$ 的二元程序只有 $1+2+\cdots+2^{k-1}=2^k-1<2^k$ 个，一个程序至多产生一个输出，故\textbf{低复杂度串极少}。进一步（定理 9.3.5、9.3.6）：$N$ 位串有 $N\,H(X)\le\E[K(x\mid N)]\le N\,H(X)+\lb N+C$，且绝大多数串 $\lim_{N\to\infty}K/N=1$——一个字也压不动，称\textbf{不可压缩序列}（即"真正的随机序列"），故算法熵又叫\textbf{算法随机度}。
+
+\begin{qa}{不可能有个通用程序，算出任意串的最短程序}
+1970 年 Chaitin 证明：\textbf{数学上不存在通用办法对任意给定的串算出其算法熵}。
+
+直观论证：若真有程序能算 $K(x)$，就可写个很短的程序"找出第一个 $K(x)\ge10^{10}$ 的二元串并打印它"。这个描述本身很短，打出来的串复杂度应该很小；可它偏偏是"复杂度 $\ge10^{10}$"的第一个，矛盾。这与 Perry 悖论（"用少于 $30$ 个英文单词不能表示的最小正整数"，而这句话本身只有 $20$ 个词）、Gödel 不完备定理同源。故 Kolmogorov 复杂度的价值不在求那段最短程序，而在给出研究随机性与可压缩性的理论框架。
+\end{qa}
+
+\textbf{Lempel--Ziv 压缩，一句话}：\textbf{找重复片段，用"偏移 + 长度"表示}。既然"理想最短程序"算不出来，就限制计算模型用"找重复"来逼近：LZ77 用滑动窗口，把当前内容在"已编码区"里找最长匹配，输出三元组（偏移量, 匹配长度, 下一个字符）。课件那个串 \texttt{ababbbabaabababaababbababa} 切成 \texttt{a.b.abb.baba.ababa.baababb.ababa}，编码为
+\begin{align*}
+(0,0,\texttt{a})\ (0,0,\texttt{b})\ (2,2,\texttt{b})\ (4,3,\texttt{a})\ (9,4,\texttt{a})\ (7,6,\texttt{b})\ (10,5,\varnothing).
+\end{align*}
+看 $(2,2,\texttt{b})$：往回退 $2$ 个字符（\texttt{ab}）、抄 $2$ 个（得 \texttt{ab}）、后面跟一个 \texttt{b}，拼出 \texttt{abb}——这就是"偏移+长度"的秘密（LZ78 改用"字典索引, 下一个字符"，本质一样）。它为何算逼近算法复杂度？"重复片段"就是"规律"，找到规律就能用短码代长串，正是 $K(x)$ 想度量的事；平稳遍历信源下压缩比当 $N\to\infty$ 趋于熵率 $H(X)$，且\emph{不需知统计特性}，故是通用编码，也是 gzip/zip 的核心。
+
+\subsection{近似熵与样本熵（简答级）}
+
+前面讲的都是"一个串"。工程里更常见的是\textbf{时间序列}（心率、血压、振动信号），要问的是：\emph{这串数据有多"有规律"？} 思路：切成很多长 $m$ 的小片段，看"两个片段像不像"；\textbf{片段越容易找到相似的伙伴，序列越有规律，熵越小}。
+
+\begin{defbox}{近似熵 ApEn 与样本熵 SampEn}
+\textbf{近似熵}（Pincus, 1991）：对每个 $i$，统计与第 $i$ 个 $m$ 长片段距离小于阈值 $r$ 的片段占比 $B^m(i)$，取对数平均
+\begin{align*}
+\phi^m(r)=\frac{1}{N-m+1}\sum_{i=1}^{N-m+1}\ln B^m(i),
+\qquad
+\mathrm{ApEn}(m,r,N)=\phi^{m}(r)-\phi^{m+1}(r).
+\end{align*}
+\textbf{样本熵}（Richman 等, 2000）：只在\emph{其余} $N-m$ 个片段中统计匹配（\textbf{不把自己算进去}），得平均 $B^m(r)$、$B^{m+1}(r)$，则
+\begin{align*}
+\mathrm{SampEn}(m,r,N)=-\ln\frac{B^{m+1}(r)}{B^{m}(r)}.
+\end{align*}
+\end{defbox}
+
+\textbf{人话}：$\phi^m$ 是"用 $m$ 维模式看这串数据时，平均多容易找到相似片段"；维数由 $m$ 加到 $m+1$ 后相似度掉了多少，就是"新模式出现的概率"。掉得越少 $\Rightarrow$ 越有规律 $\Rightarrow$ 熵越小；周期信号的近似熵很小，随机信号较大。且它与幅值、相位无关，只与频率成分的复杂性有关。
+
+\textbf{两者区别（必考一句）}：近似熵把数据和\textbf{自身}比较（自己当然和自己匹配，正好避免 $\ln0$），但引进了偏差、结果不恒定；样本熵\textbf{不计自身匹配}——"熵是新信息产生率"，拿数据和它自己比毫无意义——故精度更高、一致性更好。两者都依赖 $m,r$（$m$ 常取 $2\sim10$，$r$ 按数据定），没有公认最佳标准。
+
+\subsection{考试怎么考}
+
+\begin{exam}{第 11 讲（第 9 章）的题型与答法}
+\textbf{一、组合信息计数题（最容易满分）}——四步写全就是满分：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+\item 数候选：确定有几个"$1$"（或几个某字母），算 $C(n,k)=\frac{n!}{k!(n-k)!}$（如 $C(6,2)=\frac{6\times5}{2}=15$）。
+\item 排号：按字典序排出索引，\textbf{从 $0$ 开始}，找出目标串的索引（\texttt{001001}$\to3$）。
+\item 定码长：最小的 $l$ 使 $2^l\ge$ 候选数，即 $\lceil\lb N\rceil$（$2^3=8<15\le2^4\Rightarrow4$ 位）。
+\item 转二进制：索引写成 $l$ 位二进制（$3\to$\texttt{0011}），并说明解码端查同一张表即可还原。
+\end{enumerate}
+最后补一句"若 $k$ 未事先约定，还要额外传 $k$，约需 $\lb(n+1)$ 位"是加分点。
+
+\textbf{二、算法复杂度判断题}——给两个串问哪个更随机/复杂度更高，答法固定：\emph{能写成短程序（如 \texttt{print("01"*8)}）的复杂度低；只能原样照抄的复杂度高，$K(x)\approx$ 串长}。再补反直觉结论：\textbf{随机串复杂度最高，因为没规律就无法压缩}，并引定理 9.3.3（复杂度小于 $k$ 的串不足 $2^k$ 个，低复杂度串极少，绝大多数串 $K/N\to1$ 即不可压缩）。
+
+\textbf{三、简答题}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+\item \emph{Kolmogorov 复杂度定义}：产生该串所需最短二元程序的长度，条件版 $K(x\mid y)=\min l(p)$。
+\item \emph{不可计算性}：Chaitin（1970）证明不存在通用算法算出任意串的算法熵；用"最小复杂度 $\ge10^{10}$ 的串"的自指矛盾说明，与 Gödel 不完备定理、Perry 悖论同源。
+\item \emph{组合信息}：$H_c(X)=\lb N$（$N$ 为可能取值个数），与分布无关；典型序列 $\lb C(N,\alpha N)\approx NH_2(\alpha)$；\emph{不可}照搬 Shannon 公式。
+\item \emph{自适应编码三类}：静态（固定特性）/ 半自适应（扫两遍、要传码书）/ 自适应（扫一遍、边统计边编码）；记住"失配代价 $=D(g\|p)$"与"自适应只略差于最佳静态"。
+\item \emph{ApEn 与 SampEn 的区别}：样本熵不计自身匹配，偏差更小、一致性更好。
+\end{enumerate}
+
+\textbf{四、最容易丢分}：(1) 索引从 $0$ 还是 $1$ 开始没写清（课件与教材从 $0$ 开始）；(2) 码长写成 $\lb N$ 而不取整（必须 $\lceil\lb N\rceil$）；(3) 说"随机串信息量低"——恰恰相反，随机串\emph{算法}复杂度最高；(4) 把组合信息当熵去套 Shannon 公式。
+\end{exam}

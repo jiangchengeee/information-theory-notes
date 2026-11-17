@@ -1,0 +1,118 @@
+% 零基础讲义公共导言区
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\geometry{left=2.0cm,right=2.0cm,top=2.2cm,bottom=2.0cm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{multirow}
+\usepackage{longtable}
+
+% ---------- 颜色 ----------
+\definecolor{mainblue}{RGB}{25,70,130}
+\definecolor{acc1}{RGB}{176,58,46}      % 定义/公式
+\definecolor{acc2}{RGB}{20,105,85}      % 直觉/类比
+\definecolor{acc3}{RGB}{120,80,150}     % 你可能想问
+\definecolor{acc4}{RGB}{160,110,20}     % 手把手算
+\definecolor{acc5}{RGB}{40,90,160}      % 考试怎么考
+\definecolor{soft}{RGB}{246,247,250}
+
+% ---------- 数学宏 ----------
+\newcommand{\Hx}[1]{H\!\left(#1\right)}
+\newcommand{\Hc}[1]{H_{c}\!\left(#1\right)}
+\newcommand{\I}[1]{I\!\left(#1\right)}
+\newcommand{\lb}{\log_{2}}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\newcommand{\bit}{\,\text{bit}}
+\newcommand{\p}[1]{p\!\left(#1\right)}
+
+% ---------- 五种盒子 ----------
+\newtcolorbox{defbox}[1]{enhanced,breakable,
+  colback=soft,colframe=acc1,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc1,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{idea}[1]{enhanced,breakable,
+  colback=white,colframe=acc2,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc2,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{qa}[1]{enhanced,breakable,
+  colback=white,colframe=acc3,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc3,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{calc}[1]{enhanced,breakable,
+  colback=white,colframe=acc4,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc4,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{exam}[1]{enhanced,breakable,
+  colback=white,colframe=acc5,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc5,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+% 兼容旧环境名
+\newenvironment{thmbox}[1]{\begin{defbox}{#1}}{\end{defbox}}
+\newenvironment{keypoint}[1]{\begin{idea}{#1}}{\end{idea}}
+\newenvironment{warning}[1]{\begin{qa}{#1}}{\end{qa}}
+\newenvironment{example}[1]{\begin{calc}{#1}}{\end{calc}}
+\newenvironment{problem}[1]{\begin{defbox}{#1}}{\end{defbox}}
+
+% ---------- 标题格式 ----------
+\titleformat{\section}{\Large\bfseries\color{acc1}}{第\,\thesection\,讲}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{mainblue}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{acc2}}{\thesubsubsection}{0.4em}{}
+
+% ---------- 页眉页脚 ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 信息论基础\ \textbar\ 零基础讲义}
+\fancyhead[R]{\small\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\allowdisplaybreaks
+\setlength{\parskip}{2.5pt}
+\linespread{1.08}
+
+% ---------- 特殊符号兜底（避免缺字）----------
+\usepackage{newunicodechar}
+\newunicodechar{✓}{\ensuremath{\checkmark}}
+\newunicodechar{✗}{\ensuremath{\times}}
+\xeCJKDeclareCharClass{CJK}{"2460 -> "24FF}   % ① ② ③ 等圈号交给中文字体
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{∞}{\ensuremath{\infty}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{⊕}{\ensuremath{\oplus}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∫}{\ensuremath{\int}}
+\newunicodechar{√}{\ensuremath{\surd}}
+\newunicodechar{σ}{\ensuremath{\sigma}}
+\newunicodechar{π}{\ensuremath{\pi}}
+\newunicodechar{λ}{\ensuremath{\lambda}}
+\newunicodechar{μ}{\ensuremath{\mu}}
+\newunicodechar{Δ}{\ensuremath{\Delta}}
+\newunicodechar{α}{\ensuremath{\alpha}}
+\newunicodechar{β}{\ensuremath{\beta}}
+\newunicodechar{ε}{\ensuremath{\varepsilon}}

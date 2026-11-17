@@ -1,0 +1,473 @@
+% ==================== 第2章 信息与熵 ====================
+% 教材：石峰、莫忠息《信息论基础》（第三版），武汉大学出版社
+% 范围：教材 P14--P44（OCR 第 p027--p057 页）
+% 全书统一：对数底取 2，单位 bit；必要时注明以 e 为底的 ln。
+
+\section{第 2 章\quad 信息与熵}
+
+\begin{keypoint}{本章主线与考点}
+\textbf{主线}：自信息 $\I{x_i}=-\lb\p{x_i}$ $\Rightarrow$ 熵 $\Hx{X}=\E[-\lb\p{X}]$
+$\Rightarrow$ 联合熵/条件熵与链式法则 $\Rightarrow$ 熵的性质与四条不等式
+$\Rightarrow$ 微分熵与两个最大熵定理 $\Rightarrow$ 加权熵、Rényi/Tsallis 熵（拓展）。
+
+\textbf{必考四件套}：(1) 由联合分布表求 $\Hx{X},\Hx{Y},\Hx{X,Y},\Hx{X|Y},\Hx{Y|X}$；
+(2) 用链式法则（定理 2.2.1）$\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}$ 灵活拆项；
+(3) 定理 2.4.2 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$ 的证明（P32）；
+(4) 均匀/正态的微分熵与两个最大微分熵定理（定理 2.5.1、2.5.2）。
+\end{keypoint}
+
+\subsection{信源的数学模型与自信息（2.1 节）}
+
+\begin{defbox}{定义 2.1.1（离散信源）与定义 2.1.2（自信息）}
+\textbf{离散信源}是有序对 $\mathcal{L}=(S,P)$：$S=\{x_1,\dots,x_n\}$ 为有限符号集（字母集），
+$P$ 为 $S$ 上的概率分布，记 $p_i=\p{x_i}$，$\sum_i p_i=1$。做题第一步永远先写概率空间
+$\begin{pmatrix}x_1 & x_2 & \cdots & x_n\\ p_1 & p_2 & \cdots & p_n\end{pmatrix}$。\\[2pt]
+事件 $x_i\in S$ 的\textbf{自信息}
+$\I{x_i}=-\log \p{x_i}=\log\frac{1}{\p{x_i}}$；
+底只改变单位：底 $2$ 为比特（bit）、$10$ 为哈特（Hart）、e 为奈特（nat）。
+$p_i=\tfrac12$ 时 $\I{x_i}=1\bit$，即\textbf{1 比特 $=$ 两个等可能事件中任取一个所含的信息量}。\\[2pt]
+\textbf{三个性质}：(1) \textbf{单调递减}——$\p{x_i}$ 越小 $\I{x_i}$ 越大（越少见的事件信息量越大，
+必然事件为 $0$）；(2) \textbf{非负}——$0\le\p{x_i}\le1\Rightarrow\I{x_i}\ge0$，且
+$\I{x_i}=0\iff\p{x_i}=1$；(3) \textbf{可加}——若 $E_i,F_j$ 独立，则
+$\I{E_i\cap F_j}=-\log(p_iq_j)=\I{E_i}+\I{F_j}$。\\
+速算：$\I{}=\lb26\approx4.7\bit$（26 字母）；$\I{}=\lb2^m=m\bit$（$m$ 位二进制数）；
+$64$ 点方阵中 $\I{x_i}=\I{y_j}=\lb8=3\bit$ 而 $\I{x_i\cap y_j}=\lb64=6\bit$（行列独立）。
+\end{defbox}
+
+\begin{defbox}{定义 2.1.3（信源熵 = 平均信息量）}
+信源熵是自信息的统计平均：
+\[
+\Hx{S}=\sum_{i=1}^{n}p_i\I{x_i}=-\sum_{i=1}^{n}p_i\lb p_i=\E\bigl[-\lb\p{X}\bigr],
+\qquad \Hx{p_1,\dots,p_n}=-\sum_{i=1}^{n}p_i\lb p_i ,
+\]
+约定 $\mathbf{0\cdot\log 0=0}$（因 $\lim_{x\to0^+}x\log x=0$）。熵只与\textbf{概率分布}有关、
+与符号形式无关，是概率分布的 $n$ 元函数。因 $0\le p_i\le1$ 时 $p_i\lb p_i\le0$，故
+\textbf{离散熵恒非负}：它度量信源的\textbf{平均不确定性}（全确定时 $H=0$，等概率时最大）。
+\end{defbox}
+
+\begin{thmbox}{定理 2.1.1（基本不等式）与定理 2.1.2（极值性）}
+\textbf{定理 2.1.1}：设 $x>0$，则 $\ln x\le x-1$，等号 $\iff x=1$。\\[2pt]
+\textbf{定理 2.1.2}：设 $p_1,\dots,p_n$ 为概率分布，则
+\[
+0\le\Hx{p_1,\dots,p_n}\le\log n ,
+\]
+$\Hx{\cdot}=\log n\iff p_i=\frac1n$（\textbf{等概率}）；$\Hx{\cdot}=0\iff$\textbf{恰好某一个}
+$p_i=1$ 而其余为 $0$（确定信源）。\\
+证：由定理 2.1.1，$\sum_i p_i\ln\frac{1}{np_i}\le\sum_i p_i\bigl(\frac{1}{np_i}-1\bigr)=0$
+即 $-\sum_i p_i\ln p_i\le\ln n$；换 $\lb$ 只差正常数，等号 $\iff np_i=1$。
+\end{thmbox}
+
+\begin{defbox}{二元熵函数 $H(p)$（例 2.1.4）与例 2.1.5}
+二元信源 $\p{X}=\bigl(p,1-p\bigr)$ 的熵
+$\Hx{p}=-p\lb p-(1-p)\lb(1-p)$（$0\le p\le1$，底为 $2$），称\textbf{熵函数}（图 2.1）。
+读数：$H(0)=H(1)=0$，$H(p)=H(1-p)$（关于 $p=\frac12$ 对称），$H\bigl(\frac12\bigr)=1\bit$ 最大。
+凡“二元信源”“模 2 和”一律先写成 $H(p)$ 再代值。\\[2pt]
+例 2.1.5：甲地 $\bigl(\tfrac12,\tfrac14,\tfrac18,\tfrac18\bigr)$ 时
+$\Hx{X}=\frac12+\frac12+\frac38+\frac38=1.75\bit$；乙地 $\bigl(\tfrac78,\tfrac18\bigr)$ 时
+$\Hx{Y}\approx0.544\bit$（不确定性小、信息量少）。两个极端：晴概率为 $1$ 时两地 $H=0$；
+全部等可能时甲地 $\lb4=2\bit$、乙地 $\lb2=1\bit$——\textbf{可能消息数越多，熵越大}。
+\end{defbox}
+
+\subsection{联合熵与条件熵（2.2 节）}
+
+\begin{defbox}{定义 2.2.1--2.2.3（熵、联合熵及其推广）}
+$X$（取值 $S=\{x_1,\dots,x_n\}$）的熵为 $\Hx{X}=\sum_i\p{x_i}\log\frac{1}{\p{x_i}}$
+（与信源 $S$ 的熵同式）；$X,Y$ 的\textbf{联合熵}
+\[
+\Hx{X,Y}=\sum_{i=1}^{n}\sum_{j=1}^{m}\p{x_iy_j}\log\frac{1}{\p{x_iy_j}},
+\qquad \Hx{X,Y}=\Hx{Y,X}\ \ge 0 ,
+\]
+表示 $X,Y$ \textbf{同时发生的不确定性}（随机向量 $\mathbf{X}=(X,Y)$ 的熵即 $\Hx{X,Y}$）。
+$k$ 个变量同法：$\Hx{X_1,\dots,X_k}=\sum_{x_1\in S_1}\cdots\sum_{x_k\in S_k}
+\p{x_1,\dots,x_k}\log\frac{1}{\p{x_1,\dots,x_k}}$。
+\end{defbox}
+
+\begin{defbox}{定义 2.2.4 与 2.2.5（条件熵）}
+给定 $Y=y_j$ 时 $\Hx{X|Y=y_j}=-\sum_i\p{x_i|y_j}\log\p{x_i|y_j}$；
+$X$ \textbf{关于 $Y$ 的条件熵}为其对 $Y$ 的平均：
+\[
+\Hx{X|Y}=\sum_{j}\p{y_j}\Hx{X|Y=y_j}=-\sum_{i,j}\p{x_iy_j}\log\p{x_i|y_j},
+\]
+即\textbf{收到 $Y$ 后 $X$ 尚存的剩余不确定性}，依赖 $Y$ 的分布与 $\p{x_i|y_j}$。
+向量形式：$\Hx{\mathbf{X}|\mathbf{Y}=\mathbf{y}}=-\sum_{\mathbf{x}}\p{\mathbf{x}|\mathbf{y}}
+\log\p{\mathbf{x}|\mathbf{y}}$，$\Hx{\mathbf{X}|\mathbf{Y}}=\sum_{\mathbf{y}}\p{\mathbf{y}}
+\Hx{\mathbf{X}|\mathbf{Y}=\mathbf{y}}$。
+\end{defbox}
+
+\begin{thmbox}{定理 2.2.1（链式法则，P22）与推论 2.2.1（条件不增熵）}
+\textbf{定理 2.2.1}：
+\begin{align*}
+\Hx{X,Y}&=\Hx{X}+\Hx{Y|X}=\Hx{Y}+\Hx{X|Y}\\
+\Longrightarrow\quad
+\Hx{X|Y}&=\Hx{X,Y}-\Hx{Y},\qquad \Hx{Y|X}=\Hx{X,Y}-\Hx{X}.
+\end{align*}
+证：$\Hx{X|Y}=\sum_{i,j}\p{x_iy_j}\log\frac{\p{y_j}}{\p{x_iy_j}}=\Hx{X,Y}-\Hx{Y}$，移项即得。\\
+\textbf{推论 2.2.1}：$\Hx{X|Y}\le\Hx{X}$，\textbf{等号 $\iff X,Y$ 相互独立}。\\
+\textbf{解读}（答题写一句）：从 $X,Y$ 中获取的信息量 $=$ 从 $Y$ 中获取的信息量 $+$
+$Y$ 确定后再从 $X$ 处获取的信息量。
+\end{thmbox}
+
+\begin{keypoint}{链式法则推广与两条速算结论}
+\[
+\Hx{X_1,\dots,X_n}=\Hx{X_1}+\Hx{X_2|X_1}+\Hx{X_3|X_1,X_2}+\cdots+\Hx{X_n|X_1,\dots,X_{n-1}},
+\]
+条件形式 $\Hx{X_1,\dots,X_n|Z}=\sum_{i=1}^{n}\Hx{X_i|X_1,\dots,X_{i-1},Z}$。\\
+(1) 若 $Z=f(X,Y)$ 为确定性函数，则 $\Hx{Z|X,Y}=0$、$\Hx{X,Y,Z}=\Hx{X,Y}$
+（\textbf{确定性函数不增加熵}）；(2) 若诸 $X_i$ 独立，则 $\Hx{X_1,\dots,X_n}=\sum_i\Hx{X_i}$。
+\end{keypoint}
+
+\begin{warning}{易错点：条件熵不对称、单个条件下可“增熵”}
+(1) 一般 $\Hx{X|Y}\neq\Hx{Y|X}$（作业 2.1 中为 $1.896$ 与 $2.585$）；对称的是\textbf{熵差}
+$\Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}=\I{X;Y}$。\\
+(2) 推论 2.2.1 只是\textbf{平均意义}：对某个 $y$ 可能有 $\Hx{X|Y=y}>\Hx{X}$。
+教材例 2.2.3 中 $\Hx{X}\approx0.811$、$\Hx{X|Y=1}\approx0.918>\Hx{X}$，
+而平均后 $\Hx{X|Y}\approx0.344<\Hx{X}$（$\Hx{Y}\approx1.406$）。\\
+(3) $\Hx{Y|X}$ 用“向前转移概率”$\p{y_j|x_i}$ 算更易；求 $\Hx{X|Y}$ 首选链式法则。
+\end{warning}
+
+\subsection{熵函数的唯一性（2.3 节）}
+
+\begin{defbox}{三条公理（P25--26）}
+设 $H(p_1,\dots,p_n)$ 只依赖概率分布。
+(1) \textbf{连续性}：各 $p_i$ 的微小变化只引起不确定性的微小变化；
+(2) \textbf{单调性}：等概率下符号越多不确定性越大，
+$g(n)=H\bigl(\tfrac1n,\dots,\tfrac1n\bigr)$ 关于 $n$ 严格递增；
+(3) \textbf{分组（可加）性}：把 $S$ 分成 $k$ 个非空不交子集 $B_1,\dots,B_k$（$|B_l|=b_l$，
+$\sum_l b_l=n$），先按 $P(B_l)=b_l/n$ 抽子集、再在子集内等概率抽元素，则
+$H\bigl(\tfrac1n,\dots,\tfrac1n\bigr)=H\bigl(\tfrac{b_1}{n},\dots,\tfrac{b_k}{n}\bigr)
++\sum_{l=1}^{k}\frac{b_l}{n}H\bigl(\tfrac{1}{b_l},\dots,\tfrac{1}{b_l}\bigr)$。
+\end{defbox}
+
+\begin{thmbox}{定理 2.3.1（熵函数的唯一性）}
+$H$ 满足公理 (1)$\sim$(3) 当且仅当
+$H(p_1,\dots,p_n)=-\lambda\sum_{i=1}^{n}p_i\log p_i$，其中 $\lambda>0$、底 $>1$，
+约定 $0\log0=0$；取 $\lambda=1$、底为 $2$ 即 Shannon 熵。
+\end{thmbox}
+
+\textbf{证明思路三步}：(i) 令 $g(n)=H(\frac1n,\dots,\frac1n)$，由公理 (3) 得
+$g(mn)=g(m)+g(n)$，进而 $g(n^s)=s\,g(n)$；(ii) 取整数 $t$ 使 $s^{t}\le n^{m}<s^{t+1}$，取对数并用
+$g$ 非减得 $\frac{t}{m}\le\frac{g(n)}{g(s)}\le\frac{t+1}{m}$，与
+$\frac{t}{m}\le\frac{\log n}{\log s}\le\frac{t+1}{m}$ 夹逼，令 $m\to\infty$ 得 $g(n)=C\log n$；
+(iii) 对有理概率 $p_i=m_i/M$ 用公理 (3) 展开，再由公理 (1) 推广到任意 $p_i$。
+\textbf{意义}：底只改变单位、不改变任何结论（“底的选择无关紧要”），
+公理 (3) 最本质（性质 2.4.2 即其一般形式）。
+
+\subsection{熵函数的性质（2.4 节）}
+
+\begin{thmbox}{引理 2.4.1（对数求和不等式——一切熵不等式的工具）}
+设 $0\le p_i\le1$、$\sum_i p_i=1$；$0\le q_i\le1$ 且 $\sum_i q_i\le1$
+（\textbf{注意是“$\le$”，$q$ 不必是概率分布}），则
+$\sum_{i=1}^{n}p_i\log\frac{p_i}{q_i}\ge0$，等号 $\iff$ 对任意 $i$ 有 $p_i=q_i$
+（约定 $0\log\frac00=0$、$p_i\log\frac{p_i}{0}=+\infty$）。
+证：$p_iq_i>0$ 时由定理 2.1.1 得 $p_i\log\frac{p_i}{q_i}\le q_i-p_i$，求和即得。
+\end{thmbox}
+
+\begin{thmbox}{性质 2.4.1--2.4.4（四条基本性质）}
+\textbf{性质 2.4.1（非负性与极值性）}：离散型 $X$ 有 $0\le\Hx{X}\le\log n$；
+$\Hx{X}=\log n\iff$ 所有 $\p{x_i}=\frac1n$；$\Hx{X}=0\iff$ 恰有某 $\p{x_i}=1$ 其余为 $0$
+（即定理 2.1.2 的随机变量表述）。\\[2pt]
+\textbf{性质 2.4.2（可加性/分组原则）}：若 $(p_1,\dots,p_k,q_1,\dots,q_m)$ 为概率分布、
+$a=p_1+\cdots+p_k\in(0,1)$，则
+\begin{align*}
+\Hx{p_1,\dots,p_k,q_1,\dots,q_m}
+=\Hx{a,1-a}
++a\,\Hx{\tfrac{p_1}{a},\dots,\tfrac{p_k}{a}}
++(1-a)\,\Hx{\tfrac{q_1}{1-a},\dots,\tfrac{q_m}{1-a}} .
+\end{align*}
+\textbf{性质 2.4.3（对称性）}：任意两项互换不改变熵，即熵只与概率的集合有关、
+与“哪个符号对应哪个概率”无关。\\[2pt]
+\textbf{性质 2.4.4（扩展性）}：
+$\lim_{\varepsilon\to0^{+}}\Hx{p_1,\dots,p_{n-1},p_n-\varepsilon,\varepsilon}
+=\Hx{p_1,\dots,p_{n-1},p_n}$（增加一个概率趋于 $0$ 的符号熵不变，
+由 $x\log\frac1x$ 在 $[0,\infty)$ 上连续及 $0\log0=0$ 得）。
+\end{thmbox}
+
+\begin{keypoint}{凸性的两个定义（P30）}
+$K\subset\mathbb{R}^n$ 为\textbf{凸集}指任两点连线仍在 $K$ 中；
+$f$ 为\textbf{凸函数（下凸）}指 $f\bigl(\alpha x+(1-\alpha)y\bigr)\le\alpha f(x)+(1-\alpha)f(y)$；
+$f$ 为\textbf{上凸函数（凹）}指上式反向 $\ge$。
+概率分布集合 $K=\bigl\{P:0\le p_i\le1,\sum_i p_i=1\bigr\}$ 是凸集。
+\end{keypoint}
+
+\begin{thmbox}{定理 2.4.1（上凸性）与定理 2.4.2（次可加性，P32）}
+\textbf{定理 2.4.1}：在 $K$ 上熵函数为上凸函数，
+$H\bigl(\alpha P+(1-\alpha)Q\bigr)\ge\alpha H(P)+(1-\alpha)H(Q)$；
+证由 $\log$ 的上凸性（引理 2.4.1）逐项放缩即得。\\[2pt]
+\textbf{定理 2.4.2}：若 $X,Y$ 为离散型随机变量，则
+\[
+\Hx{X,Y}\ \le\ \Hx{X}+\Hx{Y},
+\]
+\textbf{等号成立 $\iff X$ 与 $Y$ 相互独立}。\\
+证（照抄 P32）：由链式法则只需证 $\Hx{Y|X}\le\Hx{Y}$，
+\begin{align*}
+\Hx{Y}-\Hx{Y|X}
+&=-\sum_{i,j}\p{x_iy_j}\log\p{y_j}+\sum_{i,j}\p{x_iy_j}\log\p{y_j|x_i}\\
+&=\sum_{i,j}\p{x_iy_j}\log\frac{\p{y_j|x_i}}{\p{y_j}}\ \ge\ 0,
+\end{align*}
+末步因 $\sum_j\p{y_j|x_i}=1$，对每个固定 $i$ 用引理 2.4.1；等号 $\iff\p{y_j|x_i}=\p{y_j}$
+$\iff\p{x_iy_j}=\p{x_i}\p{y_j}\iff$ 独立。\\[2pt]
+\textbf{推论 2.4.1}：$\Hx{X_1,\dots,X_n}\le\sum_{i=1}^{n}\Hx{X_i}$，等号 $\iff$ 诸 $X_i$ 独立。\\
+\textbf{推论 2.4.2}：$\Hx{X_1,\dots,X_n|Y_1,\dots,Y_m}\le\sum_{i=1}^{n}\Hx{X_i|Y_1,\dots,Y_m}$，
+等号 $\iff$ 给定 $Y_1,\dots,Y_m$ 时 $X_1,\dots,X_n$ 条件独立（证明留给读者）。
+\end{thmbox}
+
+\begin{keypoint}{本章不等式全表（填空、判断改错高频点）}
+\begin{center}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{lll}
+\toprule
+不等式 & 形式 & 等号条件 \\
+\midrule
+非负 / 极值 & $0\le\Hx{X}\le\log n$ & 左下：某 $p_i=1$；右上：等概率 \\
+条件不增熵 & $\Hx{X|Y}\le\Hx{X}$ & $X,Y$ 独立（推论 2.2.1）\\
+次可加性 & $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$ & $X,Y$ 独立（定理 2.4.2）\\
+链式（等式）& $\Hx{X,Y}=\Hx{X}+\Hx{Y|X}$ & 恒成立 \\
+下界 & $\Hx{X,Y}\ge\max\{\Hx{X},\Hx{Y}\}$ & 一方是另一方的函数 \\
+增加变量 & $\Hx{X_1,\dots,X_n}\le\Hx{X_1,\dots,X_{n+1}}$ & 恒不增 \\
+\bottomrule
+\end{tabular}
+\end{center}
+故“已知 $\Hx{X},\Hx{Y}$ 求 $\Hx{X,Y}$ 范围”的标准答案：
+$\max\{\Hx{X},\Hx{Y}\}\le\Hx{X,Y}\le\Hx{X}+\Hx{Y}$。
+\end{keypoint}
+
+\subsection{连续型随机变量的熵（2.5 节）}
+
+\textbf{为什么要“微分熵”}：把值域分成宽 $\Delta x$ 的小区间，事件“$X$ 落在第 $i$ 个小区间”
+的自信息为 $-\log\bigl[\p{x_i}\Delta x\bigr]$，按离散熵求平均并令 $\Delta x\to0$，得
+\[
+\Hx{\Delta}=-\sum_i\p{x_i}\Delta x\,\log\p{x_i}
+-\log\Delta x\underbrace{\sum_i\p{x_i}\Delta x}_{\to1}
+\xrightarrow[\Delta x\to0]{}
+\int p\log\frac{1}{p}\,dx+\infty ,
+\]
+即第二项 $-\log\Delta x\to+\infty$（潜在信息量无穷大），按离散熵概念连续熵发散、失去意义；
+第一项有限、有意义且历史上屡被使用，这就是微分熵的来源。
+
+\begin{defbox}{微分熵的定义（Shannon 1948）}
+\[
+\Hc{X}=-\int_{-\infty}^{+\infty}p(x)\log p(x)\,dx ,
+\]
+又称\textbf{微分熵}，常记 $h(X)$ 以区别于离散熵；本书取\textbf{以 e 为底}（nat；改底 $2$
+为 bit 只差因子 $\ln2$）。多变量：$\Hc{X,Y}=-\iint p(x,y)\log p(x,y)\,dx\,dy$，
+$\Hc{X|Y}=-\iint p(x,y)\log p(x|y)\,dx\,dy$。
+\end{defbox}
+
+\begin{example}{例 2.5.1（均匀）与例 2.5.2（正态）}
+$X\sim U(a,b)$，$p(x)=\frac{1}{b-a}$，则
+$\Hc{X}=-\int_a^b\frac{1}{b-a}\log\frac{1}{b-a}dx=\log(b-a)$（底 $2$ 为 $\lb(b-a)$）。
+当 $0<b-a<1$ 时 $\log(b-a)<0$：\textbf{微分熵可为负}，与离散熵必非负不一致，
+说明微分熵\textbf{并非真实反映}连续型随机变量的不确定性程度。\\[2pt]
+$X\sim N(\mu,\sigma^2)$，
+$p(x)=\frac{1}{\sqrt{2\pi}\sigma}\exp\bigl[-\frac{(x-\mu)^2}{2\sigma^2}\bigr]$：
+\begin{align*}
+\Hc{X}&=-\int p(x)\Bigl[-\tfrac12\ln(2\pi\sigma^2)-\tfrac{(x-\mu)^2}{2\sigma^2}\Bigr]dx
+=\tfrac12\ln(2\pi\sigma^2)+\tfrac{1}{2\sigma^2}\E\bigl[(X-\mu)^2\bigr]\\
+&=\tfrac12\ln\bigl(2\pi e\sigma^2\bigr)
+\qquad\Bigl(\text{底 }2:\ \tfrac12\lb(2\pi e\sigma^2)\Bigr).
+\end{align*}
+\textbf{熵功率}：$P_e=\frac{1}{2\pi e}e^{2\Hc{X}}$（底 2 时 $\frac{1}{2\pi e}2^{2\Hc{X}}$），
+正态分布的熵功率恰为其方差 $\sigma^2$。
+\end{example}
+
+\begin{keypoint}{微分熵的性质（判断题常考）}
+(1) \textbf{可为负}，故放弃非负性；\textbf{不具一一变换不变性}（离散熵在该变换下不变），
+但有变换公式 $\Hc{g(X)}=\Hc{X}+\E\bigl[\log|g'(X)|\bigr]$（$g$ 为一一映射，由定义直接推得）。\\
+(2) 保留的形式完全相同：$\Hc{X,Y}=\Hc{X}+\Hc{Y|X}=\Hc{Y}+\Hc{X|Y}$，
+$\Hc{X|Y}\le\Hc{X}$，$\Hc{Y|X}\le\Hc{Y}$，$\Hc{X,Y}\le\Hc{X}+\Hc{Y}$。\\
+(3) \textbf{概念区别}：微分熵去掉了 $-\log\Delta x$ 的无穷大项，只代表不确定程度的
+\textbf{相对度量}，不代表“事件出现的不确定性”。
+\end{keypoint}
+
+\begin{thmbox}{定理 2.5.1（峰值受限 $\to$ 均匀）与定理 2.5.2（平均功率受限 $\to$ 正态）}
+\textbf{定理 2.5.1}：设 $X$ 取值于 $(-M,M)$（幅度限制在 $[a,b]$，$b-a=2M$）的连续型随机变量，则
+\[
+\Hc{X}\le\ln2M=\ln(b-a),
+\]
+等号 $\iff X$ 服从该区间上的\textbf{均匀分布} $p(x)=\frac{1}{2M}$（$x\in[-M,M]$），
+即\textbf{峰值功率受限时均匀分布熵最大} $\log(b-a)$。
+证：约束 $\int_{-M}^{M}p=1$ 下用 Lagrange 乘子极大化 $\Hc{X}$ 得 $p\equiv$ 常数。\\[2pt]
+\textbf{定理 2.5.2}：设 $X$ 密度为 $p(x)$，方差 $\sigma^2$ 一定时
+\[
+\Hc{X}\le\ln\sqrt{2\pi e\sigma^2}=\tfrac12\ln\bigl(2\pi e\sigma^2\bigr),
+\]
+等号 $\iff X\sim N(\mu,\sigma^2)$。
+证：对 $\Hc{X}-\lambda_1\!\int p-\lambda_2\!\int(x-\mu)^2p$ 取极值得
+$p\propto e^{-\lambda_2(x-\mu)^2}$，由 $\int p=1$、$\int(x-\mu)^2p=\sigma^2$ 定出
+$\lambda_2=\frac{1}{2\sigma^2}$，即正态密度。\\[2pt]
+\textbf{一句话记忆}：\textbf{幅度（峰值）受限 $\to$ 均匀；平均功率（方差）受限 $\to$ 正态}。
+故方差为 $\sigma^2$ 的分布中正态最“不确定”，高斯信道是最坏信道（第 5 章基础）。
+\end{thmbox}
+
+\subsection{意义信息和加权熵（2.6 节）}
+
+Shannon 信息量只依赖概率、撇开了人的主观因素；但实际事件虽以一定概率发生，
+对人有不同的价值和效用（如夏天“阴有小雪”概率极小却后果严重）。Guiasu（1997）
+为此引入权重，得到\textbf{意义信息}与\textbf{加权熵}。
+
+\begin{defbox}{事件权重、意义信息与加权熵（式 2.6.1）}
+设信源 $\begin{pmatrix}a_1 & \cdots & a_k\\ p_1 & \cdots & p_k\end{pmatrix}$，
+$0\le p_i\le1$，$\sum_i p_i=1$；对每个事件指定非负实数 $w_i\ge0$，称\textbf{权重}
+（效用权重系数）：事件越有意义、越重要、越有效用，权重越大。\\
+\textbf{意义信息}（加权自信息）$I_w(a_i)=w_i\I{a_i}=-w_i\log p_i$，
+刻画事件发生并叠加其主观意义后提供的单个信息量。\\
+\textbf{加权熵}（意义信息的统计平均，既依赖概率又依赖权重）：
+\[
+H_w(w_1,\dots,w_k;p_1,\dots,p_k)=-\sum_{i=1}^{k}w_i\,p_i\log p_i ,
+\]
+其中 $p_i$ 是客观概率，$w_i$ 决定于实验者目的或系统的某些质的特性。
+\end{defbox}
+
+\begin{keypoint}{加权熵的八条性质（P37--41，记名称 + 结论）}
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}p{1.75cm}p{11.2cm}@{}}
+\toprule
+性质 & 条件与结论 \\
+\midrule
+1 非负性 & $w_i\ge0$ 时 $H_w\ge0$：赋权后总能提供至少为零的平均信息量 \\
+2 等重性 & 各 $w_i=\omega$ 时 $H_w=\omega\,\Hx{p_1,\dots,p_k}$，即 Shannon 熵的 $\omega$ 倍 \\
+3 无重性 & 所有 $w_i=0$ 时 $H_w=0$：即使 Shannon 熵 $\neq0$，得到的也是无用信息 \\
+4 确定性 & 某 $p_j=1$ 而余为 $0$ 时 $H_w=0$：确定事件再重要也不提供信息（与 Shannon 熵一致）\\
+5 非容性 & 有概率者无权重、有权重者概率为 $0$ 时 $H_w=0$：有意义的“不可能”，整体信息量为零 \\
+6 扩展性 & 增加 $p_{k+1}\to0$、$w_{k+1}>0$ 的事件时 $H_w$ 不变：其平均贡献趋于 $0$ \\
+7 线性叠加性 & $\lambda\ge0$ 时 $H_w(\lambda w;\cdot)=\lambda H_w(w;\cdot)$：权重与熵同倍放大 \\
+8 递增性 & 某事件被分割为二时 $H_w$ 增加，增量与分出概率及新事件权重有关；权重全同即退化为 Shannon 熵的递增性 \\
+\bottomrule
+\end{tabular}
+\end{center}
+在某些公理条件下同样可证\textbf{式 (2.6.1) 是加权熵的唯一函数形式}（P41）。
+\end{keypoint}
+
+\begin{warning}{加权熵的定位（简答/论述标准答案）}
+加权熵能在一定程度上反映信息对收信者的\textbf{主观价值}，但远不能全面解决与主观价值、
+主观意义有关的信息问题；语法信息、语义信息、语用信息、模糊信息等研究
+\textbf{尚未获得令人满意的统一结果}。
+\end{warning}
+
+\subsection{Rényi 熵与 Tsallis 熵（2.7 节）}
+
+\begin{defbox}{Rényi 熵与 Tsallis 熵（Shannon 熵的带参数推广）}
+设离散变量分布为 $(p_1,\dots,p_n)$，$q$ 为任意实参数：
+\[
+\mathrm{R}_q=\frac{1}{1-q}\log\Bigl(\sum_{i=1}^{n}p_i^{q}\Bigr),
+\qquad
+\mathrm{S}_q=\frac{1}{q-1}\Bigl(1-\sum_{i=1}^{n}p_i^{q}\Bigr)
+=\frac{1}{1-q}\Bigl(\sum_{i=1}^{n}p_i^{q}-1\Bigr).
+\]
+\textbf{Rényi 熵两端}：$q=0$ 时 $\mathrm{R}_0=\log\sum_i p_i^0=\log n$（元素个数的对数）；
+$q\to1$ 时分子分母同趋于 $0$，由\textbf{洛必达法则}
+$\lim_{q\to1}\mathrm{R}_q=\frac{-\sum_i p_i\log p_i}{\sum_i p_i}
+=-\sum_i p_i\log p_i=\Hx{X}$，即 \textbf{Rényi 熵在 $q=1$ 时退化为 Shannon 熵}。\\
+\textbf{Tsallis 熵}是 Boltzmann--Gibbs 熵的推广（Tsallis，1988），是统计物理中度量信息的新方法，
+能对\textbf{混杂或具不规则碎片形状的非可加（非广延）系统}给出较满意的物理解释。\\
+\textbf{关系}：$\mathrm{R}_q=\dfrac{\ln\bigl(1+(1-q)\mathrm{S}_q\bigr)}{1-q}$，且
+$q\to1$ 时 $\mathrm{R}_1=\mathrm{S}_1=\Hx{X}$。$q\neq1$ 的 $q$-Rényi 熵常比 Shannon 熵
+性质更好（对极端事件更敏感），故有重要理论与实际意义。
+\end{defbox}
+
+\subsection{本章作业与讲评}
+
+\textbf{作业}（教材 P43）：\textbf{2.1、2.2、2.4、2.7、2.10}，以及
+\textbf{证明 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$}（参考书本 \textbf{P32 定理 2.4.2}）。
+
+\begin{keypoint}{老师讲评原话（对症复习）}
+\textbf{2.7 (2)} 中 $\Hx{X|Z}$ \textbf{错得较多}，且 \textbf{$Z$ 的分布易求错}；
+\textbf{2.10 (2)} $\log$ 函数的\textbf{积分易求错}；\textbf{2.4} 基本都对；
+\textbf{2.2} 思路基本都对、写法不一样；证明 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$ 照书
+\textbf{P32 定理 2.4.2}。
+\end{keypoint}
+
+\begin{keypoint}{关键结论速查（单位 bit）}
+\begin{center}
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{@{}lll@{}}
+\toprule
+题 & 所求 & 答案 \\
+\midrule
+2.1 & $\Hx{X|Y}=2\lb6-\Hx{Y}$ & $1.896$ \\
+    & $\Hx{Y|X}=\lb6$；$\Hx{Z|X,Y}=\lb6$ & $2.585$；$2.585$ \\
+    & $\Hx{X,Z|Y}=1.896+2.585$ & $4.480$ \\
+    & $\Hx{Z|X}=\Hx{Y}$ & $3.274$ \\
+\midrule
+2.7 & $\Hx{X}=\Hx{Y}$ & $-\frac23\lb\frac23-\frac13\lb\frac13=0.918$ \\
+    & $\Hx{X|Y}=\Hx{Y|X}=\Hx{X|Z}$ & $2/3=0.667$ \\
+    & $\Hx{X,Y,Z}$ & $\lb3=1.585$ \\
+\midrule
+2.10 & $\Hc{X}$ & $\lb2=1$ \\
+     & $\Hc{X^2}$ & $1-\lb\mathrm{e}\approx-0.443$ \\
+     & $\Hc{X^3}$ & $\lb6-2\lb\mathrm{e}\approx-0.300$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{keypoint}
+
+\begin{example}{2.1 三颗骰子：$X=X_1$，$Y=X_1+X_2$，$Z=X_1+X_2+X_3$}
+$Y$ 的分布 $p_Y=\frac1{36}(1,2,3,4,5,6,5,4,3,2,1)$，
+$\Hx{Y}=\lb36-\frac1{36}\sum_{y=2}^{12}c_y\lb c_y=5.170-2.326=3.274\bit$。
+再用“抽掉已知量”：$\Hx{Y|X}=\Hx{X_2}=\lb6$、$\Hx{X|Y}=2\lb6-\Hx{Y}=1.896$、
+$\Hx{Z|X,Y}=\Hx{X_3}=\lb6$、$\Hx{Z|X}=\Hx{X_2+X_3}=\Hx{Y}=3.274$。
+\textbf{易错}：$\Hx{X|Y}\neq\Hx{Y|X}$；不必真写出 $Z$ 的分布（三重卷积）。
+\end{example}
+
+\begin{example}{2.2 十个数字的传输（收到一个数字后平均得到的信息量 $=\I{X;Y}$）}
+发送 $X$ 在 $\{0,\dots,9\}$ 上等可能，$\Hx{X}=\lb10=3.322\bit$；奇数以 $\tfrac12$ 概率错成
+“下一个奇数”、其余正确。可算得 $Y$ 仍等可能（偶数只由自己传来，奇数有两个来源各 $\frac1{20}$），
+收到奇数时 $\Hx{X|Y=y}=1\bit$、偶数时 $=0$，奇偶各半，故 $\Hx{X|Y}=\tfrac12\bit$，
+$\I{X;Y}=\lb10-\tfrac12=2.822\bit$。点评：思路都对、写法不同——务必先写清信道模型
+$p(y|x)$ 与假设；本题信道对称（$\Hx{X|Y}=\Hx{Y|X}$），可用两条路径互验。
+\end{example}
+
+\begin{example}{2.4 条件熵的三角不等式（基本都对）}
+(a) $\Hx{X|Y}+\Hx{Y|Z}\ge\Hx{X|Y,Z}+\Hx{Y|Z}\overset{\text{链式}}{=}\Hx{X,Y|Z}\ge\Hx{X|Z}$。\\
+(b) 三项分母不同，\textbf{不能分别相除后直接比较}：先统一分母到 $A=\Hx{X,Y,Z}$
+（分母放大使分式变小），再用 $\Hx{X|Y}+\Hx{Y|Z}=A-\Hx{Z}$ 与 $A\ge\Hx{X,Z}$ 双向放缩，
+即得 $\frac{\Hx{X|Y}}{\Hx{X,Y}}+\frac{\Hx{Y|Z}}{\Hx{Y,Z}}\ge\frac{\Hx{X|Z}}{\Hx{X,Z}}$。
+\end{example}
+
+\begin{example}{2.7 模 2 和（$\Hx{X|Z}$ 错得较多、$Z$ 的分布易求错）}
+联合分布 $p(0,0)=p(0,1)=p(1,0)=\tfrac13$、$p(1,1)=0$；边缘
+$p_X=p_Y=\bigl(\tfrac23,\tfrac13\bigr)$，故 $\Hx{X}=\Hx{Y}=0.918$，$\Hx{X,Y}=\lb3=1.585$，
+$\Hx{X|Y}=\Hx{Y|X}=1.585-0.918=2/3\bit$。\\
+\textbf{$Z=X\oplus Y$ 的分布}：$X=Y$ 时 $Z=0$、$X\neq Y$ 时 $Z=1$，故
+$\p{Z=0}=\tfrac13$、$\p{Z=1}=\tfrac13+\tfrac13=\tfrac23$，即 $\Hx{Z}=0.918\bit$。
+再由 $Z=0\Rightarrow X=Y=0$（故 $\Hx{X|Z=0}=0$）、$Z=1$ 时 $X$ 两值各占一半
+（$\Hx{X|Z=1}=1\bit$），得 $\Hx{X|Z}=\tfrac13\cdot0+\tfrac23\cdot1=2/3\bit$。
+又 $Z$ 是 $X,Y$ 的确定性函数，$\Hx{Z|X,Y}=0$，故 $\Hx{X,Y,Z}=\Hx{X,Y}=\lb3=1.585\bit$。
+\end{example}
+
+\begin{example}{2.10 连续熵（(2) 的 $\log$ 积分易求错）}
+$X\sim U(-1,1)$，$p(x)=\tfrac12$，$\Hc{X}=-\int_{-1}^{1}\tfrac12\lb\tfrac12\,dx=\lb2=1\bit$。\\
+(2) 令 $Y=X^2$，由 $F_Y(y)=\sqrt y$ 得 $p_Y(y)=\frac{1}{2\sqrt y}$（$0<y\le1$），故
+\begin{align*}
+\Hc{X^2}&=-\int_{0}^{1}\frac{1}{2\sqrt y}\lb\frac{1}{2\sqrt y}\,dy
+=\int_{0}^{1}\frac{1}{2\sqrt y}\Bigl(1+\tfrac12\lb y\Bigr)dy
+=1+\tfrac14\cdot\frac{1}{\ln2}\int_{0}^{1}y^{-1/2}\ln y\,dy\\
+&=1-\frac{1}{\ln2}=1-\lb\mathrm{e}\approx-0.443\bit .
+\end{align*}
+关键积分 $\int_0^1 y^{a-1}\ln y\,dy=-\frac{1}{a^2}$（此处 $a=\tfrac12$ 得 $-4$）；
+\textbf{负值原因}：$X^2$ 的密度在 $y\to0^+$ 处发散、概率高度集中。\\
+(3) 用变换公式最省力：$\Hc{X^3}=\Hc{X}+\E\bigl[\lb|3X^2|\bigr]=1+\lb3+\E[\lb X^2]$，而
+$\E[\lb X^2]=2\E[\lb|X|]=\frac{2}{\ln2}\int_0^1\ln x\,dx=-2\lb\mathrm{e}$，故
+$\Hc{X^3}=1+\lb3-2\lb\mathrm{e}=\lb6-2\lb\mathrm{e}\approx-0.300\bit$。
+\textbf{易错}：$X^2$ 不是均匀分布（密度须由分布函数求导，两分支）；$X^3$ 别丢 Jacobi 项。
+\end{example}
+
+\begin{example}{补充：证明 $\Hx{X,Y}\le\Hx{X}+\Hx{Y}$（照 P32 定理 2.4.2）}
+\textbf{证法一（条件熵，最标准）}：$\Hx{X,Y}=\Hx{X}+\Hx{Y|X}\le\Hx{X}+\Hx{Y}$，
+等号 $\iff\Hx{Y|X}=\Hx{Y}\iff$ 独立。\\
+\textbf{证法二（定义 + 对数不等式）}：
+\begin{align*}
+\Hx{X,Y}-\Hx{X}-\Hx{Y}
+&=\sum_{x,y}p(x,y)\lb\frac{p(x)p(y)}{p(x,y)}
+\overset{\ln t\le t-1}{\le}\frac{1}{\ln2}\sum_{x,y}\bigl[p(x)p(y)-p(x,y)\bigr]=0 .
+\end{align*}
+等号 $\iff p(x,y)=p(x)p(y)$ 对一切 $(x,y)$ 成立 $\iff$ 独立；推广见推论 2.4.1。
+\end{example}
+
+\begin{warning}{复习优先级（按讲评与考点频次）}
+\textbf{第一档}：熵/联合熵/条件熵的计算（先列分布表）、链式法则、定理 2.4.2 证明、
+二元熵函数、连续熵的均匀/正态结果。\quad
+\textbf{第二档}：六条性质及等号条件，两个最大微分熵定理。\quad
+\textbf{第三档}：唯一性三公理、加权熵八性质、Rényi/Tsallis 定义与 $q=1$ 退化。
+\end{warning}

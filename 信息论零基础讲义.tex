@@ -1,0 +1,55 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+\vspace*{2.0cm}
+{\Huge\bfseries\color{acc1} 信息论基础\ \ 零基础讲义}\\[1.0em]
+{\Large 一节课没听也能看懂的版本}\\[2.5em]
+\rule{0.7\textwidth}{0.8pt}\\[1.5em]
+{\large 从“概率 $p(x)$ 是什么”讲到“汉明码怎么构造”}\\[0.5em]
+{\large 每个符号都翻译成人话\ \textbullet\ 每个公式都配手算例子}\\[0.5em]
+{\large 每讲末尾附「考试怎么考」与自测题}\\[1.5em]
+\rule{0.7\textwidth}{0.8pt}\\[3.5em]
+\begin{minipage}{0.86\textwidth}
+\begin{tcolorbox}[colback=soft,colframe=acc1,boxrule=0.7pt,arc=2pt]
+\textbf{怎么用这本讲义（重要）}\\[4pt]
+\begin{enumerate}[leftmargin=1.5em,itemsep=2pt,topsep=2pt]
+  \item \textbf{务必按顺序读}第1--4讲，它们只讲三件事：$p(x)$ 是什么、$I(x)$ 是什么、$H(X)$ 是什么。这三件事不透，后面全是天书。
+  \item 读的时候\textbf{手里拿支笔}，看到例题就遮住答案自己算一遍——信息论不背公式是靠算熟的。
+  \item 每讲末尾的橙色框「\textbf{考试怎么考}」是得分清单，考前只看这些框也能捞回大量分数。
+  \item 紫色框「\textbf{你可能想问}」是我预先替你问的问题，别跳过，那都是你真正会卡住的地方。
+\end{enumerate}
+\end{tcolorbox}
+\end{minipage}
+\vfill
+{\large 配套材料：《作业1-超详细版》（第2章作业逐步讲解）}\\[3cm]
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\input{notes2/part0}
+\clearpage
+\input{notes2/part1}
+\clearpage
+\input{notes2/part2}
+\clearpage
+\input{notes2/part3}
+\clearpage
+\input{notes2/part4}
+\clearpage
+\input{notes2/part5}
+\clearpage
+\input{notes2/part6}
+\clearpage
+\input{notes2/part7}
+\clearpage
+\input{notes2/part8}
+\clearpage
+\input{notes2/part9}
+
+\end{document}

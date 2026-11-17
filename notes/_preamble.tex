@@ -1,0 +1,85 @@
+% 公共导言区：宏包与自定义环境（供复习笔记各章 \input 使用）
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\geometry{left=2.1cm,right=2.1cm,top=2.2cm,bottom=2.0cm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{graphicx}
+
+% ---------- 颜色 ----------
+\definecolor{mainblue}{RGB}{25,70,130}
+\definecolor{accent}{RGB}{170,45,45}
+\definecolor{soft}{RGB}{245,247,250}
+\definecolor{notegreen}{RGB}{20,105,85}
+\definecolor{warnred}{RGB}{170,45,45}
+\definecolor{gold}{RGB}{150,105,20}
+
+% ---------- 数学宏 ----------
+\newcommand{\Hx}[1]{H\!\left(#1\right)}
+\newcommand{\Hc}[1]{H_{c}\!\left(#1\right)}
+\newcommand{\I}[1]{I\!\left(#1\right)}
+\newcommand{\lb}{\log_{2}}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\newcommand{\bit}{\,\text{bit}}
+\newcommand{\dt}{\,\text{dt}}
+\newcommand{\p}[1]{p\!\left(#1\right)}
+
+% ---------- 三色盒子 ----------
+\newtcolorbox{defbox}[1]{enhanced,breakable,
+  colback=soft,colframe=mainblue,boxrule=0.6pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=mainblue,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{thmbox}[1]{enhanced,breakable,
+  colback=white,colframe=mainblue!70!black,boxrule=0.6pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=mainblue!70!black,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{keypoint}[1]{enhanced,breakable,
+  colback=white,colframe=notegreen,boxrule=0.6pt,arc=2pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=notegreen,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{warning}[1]{enhanced,breakable,
+  colback=white,colframe=warnred,boxrule=0.6pt,arc=2pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=warnred,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{example}[1]{enhanced,breakable,
+  colback=white,colframe=gold,boxrule=0.6pt,arc=2pt,
+  left=6pt,right=6pt,top=4pt,bottom=4pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=gold,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+% ---------- 标题格式 ----------
+\titleformat{\section}{\Large\bfseries\color{mainblue}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{mainblue!85!black}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{mainblue!70!black}}{\thesubsubsection}{0.4em}{}
+
+% ---------- 页眉页脚 ----------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 信息论基础\ \textbar\ 期末复习笔记}
+\fancyhead[R]{\small\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\allowdisplaybreaks
+\setlength{\parskip}{2pt}

@@ -1,0 +1,484 @@
+\section{连续型随机变量的熵：为什么它可以是个负数}
+
+前面几讲算的熵都是\textbf{离散}随机变量的：掷骰子、抛硬币。这一讲换成\textbf{连续}随机变量：
+身高、温度、电压、噪声。你会碰到一件让初学者发愣的事——\textbf{连续随机变量的熵可以是负数}：
+$X$ 在 $[-1,1]$ 上均匀分布时，$\Hc{X^2}\approx-0.443\bit$。信息量怎么会是负的？
+本讲把负号的来历讲透：先讲清"连续随机变量"（第一、二节），再给连续熵的定义与来历（第三节），
+再算两个必背结果（第四节），然后手把手算一道作业原型题（第五节），最后是最大熵定理、
+熵功率与答题模板（第六至九节）。零基础没关系，会四则运算就跟得上。
+
+\subsection{第一节\quad 连续随机变量：为什么"取到某一个点"的概率是 0}
+
+\subsubsection{先看离散，再看连续}
+
+抛一枚硬币，记 $X=0$ 为反面、$X=1$ 为正面，$\p{X=0}=\p{X=1}=0.5$。记号 $\p{\cdot}$ 就是"概率函数"：
+给它一个取值，它告诉你这个取值出现的可能性。离散情形有三个特征，下面对照的就是这三条：
+(1) 取值\textbf{一个一个数得出来}；(2) 每个取值都有一份\textbf{大于 $0$} 的概率 $\p{x_i}>0$；
+(3) 所有取值概率加起来恰好是 $1$，即 $\sum_i\p{x_i}=1$——概率就是"份额"。
+连续情形的样子完全不同：取\textbf{某地成年男性的身高} $X$（厘米），问 $X$ 恰好等于
+$170.0000000\cdots$ 厘米的概率是多少？答案是 $\mathbf{0}$，不是"很小"，是\textbf{严格等于零}。
+因为 $170$ 后面可以跟无限多位小数，$170.0001$、$170.000100001$……有无限多种可能，
+而总概率只有 $1$ 这一份，无限多种可能去分一份，每种拿到的只能是 $0$。
+
+\begin{defbox}{核心区别：连续时只有"区间"才有概率}
+离散时"$X$ 等于某个值"有概率 $\p{x_i}>0$；连续时"$X$ 恰好等于某个具体值"的概率\textbf{永远是 0}，
+即 $\p{X=x}=0$。有概率的只有"$X$ \textbf{落在某区间里}"：
+\[
+P(a<X\le b)=\int_a^b f(x)\,dx ,
+\]
+这个 $f(x)$ 叫\textbf{概率密度函数}（简称\textbf{密度}）。
+所以"身高在 169 到 171 厘米之间概率为 0.35"是有意义的话；
+"恰好等于 170 的概率是 0.02"则毫无意义——任何单点概率都是 $0$。
+\end{defbox}
+
+\subsubsection{$f(x)$ 不是概率，而是"概率的密度"}
+
+这是全讲最容易误解的地方：$f(x)$ 名字带"概率"，但它\textbf{本身不是概率}。先看一个请记一辈子的类比。
+
+\begin{idea}{一根铁棍的"线密度"}
+一根铁棍线密度 $2$ 千克/米。问：铁棍上\textbf{某一个几何点}有多少质量？答案是 $0$——
+点没有长度，再密的棍子一个点也没有质量；但问"\textbf{从 3 米到 4 米}这段多重？"
+答案是 $2\times1=2$ 千克。规律是\textbf{质量 $=$ 密度 $\times$ 长度}，
+而且\textbf{密度可以大于 $1$}（$2$ 千克/米就大于 $1$），这不影响任何事。
+翻译成概率语言：$f(x)$ 就是"概率的密度"，\textbf{概率 $=$ 密度 $\times$ 区间长度}
+（区间很短、密度近似不变时）：某一点的"概率"是 $0$，但一段区间的概率可以很大。
+\end{idea}
+
+\begin{calc}{$f(x)>1$ 完全正常}
+密度函数必须满足两个条件：
+\[
+\text{(1)}\ f(x)\ge0\ \text{对所有 }x ;
+\qquad\qquad
+\text{(2)}\ \int_{-\infty}^{+\infty}f(x)\,dx=1 .
+\]
+条件 (2) 的大白话是"曲线 $y=f(x)$ 下方的\textbf{总面积等于 $1$}"（总面积 $=$ 总概率）。
+\textbf{注意条件里没有 $f(x)\le1$！}$f$ 可以等于 $4$、$100$——它是密度不是概率，不受 $1$ 限制。
+例如 $X\sim U(0,\tfrac14)$，区间内密度是常数，由总面积 $=1$ 定出
+$f(x)=\dfrac{1}{\tfrac14-0}=4$（$0<x\le\tfrac14$），其他处为 $0$。
+$f(x)=4$ 看着吓人，但从不拿它当概率，只用它乘长度：
+$P\bigl(0<X\le\tfrac18\bigr)=4\times\tfrac18=0.5$，是个合格的概率（总面积
+$\int_0^{1/4}4\,dx=1$ 也正常）。\textbf{记住}：$f(x)$ 的单位是"每单位长度的概率"，
+所以可以大于 $1$；真正的概率是\textbf{面积}，面积永远不超过 $1$。
+\end{calc}
+
+两种最常用的密度，后面反复用：
+\[
+X\sim U(a,b):\quad f(x)=\frac{1}{b-a}\ (a\le x\le b),\qquad
+X\sim N(m,\sigma^2):\quad f(x)=\frac{1}{\sqrt{2\pi}\,\sigma}\exp\!\left(-\frac{(x-m)^2}{2\sigma^2}\right).
+\]
+均匀分布的意思是"落进长度相等的区间，概率也相等"；正态分布是中间高两边低的钟形曲线，
+$m$ 是均值（钟形中心），$\sigma^2$ 是方差（胖瘦，越大越分散），$\exp(t)$ 就是 $\mathrm{e}^t$
+（$\mathrm{e}\approx2.71828$）。两条曲线总面积都是 $1$，但正态的积分写不出简单表达式，
+考试只需记住"总面积 $=1$、方差 $=\sigma^2$"这两条。
+
+\subsection{第二节\quad 积分这件事，你只要会这么多}
+
+连续熵里全是积分号，先把门槛抹平。\textbf{图像一}：$\int_a^b f(x)dx$ 就是"曲线 $y=f(x)$、
+横轴、$x=a$、$x=b$ 围出来的面积"（横轴上方算正），$f$ 是概率密度时它等于 $P(a<X\le b)$。
+\textbf{图像二}：把 $[a,b]$ 切成无数宽 $\Delta x$ 的细条，每条近似是"高 $f(x_i)$、宽 $\Delta x$"
+的矩形、面积 $f(x_i)\Delta x$，全部加起来再让 $\Delta x\to0$ 就是积分。
+\textbf{记住：积分就是求和的连续版}——第三节全靠这句话。
+
+\begin{defbox}{本讲要用的标准积分（含主力积分的来历）}
+\[
+\int_a^b c\,dx=c\,(b-a)\quad(c\ \text{常数}),
+\qquad
+\int_0^1y^{\alpha}dy=\frac{1}{\alpha+1}\quad(\alpha>-1),
+\qquad
+\int_0^1\frac{dy}{\sqrt y}=2 ,
+\]
+\[
+\boxed{\ \int_0^1 y^{a-1}\ln y\,dy=-\frac{1}{a^{\,2}}\ }\qquad(a>0).
+\]
+最后这条是本讲的\textbf{主力积分}，第五节全靠它。来历：用求导公式
+$(y^{a}\ln y)'=a\,y^{a-1}\ln y+y^{a-1}$（"前导后不导 $+$ 前不导后导"）从 $0$ 积到 $1$ 得
+$\bigl[y^{a}\ln y\bigr]_{0}^{1}=\int_0^1a\,y^{a-1}\ln y\,dy+\int_0^1y^{a-1}dy$；
+左边 $=0$（$y=1$ 时 $\ln1=0$；$y\to0^+$ 时 $y^{a}\ln y\to0$，因为 $a>0$ 时幂函数压得住对数），
+右边第二个积分 $=\dfrac1a$，于是 $0=a\int_0^1y^{a-1}\ln y\,dy+\dfrac1a$，即主力积分成立。
+\textbf{本讲只用 $a=\tfrac12$}：$\int_0^1y^{-1/2}\ln y\,dy=-\frac{1}{(1/2)^2}=-4$。
+注意这是对数 $\ln$（底 $\mathrm{e}$），而熵的定义用 $\lb$（底 $2$），两者差一个 $\ln2$，第五节会救命。
+\end{defbox}
+
+还有一个第三节要用的概念：\textbf{期望}，即"加权平均"，权重是密度：
+$\E\bigl[g(X)\bigr]=\int_{-\infty}^{+\infty}g(x)f(x)\,dx$。平均身高是 $\E[X]$，
+"离均值平方的平均"就是方差 $\E[(X-m)^2]=\sigma^2$。这些积分不必会算，只要知道它是加权平均。
+
+\subsection{第三节\quad 连续熵（微分熵）的定义}
+
+\subsubsection{定义，以及它和离散熵的血缘}
+
+\begin{defbox}{定义（连续熵 / 微分熵）}
+设连续型随机变量 $X$ 的密度为 $f(x)$，定义
+\[
+\Hc{X}=-\int_{-\infty}^{+\infty}f(x)\lb f(x)\,dx=\E\bigl[-\lb f(X)\bigr].
+\]
+\textbf{人话}：对每个 $x$ 先算 $-\lb f(x)$（"这个位置有多稀罕"），再用密度当权重做加权平均，
+即"平均的稀罕程度"。\textbf{它是离散熵的"积分版"}：把 $\Hx{X}=-\sum_i\p{x_i}\lb\p{x_i}$
+里的"求和 $\sum$"换成"积分 $\int$"、"概率 $\p{x_i}$"换成"密度 $f(x)dx$"即可，
+所以也常记作 $H(X)$、$h(X)$，或叫\textbf{微分熵}。对照看：
+\end{defbox}
+
+\begin{center}
+\small
+\begin{tabular}{@{}l c c@{}}
+\toprule
+ & 离散 & 连续 \\
+\midrule
+描述工具 & 概率 $\p{x_i}$ & 密度 $f(x)$ \\
+熵的定义 & $\Hx{X}=-\sum_i\p{x_i}\lb\p{x_i}$ & $\Hc{X}=-\displaystyle\int f(x)\lb f(x)dx$ \\
+能否为负 & 不能（恒 $\ge0$） & \textbf{能} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+最后一行先给了答案，下面解释"为什么"——这是本章最常被问的一句话。
+
+\subsubsection{它从哪来：切成小格子，再让格子无限窄}
+
+用"积分是无限细的求和"这个图像，一步步推。这是理解全讲的钥匙，请慢慢读。
+
+\begin{calc}{核心推导：切成宽 $\Delta x$ 的小格子}
+\textbf{第 1 步（切格子）}：把取值范围切成一根根宽 $\Delta x$ 的小格子（像把棍子切成薄片），
+第 $i$ 格是 $[a+(i-1)\Delta x,\ a+i\Delta x]$，取格内一点 $x_i$ 当代表。
+\textbf{第 2 步（写概率）}：$X$ 落进第 $i$ 格的概率 $=$ 那根细条的面积 $\approx f(x_i)\Delta x$。
+\textbf{第 3 步（当成离散问题算熵）}："落在哪个格子"是个离散随机变量，取值概率
+$p_i=f(x_i)\Delta x$，套离散熵公式（第二步用 $\lb(uv)=\lb u+\lb v$）：
+\begin{align*}
+H_\Delta
+=-\sum_{i}f(x_i)\Delta x\Bigl[\lb f(x_i)+\lb\Delta x\Bigr]
+=-\sum_{i}f(x_i)\Delta x\,\lb f(x_i)\ -\ \lb\Delta x\sum_{i}f(x_i)\Delta x .
+\end{align*}
+\textbf{第 4 步（认亲戚）}：第一项是"密度 $\times$ $\lb$密度"再求和，$\Delta x\to0$ 时正是积分
+$-\int f\lb f\,dx=\Hc{X}$，是个\textbf{有限值}；第二项里 $\sum_if(x_i)\Delta x$ 是所有细条面积之和
+$=$ 曲线下总面积 $=1$。于是 $H_\Delta\approx\Hc{X}-\lb\Delta x$。
+\end{calc}
+
+关键就在 $-\lb\Delta x$。$\Delta x$ 是小于 $1$ 的正数（比如 $0.001$），故 $\lb\Delta x<0$、
+$-\lb\Delta x>0$，且 $\Delta x$ 越小它越大：$H_\Delta=\Hc{X}+(-\lb\Delta x)$，
+而 $-\lb\Delta x\to+\infty$（$\Delta x\to0$）。
+
+\begin{defbox}{结论：真熵是 $+\infty$，只留有限的那一块；以及三条必记推论}
+照离散熵的定义老实取极限，连续随机变量的\textbf{熵是无穷大}——这讲得通：要精确写下一个连续量
+需要无限多比特，即"连续随机变量的潜在信息量无穷大"。Shannon 的处理很干脆：
+\textbf{把趋于无穷的那一项扔掉，只留有限的那一项}，叫\textbf{微分熵}：
+$\Hc{X}=\lim_{\Delta x\to0}\bigl(H_\Delta+\lb\Delta x\bigr)$。
+所以必须清楚：$\Hc{X}$ \textbf{不是}"真正的无穷大熵"，而是"真熵减去无穷大常数
+$-\lb\Delta x$ 后剩下的有限部分"。由此有三条必记推论：
+\\[1pt]
+\textbf{(1) 可以为负。} 因为 $\Hc{X}=H_\Delta+\lb\Delta x$，而 $\lb\Delta x\to-\infty$ 可以任意小，
+剩下这块当然可能为负，例如 $X\sim U(0,\tfrac12)$ 时 $\Hc{X}=\lb\tfrac12=-1\bit<0$。
+更直接的理由：单项 $-\lb f(x)$ 只在 $f(x)\le1$ 时 $\ge0$，而密度\textbf{可以大于 $1$}，
+此时 $\lb f(x)>0$、单项为负（第五节的 $X^2$ 即是）。所以负的微分熵\textbf{不代表}"比确定还确定"，
+只说"相对同单位下密度为 $1$ 的基准分布，这个变量更集中"。\\[1pt]
+\textbf{(2) 只有"相对大小"有意义。} 那个无穷大常数 $-\\lb\Delta x$ \textbf{只跟格子宽度有关、
+跟分布无关}，比较两个变量时自动抵消：$H_\Delta(X)-H_\Delta(Y)=\Hc{X}-\Hc{Y}$（同一 $\Delta x$）。
+所以连续熵只能比"谁更不确定"，不能像离散熵那样说"这个信源值 3 比特"。
+\textbf{数值还依赖单位}：同一个 $X$，用"厘米"记账与用"米"记账差 $\lb100$。\\[1pt]
+\textbf{(3) 非负性没了，别的性质还在}（链式法则、条件熵不等式都保留，只是 $-\lb f$ 不再保底非负）。
+\end{defbox}
+
+\subsubsection{顺手记一个公式：$\Hc{g(X)}$（第五节要用）}
+
+\begin{defbox}{变换公式：$\Hc{g(X)}=\Hc{X}+\E\bigl[\lb|g'(X)|\bigr]$}
+设 $y=g(x)$ 是\textbf{一一映射}（严格单调：一直增或一直减），$g'(x)$ 是它的导数（斜率）。则
+\[
+\Hc{g(X)}=\Hc{X}+\E\bigl[\lb\bigl|g'(X)\bigr|\bigr].
+\]
+\textbf{人话}：变换后的熵 $=$ 原来的熵 $+$ "斜率绝对值的对数"的平均。斜率高，$x$ 的微小变化
+被放大成 $y$ 的大变化，分布更"摊开"、密度更低、熵更大，加号就是这个意思。
+\textbf{来历}：一一映射下 $f_Y(y)=\dfrac{f_X(x)}{|g'(x)|}$（分布被拉伸、密度变矮），代入定义
+并换变量（$dy=|g'(x)|dx$）：$-\int f_X(x)\lb\dfrac{f_X(x)}{|g'(x)|}dx
+=-\int f_X\lb f_X\,dx+\int f_X\lb|g'|\,dx=\Hc{X}+\E[\lb|g'(X)|]$。
+\textbf{特例}：$g(x)=ax$ 给出 $\Hc{aX}=\Hc{X}+\lb|a|$，取 $a=2$ 就是"摊宽一倍、熵加 $1$ bit"，
+与直觉一致；它也说明\textbf{连续熵对一一变换不保持不变}（离散熵是保持的）。
+\end{defbox}
+
+\subsection{第四节\quad 两个必背结果：均匀分布与正态分布}
+
+\subsubsection{(a) 均匀分布：$\Hc{X}=\lb(b-a)$}
+
+\begin{calc}{推导：$X\sim U(a,b)$}
+\textbf{第 1 步（写密度）}：$f(x)=\dfrac{1}{b-a}$（$a\le x\le b$），区间外 $f=0$。
+\textbf{第 2 步（代定义）}：区间外概率质量为 $0$、对积分无贡献（即离散里"$0\lb0=0$"的连续版），
+只需在 $[a,b]$ 上积：
+\[
+\Hc{X}=-\int_{-\infty}^{+\infty}f\lb f\,dx=-\int_a^b\frac{1}{b-a}\,\lb\frac{1}{b-a}\,dx .
+\]
+\textbf{第 3 步（化简对数）}：$\lb\dfrac{1}{b-a}=-\lb(b-a)$，且被积表达式里\textbf{没有 $x$}、
+整个是\textbf{常数}，用 $\int_a^bc\,dx=c(b-a)$：
+\[
+\Hc{X}=-\int_a^b\frac{1}{b-a}\Bigl[-\lb(b-a)\Bigr]dx
+=\frac{\lb(b-a)}{b-a}\int_a^b dx=\frac{\lb(b-a)}{b-a}\cdot(b-a)=\lb(b-a).
+\]
+即 $\boxed{\ X\sim U(a,b)\Rightarrow\Hc{X}=\lb(b-a)\ }$。
+\end{calc}
+
+\textbf{怎么记}：\textbf{均匀分布的微分熵 $=$ 区间长度的对数}（长度翻倍，熵 $+1$ bit）。
+三个立刻能用的数：$U(0,1)$ 时 $\Hc{X}=\lb1=0\bit$，恰在"零"这条分界线上；
+$U(0,\tfrac12)$ 时 $\Hc{X}=\lb\tfrac12=-1\bit$，\textbf{负数}！区间短于 $1$ 个单位就为负；
+$U(-1,1)$ 时 $\Hc{X}=\lb2=1\bit$，正是作业 2.10 第一问。
+
+\subsubsection{(b) 正态分布：$\Hc{X}=\dfrac12\lb(2\pi\mathrm{e}\sigma^2)$}
+
+推导只需两件事：\textbf{总面积 $=1$}、\textbf{方差 $=\sigma^2$}，两个积分都不必动手算。
+
+\begin{calc}{推导：$X\sim N(m,\sigma^2)$，并代个数验证}
+\textbf{第 1 步（写密度）}：
+$f(x)=\dfrac{1}{\sqrt{2\pi}\,\sigma}\exp\!\left(-\dfrac{(x-m)^2}{2\sigma^2}\right)$。
+\textbf{第 2 步（取以 $2$ 为底的对数）}：用 $\lb(uv)=\lb u+\lb v$、$\lb\mathrm{e}^{t}=t\lb\mathrm{e}$，
+\[
+\lb f(x)=-\lb\bigl(\sqrt{2\pi}\,\sigma\bigr)-\frac{(x-m)^2}{2\sigma^2}\,\lb\mathrm{e}
+\qquad(\text{常数部分}+\text{含 }x\text{ 的部分}).
+\]
+\textbf{第 3、4 步（取期望，代入方差）}：$\E$ 是线性的，常数提出去；再由 $m$ 是均值得
+$\E[(X-m)^2]=\sigma^2$：
+\begin{align*}
+\Hc{X}=\E\bigl[-\lb f(X)\bigr]
+&=\lb\bigl(\sqrt{2\pi}\,\sigma\bigr)+\frac{\lb\mathrm{e}}{2\sigma^2}\E\bigl[(X-m)^2\bigr]\\
+&=\lb\bigl(\sqrt{2\pi}\,\sigma\bigr)+\frac{\lb\mathrm{e}}{2\sigma^2}\cdot\sigma^2
+=\lb\bigl(\sqrt{2\pi}\,\sigma\bigr)+\frac12\lb\mathrm{e}.
+\end{align*}
+\textbf{第 5 步（并成一个对数）}：用 $\lb\sqrt u=\tfrac12\lb u$、$\lb u+\lb v=\lb(uv)$，
+\[
+\Hc{X}=\frac12\lb\bigl(2\pi\sigma^2\bigr)+\frac12\lb\mathrm{e}
+=\frac12\Bigl[\lb(2\pi\sigma^2)+\lb\mathrm{e}\Bigr]=\frac12\lb\bigl(2\pi\mathrm{e}\,\sigma^2\bigr).
+\]
+即 $\boxed{\ X\sim N(m,\sigma^2)\Rightarrow\Hc{X}=\frac12\lb(2\pi\mathrm{e}\sigma^2)\ }$。
+\textbf{代个数}（考试爱让你算数值），取 $\sigma=1$：
+\begin{align*}
+\Hc{X}&=\frac12\lb(2\pi\mathrm{e}\cdot1)=\frac12\bigl(\lb2+\lb\pi+\lb\mathrm{e}\bigr)
+=\frac12\bigl(1+1.6515+1.4427\bigr)\\
+&=\frac12\times4.0942\approx2.047\bit ,
+\end{align*}
+其中 $\lb2=1$，$\lb\pi=\log_23.14159\approx1.6515$，
+$\lb\mathrm{e}=\log_22.71828\approx1.4427$（即 $1/\ln2\approx1.4427$，很常用，建议背下）。
+\end{calc}
+
+\textbf{人话}：正态分布的熵\textbf{只跟方差有关、跟均值无关}——把钟形曲线平移（改 $m$）形状没变，
+不确定度当然不变；压扁拉宽（改 $\sigma^2$）才变。两个结果一起记：$U(a,b)\Rightarrow\lb(b-a)$
+（$b-a<1$ 时为负）；$N(m,\sigma^2)\Rightarrow\frac12\lb(2\pi\mathrm{e}\sigma^2)$
+（$\sigma^2\lesssim0.0585$ 时为负）。可见"负熵"并不稀奇：分布足够集中（区间够短、方差够小）时，
+微分熵就是负的。
+
+\subsection{第五节\quad 手把手：$X\sim U(-1,1)$，求 $\Hc{X^2}$ 与 $\Hc{X^3}$}
+
+这就是作业 2.10 的原型：\textbf{已知 $X$ 的分布，求 $g(X)$ 的熵}。
+老师说"$\log$ 函数积分易求错"，所以下面每一步算术都写出来，一个数不跳。
+第一问套第四节 (a)：$\Hc{X}=\lb(b-a)=\lb\bigl(1-(-1)\bigr)=\lb2=1\bit$
+（用定义验也对：$f=\tfrac12$，$\Hc{X}=-\int_{-1}^1\tfrac12\lb\tfrac12\,dx=-\bigl(-\lb2\bigr)=1$）。
+
+\subsubsection{第二问：$\Hc{X^2}$——关键是先求 $X^2$ 的密度}
+
+\textbf{先排除一个坑：$X^2$ 不是均匀分布。} 有人想当然写"$f(x^2)=\tfrac12$，所以熵是 $1$"，这是错的。
+$x$ 在 $[-1,1]$ 上均匀，但平方之后靠近 $0$ 的一段 $[-\epsilon,\epsilon]$ 被压成很小的 $[0,\epsilon^2]$，
+靠近 $\pm1$ 的地方被摊开——所以 $X^2$ 在 $0$ 附近\textbf{特别密}。必须老实求密度，用\textbf{分布函数法}。
+
+\begin{calc}{第 1、2 步：先求分布函数 $F_Y(y)$，求导得密度 $f_Y(y)$}
+\textbf{第 1 步}：$X\in[-1,1]\Rightarrow Y=X^2\in[0,1]$，故只需看 $0\le y\le1$：
+\begin{align*}
+F_Y(y)&=P\bigl(X^2\le y\bigr)=P\Bigl(-\sqrt{y}\le X\le\sqrt{y}\Bigr)
+\qquad(\text{开根号，}\pm\text{ 都留})\\
+&=\int_{-\sqrt{y}}^{\ \sqrt{y}}\frac12\,dx=\frac12\Bigl[\sqrt y-(-\sqrt y)\Bigr]
+=\frac12\cdot2\sqrt y=\sqrt y .
+\end{align*}
+读法：$X$ 落在 $[-\sqrt y,\sqrt y]$ 里，区间长 $2\sqrt y$，密度 $\tfrac12$，概率 $=\tfrac12\times2\sqrt y=\sqrt y$。
+\\[1pt]
+\textbf{第 2 步}："密度是分布函数的导数"，而 $(\sqrt y)'=\dfrac{1}{2\sqrt y}$：因为 $\sqrt y=y^{1/2}$，
+幂函数求导 $(y^{n})'=ny^{n-1}$，取 $n=\tfrac12$ 得 $\tfrac12y^{-1/2}$。于是
+\[
+f_Y(y)=\frac{d}{dy}\sqrt y=\frac{1}{2\sqrt y}=\frac12y^{-1/2}\quad(0<y\le1),
+\qquad f_Y(y)=0\ (\text{其他}).
+\]
+\textbf{自检}：$\displaystyle\int_0^1\frac{dy}{2\sqrt y}=\frac12\Bigl[2\sqrt y\Bigr]_0^1=1$，总面积对了。
+另外 $y\to0^+$ 时 $f_Y(y)\to+\infty$，这就是"在 $0$ 附近特别密"，也正是后面熵为负的根源。
+\end{calc}
+
+\begin{calc}{第 3 步：代定义算 $\Hc{X^2}$（算术一步不跳）}
+\[
+\Hc{X^2}=-\int_0^1f_Y(y)\lb f_Y(y)\,dy
+=-\int_0^1\frac{1}{2\sqrt y}\,\lb\left(\frac{1}{2\sqrt y}\right)dy .
+\]
+\textbf{先化简对数}：$\dfrac{1}{2\sqrt y}=\dfrac12y^{-1/2}$，用 $\lb\tfrac12=-1$、
+$\lb y^{\beta}=\beta\lb y$（这里 $\beta=-\tfrac12$）：
+\[
+\lb\left(\frac{1}{2\sqrt y}\right)=\lb\Bigl(\tfrac12y^{-1/2}\Bigr)
+=\lb\tfrac12+\lb\bigl(y^{-1/2}\bigr)=-1-\tfrac12\lb y .
+\]
+代回去，外面的负号把它翻正：
+\[
+\Hc{X^2}=\int_0^1\frac{1}{2\sqrt y}\Bigl[1+\frac12\lb y\Bigr]dy
+=\underbrace{\frac12\int_0^1y^{-1/2}dy}_{\text{第一部分}}
++\underbrace{\frac14\int_0^1y^{-1/2}\lb y\,dy}_{\text{第二部分}} .
+\]
+\textbf{第一部分}：用 $\int_0^1y^{-1/2}dy=2$，得 $\dfrac12\times2=1$。
+\textbf{第二部分}：用主力积分 $\int_0^1y^{a-1}\ln y\,dy=-\dfrac{1}{a^2}$，取 $a=\tfrac12$ 得
+$\int_0^1y^{-1/2}\ln y\,dy=-\frac{1}{(1/2)^2}=-4$。但这里对数底是 $\mathrm{e}$，我们要 $\lb$（底 $2$），
+换算 $\lb y=\dfrac{\ln y}{\ln2}$：
+\[
+\int_0^1y^{-1/2}\lb y\,dy=\frac{1}{\ln2}\int_0^1y^{-1/2}\ln y\,dy
+=\frac{-4}{\ln2}=-4\lb\mathrm{e}\approx-5.7708 ,
+\]
+于是第二部分 $=\dfrac14\times\Bigl(-\dfrac{4}{\ln2}\Bigr)=-\dfrac{1}{\ln2}=-\lb\mathrm{e}\approx-1.4427$
+（这里用了 $\dfrac{1}{\ln2}=\lb\mathrm{e}$，即 $1/0.6931=1.4427$）。
+\textbf{合并}：
+$\boxed{\ \Hc{X^2}=1-\dfrac{1}{\ln2}=1-\lb\mathrm{e}\approx1-1.4427=-0.4427\bit\ }$
+约 $-0.443\bit$，\textbf{是负数}——这就是本章那个著名的负熵结果。
+\end{calc}
+
+\textbf{负号到底从哪来}：$\Hc{X^2}=1-\lb\mathrm{e}$ 中 $+1$ 来自密度曲线"正常的那部分"，
+$-\lb\mathrm{e}\approx-1.4427$ 来自 $y\to0^+$ 时 $f_Y(y)\to+\infty$ 的区域——那里 $f_Y>1$、
+$\lb f_Y>0$、单项 $-\lb f_Y$ 为负，把总和拉到 $0$ 以下。所以负号\textbf{不是算错}，
+它反映"$X^2$ 在 $0$ 附近极度集中"；而按第三节，真正的信息量是无穷大，$\Hc{X^2}$ 只是去掉
+无穷大常数后的\textbf{相对度量}。\textbf{别}把它读成"负的信息"。
+
+\subsubsection{第三问：$\Hc{X^3}$——用变换公式更省力}
+
+$g(x)=x^3$ 在 $[-1,1]$ 上严格递增（一一映射），可用第三节的变换公式。
+
+\begin{calc}{算 $\Hc{X^3}$（两个小块）}
+\textbf{第 1 步（求导）}：$g'(x)=3x^2$，故 $|g'(x)|=3x^2$，用 $\lb(uv)=\lb u+\lb v$：
+\[
+\Hc{X^3}=\Hc{X}+\E\bigl[\lb\bigl(3X^2\bigr)\bigr]
+=1+\E\bigl[\lb3+\lb X^2\bigr]=1+\lb3+\E\bigl[\lb X^2\bigr]
+\]
+（$\lb3$ 是常数可提出期望；$\Hc{X}=1$ 来自第一问，$\lb3\approx1.5850$）。
+\textbf{第 2 步（算 $\E[\lb X^2]$）}：按期望定义 $\E\bigl[\lb X^2\bigr]
+=\int_{-1}^{1}\lb\bigl(x^2\bigr)\cdot\frac12\,dx$。$\lb(x^2)$ 是\textbf{偶函数}
+（$x$ 换成 $-x$ 不变），对称区间上积分 $=2$ 倍的 $[0,1]$ 上积分，再乘 $\tfrac12$ 恰好抵消：
+\begin{align*}
+\E\bigl[\lb X^2\bigr]&=\frac12\cdot2\int_0^1\lb\bigl(x^2\bigr)dx
+=2\int_0^1\lb x\,dx=\frac{2}{\ln2}\int_0^1\ln x\,dx
+=\frac{2}{\ln2}\times(-1)=-\frac{2}{\ln2},
+\end{align*}
+即 $\E[\lb X^2]=-2\lb\mathrm{e}\approx-2.8854$（$\int_0^1\ln x\,dx=-1$ 是主力积分取 $a=1$ 的特例：
+$-1/a^2=-1$）。这个数本章反复出现，值得单独记。
+\textbf{第 3 步（合并）}：$1+\lb3=\lb2+\lb3=\lb6\approx2.5850$，故
+\begin{align*}
+\Hc{X^3}&=1+\lb3-2\lb\mathrm{e}=\lb6-2\lb\mathrm{e}
+\approx2.5850-2.8854=\boxed{\ -0.3004\bit\ }
+\end{align*}
+约 $-0.300\bit$，也是负的。\textbf{对照}：直接求 $X^3$ 的密度再积分结果一样
+（$f_W(w)=\dfrac{1}{6|w|^{2/3}}$，$w\in[-1,1]$），但变换公式省掉一半计算量。
+\end{calc}
+
+\begin{qa}{这道题最容易错的地方（三问答案：$1\bit$、$-0.443\bit$、$-0.300\bit$）}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+\item \textbf{以为 $X^2$ 是均匀分布}（$X$ 均匀 $\ne$ $X^2$ 均匀）。必须用分布函数法求
+$f_Y(y)=\dfrac{1}{2\sqrt y}$ 再代定义，写成 $f(x^2)=\tfrac12$ 直接零分。
+\item \textbf{$\sqrt y$ 求导漏掉 $\tfrac12$}：$\sqrt y=y^{1/2}$，$(y^n)'=ny^{n-1}$ 给出
+$\tfrac12y^{-1/2}$。
+\item \textbf{$\ln$ 与 $\lb$ 混用、丢了 $\ln2$}：主力积分是 $\ln$ 版（$-1/a^2$），熵的定义是 $\lb$ 版，
+必须除以 $\ln2$（即乘 $\lb\mathrm{e}\approx1.4427$），丢了答案就不是 $-0.443$。
+\item \textbf{$\E[\lb X^2]$ 记错}：它是 $-2\lb\mathrm{e}\approx-2.8854$，不是 $-2$、也不是 $-1$。
+\item \textbf{把负号"做没了"}：算出负值就以为错、硬加绝对值——负值是对的。
+\end{enumerate}
+\end{qa}
+
+\subsection{第六节\quad 两个最大熵定理（连续版）}
+
+离散情形是"等概率时熵最大"。连续情形不能这么说：连续熵可为负，你把区间缩到极小，
+熵就趋近 $-\infty$，无从谈"最大"。所以必须先\textbf{加约束}，再问"这个约束下哪种分布熵最大"。
+
+\begin{defbox}{两个最大熵定理（记住"约束 $\to$ 分布 $\to$ 公式"三件套）}
+\textbf{定理 A（峰值 / 幅度受限）}：若 $X$ 只能取 $[a,b]$ 内的值，则
+$\Hc{X}\le\lb(b-a)$，等号当且仅当 $X$ 在 $[a,b]$ 上\textbf{均匀分布}。
+（教材用对称区间 $[-M,M]$ 写成 $\Hc{X}\le\lb(2M)$，是同一件事：$b-a=2M$。）
+\textbf{记忆}：\textbf{幅度受限 $\Rightarrow$ 均匀分布熵最大 $=\lb(b-a)$}。
+直觉是：幅度被框住了，把概率\textbf{摊得最平}（处处密度一样）最不确定，
+任何"偏爱某些位置"的分布都会降低不确定度。\\[2pt]
+\textbf{定理 B（平均功率 / 方差受限）}：若 $X$ 的\textbf{方差固定为 $\sigma^2$}，则
+$\Hc{X}\le\frac12\lb\bigl(2\pi\mathrm{e}\,\sigma^2\bigr)$，等号当且仅当 $X$ 服从\textbf{正态分布}
+$N(m,\sigma^2)$。\textbf{记忆}：\textbf{方差受限 $\Rightarrow$ 正态分布熵最大
+$=\frac12\lb(2\pi\mathrm{e}\sigma^2)$}。直觉是：方差固定 $=$ 总能量固定，此时正态分布
+把能量分得最"不浪费"——均值附近铺开，尾部又不过分拖长。
+\end{defbox}
+
+\textbf{为什么重要？} 它们是一切"最坏情形"分析的起点：\textbf{手里信息不够，就假定熵取到上限}；
+所以它们回答"只知道幅度 / 只知道功率时，最难压缩、最难传输的信号长什么样"——
+通信里"最坏噪声是高斯噪声"根就在这里。考试最常见问法是"\textbf{在 XX 约束下用什么分布
+能达到最大熵？最大熵是多少？}"，答案必须给\textbf{分布名 + 公式}。证明（Lagrange 乘子法）
+只作简答：把"总量为 $1$、方差固定"用乘子 $\lambda_1,\lambda_2$ 拼进目标函数，对密度求极值得
+$f(x)\propto\exp\bigl(-\lambda_2(x-m)^2\bigr)$，用 $\int f=1$ 定系数、用方差定
+$\lambda_2=\frac{1}{2\sigma^2}$，即为正态密度。
+
+\subsection{第七节\quad 熵功率：把熵换算成"等效噪声功率"}
+
+\begin{defbox}{熵功率（一公式一解释）}
+对任意连续随机变量 $X$，设其微分熵为 $\Hc{X}$，称 $\bar N=\dfrac{1}{2\pi\mathrm{e}}\,2^{\,2\Hc{X}}$
+为 $X$ 的\textbf{熵功率}。\textbf{人话}：它是一个"翻译器"，把\textbf{熵}（比特）翻译成
+\textbf{功率 / 方差}（物理单位），含义是"\textbf{一个方差为 $\bar N$ 的正态分布，
+其微分熵恰好等于 $\Hc{X}$}"——即"这个信号的熵，相当于多大功率的高斯噪声"。
+\end{defbox}
+
+公式怎么来的？反过来解一次就清楚。由定理 B，方差为 $\bar N$ 的正态分布的熵是
+$\frac12\lb(2\pi\mathrm{e}\bar N)$，令它等于 $\Hc{X}$，逐步解：
+\[
+\Hc{X}=\frac12\lb\bigl(2\pi\mathrm{e}\bar N\bigr)
+\ \Longrightarrow\
+2\Hc{X}=\lb\bigl(2\pi\mathrm{e}\bar N\bigr)
+\ \Longrightarrow\
+2^{\,2\Hc{X}}=2\pi\mathrm{e}\bar N
+\ \Longrightarrow\
+\bar N=\frac{1}{2\pi\mathrm{e}}2^{\,2\Hc{X}} .
+\]
+（第二步两边乘 $2$；第三步把 $\lb$ 拆掉：$\lb u=v\iff u=2^v$；第四步两边除以 $2\pi\mathrm{e}$。）
+两个能用的观察：\textbf{(1)} 正态分布的熵功率就是它的方差——代入
+$\Hc{X}=\frac12\lb(2\pi\mathrm{e}\sigma^2)$ 得 $2^{2\Hc{X}}=2\pi\mathrm{e}\sigma^2$，故
+$\bar N=\sigma^2$，与教材一致。\textbf{(2)} 熵功率相等 $\iff$ 微分熵相等，所以它是
+"不确定度的物理单位版本"，在信源编码、率失真函数里反复出现。
+
+\subsection{第八节\quad 考试怎么考}
+
+\begin{exam}{三类题 + 答题模板}
+\textbf{题型一：给密度求 $\Hc{X}$。}\ 三步：抄定义 $\Hc{X}=-\int f\lb f\,dx$；
+代 $f$ 并\textbf{化简对数}（$\lb\frac1u=-\lb u$、$\lb uv=\lb u+\lb v$）；
+用标准积分算出数值、写单位 bit。\emph{检查点}：常数密度提到积分号外后，$\int dx$ 就是区间长度。\\[3pt]
+\textbf{题型二：给 $X$ 的分布，求 $g(X)$ 的熵}（作业 2.10 型）。两条路：
+\textbf{路 A（分布函数法，万能）}——$F_Y(y)=P(g(X)\le y)$ 解出 $y$ 的有效范围 $\to$ 求导得 $f_Y$
+$\to$ \textbf{自检 $\int f_Y=1$} $\to$ 代定义积分；\textbf{路 B（变换公式，$g$ 单调时最快）}——
+$\Hc{g(X)}=\Hc{X}+\E[\lb|g'(X)|]$，前提是 $g$ \textbf{严格单调}且 $\Hc{X}$ 先会算。
+两路结果必须一致，不一致就逐行回查。\\[3pt]
+\textbf{题型三：简答"为什么连续熵可为负 / 为什么定义微分熵"。}\ 模板四句：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=1pt]
+\item 把连续取值切成宽 $\Delta x$ 的小格，按离散熵算得 $H_\Delta=\Hc{X}-\lb\Delta x$；
+\item $\Delta x\to0$ 时 $-\lb\Delta x\to+\infty$，所以按离散熵定义连续随机变量的熵是
+\textbf{无穷大}、失去意义；
+\item Shannon 去掉这个无穷大常数、只留有限的 $\Hc{X}=-\int f\lb f\,dx$，称为\textbf{微分熵}；
+\item 因此 $\Hc{X}$ 只是\textbf{相对的不确定度度量}（差一个与分布无关的常数），
+故可以为负（$f>1$ 使单项 $-\lb f<0$），也只能比较相对大小。
+\end{enumerate}
+\textbf{题型四：问"什么分布达到最大熵"。}\ 见"幅度 / 峰值受限"$\to$ \textbf{均匀}，$\Hc{X}=\lb(b-a)$；
+见"平均功率 / 方差受限"$\to$ \textbf{正态}，$\Hc{X}=\frac12\lb(2\pi\mathrm{e}\sigma^2)$。
+\end{exam}
+
+\subsection{第九节\quad 几个很可能冒出来的问题}
+
+\begin{qa}{密度函数能不能大于 $1$？}
+\textbf{能，而且经常。} $f(x)$ 的单位是"每单位长度的概率"，就像线密度可以是 $2$ 千克/米。
+$X\sim U(0,\tfrac14)$ 时 $f(x)=4$，而 $P\bigl(0<X\le\tfrac18\bigr)=4\times\tfrac18=0.5$ 依然合格。
+受 $1$ 限制的是\textbf{面积}（概率），不是\textbf{高度}（密度）；硬性要求只有 $f(x)\ge0$ 和
+$\int_{-\infty}^{+\infty}f(x)dx=1$。正因为 $f$ 可以大于 $1$，微分熵才可能为负。
+\end{qa}
+
+\begin{qa}{为什么连续熵可以为负，而离散熵不能？}
+\textbf{离散熵非负}的原因很清楚：$0\le p\le1$ 保证 $\lb p\le0$，故 $-p\lb p\ge0$，非负项求和当然非负。
+\textbf{连续熵失守}要两条一起说：(1) \textbf{记账方式}——$\Hc{X}$ 是"真熵 $+\infty$ 减去无穷大常数
+$-\lb\Delta x$"剩下的有限部分（见第三节），减掉无穷大后当然可能落到 $0$ 以下；
+(2) \textbf{直接看公式}——密度可以大于 $1$，此时 $\lb f>0$、单项 $-\lb f$ 为负，积分就有负贡献。
+比如 $X\sim U(0,\tfrac12)$ 时 $\Hc{X}=\lb\tfrac12=-1\bit$；作业里 $\Hc{X^2}\approx-0.443\bit$ 同理。
+\textbf{一句话}：负号不表示"负的信息"，只表示"相对同单位基准分布而言更集中"，
+所以微分熵只做\textbf{差值比较}，不当绝对信息量读。
+\textbf{附带提醒}：算 $g(X)$ 的熵时\textbf{不能}把 $x$ 换成 $g(x)$ 塞进 $f$ 里——换了随机变量，
+分布就变了：$X\sim U(-1,1)$ 时 $X^2$ 不均匀（在 $0$ 附近特别拥挤，密度 $\dfrac{1}{2\sqrt y}$），
+直接写 $f(x^2)=\tfrac12$ 得熵 $=1$，与正确答案 $-0.443$ 差 $1.443$ bit。
+\end{qa}
+
+\begin{idea}{这一讲的骨架（复习按这个顺序回忆）}
+(1) 连续 $\ne$ 离散：单点概率 $=0$，只有区间有概率，用\textbf{密度}描述，记住 $f$ 可以 $>1$；
+(2) 微分熵 $\Hc{X}=-\int f\lb f\,dx=\E[-\lb f(X)]$，是离散熵的积分版；
+(3) 切格子得 $H_\Delta=\Hc{X}-\lb\Delta x$，真熵无穷大，只留有限项 $\Rightarrow$ 可为负、只比相对大小；
+(4) 两个必背：$U(a,b)\to\lb(b-a)$；$N(m,\sigma^2)\to\frac12\lb(2\pi\mathrm{e}\sigma^2)$；
+(5) 求 $g(X)$ 的熵：分布函数法，或 $\Hc{X}+\E[\lb|g'(X)|]$（$g$ 单调）；
+(6) 最大熵：幅度受限 $\to$ 均匀；方差受限 $\to$ 正态；(7) 熵功率
+$\bar N=\frac{1}{2\pi\mathrm{e}}2^{2\Hc{X}}$。
+\end{idea}

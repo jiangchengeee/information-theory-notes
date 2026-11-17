@@ -1,0 +1,22 @@
+# 临时工作区与依赖（不上传）
+.tmp/
+.pylib/
+.texmf-var/
+.mcache/
+
+# LaTeX 中间文件
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# macOS
+.DS_Store
+
+# 教材与课件原件（扫描版，体积大且有版权，默认不上传）
+# 若确实想上传，把下面两行删掉再 commit
+信息论基础  13628636.pdf
+1111-信息论基础复习.pdf

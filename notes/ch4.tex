@@ -1,0 +1,518 @@
+% ================= 第 4 章 离散信源的无错编码 =================
+\section{第 4 章\quad 离散信源的无错编码}
+
+\begin{keypoint}{本章主线（考试地图）}
+信源有两个基本问题：一是\textbf{如何计算}信源输出的信息量（熵、互信息），
+二是\textbf{如何有效地表示}信源输出，即\textbf{信源编码}；要求精确重现信源输出时为
+\textbf{无错编码}。本章链条：
+\begin{align*}
+&\underbrace{\text{编码基本概念}}_{\text{4.1：码/唯一可译/即时码}}
+\ \longrightarrow\
+\underbrace{\text{AEP}\Rightarrow\text{定长编码定理}}_{\text{4.2：}R>H(X)\text{ 可达}}\\[2pt]
+&\longrightarrow\
+\underbrace{\text{Kraft + Huffman}}_{\text{4.3：}H\le\bar L<H+1}
+\ \longrightarrow\
+\underbrace{H_\infty\text{、平稳与马氏信源}}_{\text{4.4--4.5：极限即熵率}}
+\end{align*}
+一句话：\textbf{无错编码的极限就是信源的熵（熵率）}——定长编码靠“忽略非典型序列”，
+变长编码靠“大概率配短码字”。
+\end{keypoint}
+
+% ---------------------------------------------------------------
+\subsection{信源与信源编码概述}
+
+\subsubsection{信源及其分类}
+信源输出称为\textbf{消息}，须经发送器（编码器）变换成适于信道传输的\textbf{信号}。
+只考虑统计特性时把信源输出看成抽象\textbf{符号（字母）}的序列，全体字母的集合称
+\textbf{字母表} $A=\{a_1,\cdots,a_K\}$，配以概率分布 $\{p(a_k)\}$ 即得信源模型。
+按“取值集合 / 取值时刻”是否离散，分离散信源（数字信源）、模拟（波形）信源、连续信源；
+按随机过程性质分\textbf{无记忆}（各 $X_i$ 独立）与\textbf{有记忆}、\textbf{平稳}与\textbf{非平稳}信源；
+马尔可夫信源是有记忆信源中最简单、最具代表性的一种。
+本章对象：离散无记忆信源、离散平稳信源、平稳齐次马尔可夫信源。
+
+\subsubsection{编码、码字、码的分类}
+\begin{defbox}{编码与码字（4.1.3 节）}
+把一种字母序列（源字母序列）映射为另一种字母序列（码字母序列），实现该映射的装置称
+\textbf{编码器}；输入为\textbf{源字母}，输出为\textbf{码字母}。分组进行时，源字母组称\textbf{源字}，
+码字母组称\textbf{码字}。设码字母表 $B=\{b_1,\cdots,b_r\}$（$r$ 为码的\textbf{基数}，称 $r$ 元码），
+码 $C\subset B^{*}$，码字 $c_i$ 的长度 $l_i=\mathrm{len}(c_i)$。
+\end{defbox}
+
+结构上：\textbf{分组码}——源、码字母序列均分组，映射在分组基础上独立进行；按源字长、码字长是否固定，
+得定长—定长、定长—变长、变长—定长、变长—变长 4 种（本章定长编码指“定长—定长”，
+变长编码通常指“定长—变长”）。\textbf{树码}——码字母还与以前的源字母/码字母有关，用树图表示
+（映射不变的称滑动分组码，具线性特性的称卷积码）。
+信源编码分\textbf{冗余度压缩编码}（译码后无失真复原，本章）与\textbf{熵压缩编码}（允许失真）。
+
+\begin{defbox}{三种“可译性”（逐级增强）}
+\textbf{非奇异码}：$f:S\to C$ 为\textbf{单射}，不同消息对应不同码字。\\
+\textbf{唯一可译码}：任一码字串 $c_{i_1}\cdots c_{i_k}=d_{j_1}\cdots d_{j_l}$
+必有 $k=l$ 且逐项相同（分割方式唯一）。\\
+\textbf{前缀码（异字头码、即时码）}：$C$ 中没有一个码字是其他码字的前缀，
+收到完整码字即可立即译出（\textbf{无译码延时}）。
+\end{defbox}
+
+\begin{keypoint}{包含关系（必背）}
+$\text{前缀码（即时码）}\subsetneq\text{唯一可译码}\subsetneq\text{非奇异码}$；
+前缀码一定唯一可译且无延时，唯一可译码不一定前缀（有延时）。
+\end{keypoint}
+
+教材经典四码（同一信源、四种编码）：
+
+\begin{center}
+\begin{tabular}{@{}ccccc c@{}}
+\toprule
+消息 & $p(a_i)$ & 码 A & 码 B & 码 C & 码 D\\
+\midrule
+$a_1$ & 0.5   & 0    & 0  & 0    & 0\\
+$a_2$ & 0.25  & 0    & 1  & 01   & 10\\
+$a_3$ & 0.125 & 1    & 00 & 011  & 110\\
+$a_4$ & 0.125 & 10   & 11 & 0111 & 1110\\
+\midrule
+平均码长 $\bar L$ & & 1 & 1.25 & 1.875 & 1.875\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{逐条判断（必考）}：码 A 中 $a_1,a_2$ 同为“0”，非单射 $\Rightarrow$ 非奇异码都不成立；
+码 B 中“11”$=a_2a_2$ 或 $a_4$，唯一可译失败；码 C 唯一可译但“0”是“01”的前缀，
+收到“01”要等下一个“0”才可判定（\textbf{有延时}）；码 D 无前缀，是即时码
+（$0,10,110,1110$，即时码的“逗号”思想）。
+
+\subsubsection{编码效率与冗余度}
+对 $r$ 元码，平均码长 $\bar L=\sum_ip(s_i)l_i$，定义
+\begin{equation*}
+\text{编码效率}\ \ \eta=\frac{H(X)}{\bar L\,\lb r}
+\ \ \Bigl(\text{定长编码时 }\eta=\frac{H(X)}{R}=\frac{NH(X)}{M\lb J}\Bigr),
+\qquad
+\text{冗余度}\ \ \rho=1-\eta .
+\end{equation*}
+$\eta\le1$，等号 $\iff l_i=\log_r\frac{1}{p_i}$（一般不是整数，做不到）。
+本章任务：让 $\bar L\to H_r(X)=H(X)/\lb r$，即 $\rho\to0$。
+
+% ---------------------------------------------------------------
+\subsection{无记忆信源的 AEP 与定长编码定理}
+
+\subsubsection{渐近等同分割性（AEP）}
+设 $X_1\cdots X_N$ 为离散无记忆信源（i.i.d.）的长度 $N$ 输出，$x=x_1\cdots x_N$ 为一个实现，
+则 $\p{x}=\prod_{i=1}^{N}\p{x_i}$，自信息 $I_N(x)=-\lb\p{x}=\sum_i\left[-\lb\p{x_i}\right]$，
+每个符号的平均自信息
+\begin{equation*}
+\frac{1}{N}I_N(x)=-\frac{1}{N}\sum_{i=1}^{N}\lb\p{x_i}.
+\end{equation*}
+$-\lb\p{x_i}$ 是 i.i.d. 随机变量，均值 $H(X)$、方差
+$\sigma^2=\sum_kp(a_k)\lb^2p(a_k)-H^2(X)$。由切比雪夫不等式得 AEP：
+\begin{equation}
+\Pr\Bigl\{\bigl|\tfrac{1}{N}I_N(x)-H(X)\bigr|<\varepsilon\Bigr\}
+\ \ge\ 1-\frac{\sigma^{2}}{N\varepsilon^{2}}\ \longrightarrow\ 1 ,
+\qquad N\to\infty .
+\tag{4.2.1}
+\end{equation}
+
+\begin{defbox}{$\varepsilon$-典型序列集（定义 4.2.1）}
+$T_X(N,\varepsilon)=\left\{x\in A^{N}:\ H(X)-\varepsilon\le\frac{1}{N}I_N(x)\le H(X)+\varepsilon\right\}$，
+其补集称\textbf{非典型序列集}；典型集又称\textbf{高概率集}。
+\end{defbox}
+
+\begin{thmbox}{定理 4.2.1（信源划分定理）及推论 4.2.1、4.2.2}
+（1）$\displaystyle\lim_{N\to\infty}\Pr\{x\in T_X(N,\varepsilon)\}=1$，即非典型序列总概率 $<\varepsilon$；\\
+（2）若 $x\in T_X(N,\varepsilon)$，则
+$2^{-N\left(H(X)+\varepsilon\right)}\le\p{x}\le2^{-N\left(H(X)-\varepsilon\right)}$，即 $\p{x}\doteq2^{-NH(X)}$；\\
+（3）当 $N$ 足够大时
+\begin{equation}
+(1-\varepsilon)\,2^{N\left(H(X)-\varepsilon\right)}\le\left|T_X(N,\varepsilon)\right|
+\le2^{N\left(H(X)+\varepsilon\right)},
+\qquad\left|T_X(N,\varepsilon)\right|\doteq2^{NH(X)} .
+\tag{4.2.4}
+\end{equation}
+\end{thmbox}
+\textbf{证明要点（纯计数）}：$1\ge\Pr\{T\}\ge|T|2^{-N(H+\varepsilon)}$ 给上界；
+$1-\varepsilon\le\Pr\{T\}\le|T|2^{-N(H-\varepsilon)}$ 给下界。
+
+\begin{keypoint}{典型序列三性质}
+（1） \textbf{概率近等}：每个典型序列概率 $\approx2^{-NH(X)}$；
+（2） \textbf{数目} $\approx2^{NH(X)}\ll K^{N}=2^{N\lb K}$（$H<\lb K$ 时）；
+（3） \textbf{总概率 $\to1$}。$\Rightarrow$ 只给典型序列配码字（$\approx2^{NH}$ 个），
+非典型序列共用一个码字，则 $P_e\to0$。
+\textbf{易错}：个别非典型序列的概率不一定比典型序列小（如 $p<0.5$ 时“全为反面”）；
+非典型序列总概率小但\textbf{数目}可以远多（$p=0.4,N=100$：$|T|\approx2^{81}$，只占 $2^{-19}$）。
+\end{keypoint}
+
+\subsubsection{定长编码定理（定理 4.2.2）}
+\textbf{定长编码}：把长为 $N$ 的源字 $x_1\cdots x_N$ 映射成长为 $M$ 的码字 $y_1\cdots y_M$
+（码字母表大小 $J$）。用 $N$ 次\textbf{扩展信源} $X^{N}$ 来看：$\p{x}=\prod_i\p{x_i}$，
+$\Hx{X^{N}}=N\Hx{X}$。
+
+\begin{thmbox}{定理 4.2.2（定长编码定理 / 信源编码定理）}
+若
+\begin{equation}
+\frac{M}{N}\,\lb J\ \ge\ H(X)+\delta\qquad(\delta>0,\ N\ \text{足够大}),
+\tag{4.2.6}
+\end{equation}
+则存在编译码器使“源字无自己特定码字”的概率 $P_e<\varepsilon$（$\varepsilon$ 任意小）；
+反之若 $R<H(X)$，则 $P_e\not\to0$。
+\end{thmbox}
+
+\textbf{编码速率（码率）} $R\triangleq\frac{M}{N}\lb J$（bit/信源符号），
+\textbf{编码效率} $\eta=\frac{H(X)}{R}\le1$。若 $\forall\varepsilon>0$ 存在 $N_0$ 与编译码器使
+$N>N_0$ 时 $P_e<\varepsilon$，称 $R$ \textbf{可达}。于是：
+
+\begin{keypoint}{核心结论（正反定理）}
+$R>H(X)$ \textbf{可达}；$R<H(X)$ \textbf{不可达}。
+故 \fbox{$H(X)$ 是无错定长编码的临界速率}。
+\\\textbf{正定理}：典型序列数 $T\le2^{N(H+\varepsilon)}$，取 $M\lb J\ge N(H+\delta)$ 使码字数
+$J^{M}=2^{M\lb J}>T$，为每个典型序列配一个码字，非典型序列全映射到同一“废码字”$y_0$
+（收到即判错），$P_e\le\Pr\{\text{非典型}\}<\varepsilon$。\\
+\textbf{反定理}：码字仅 $2^{NR}$ 个，而典型序列有 $2^{NH}$ 个且概率近等，$R<H$ 时必然“挤在一起”，
+平均错误概率有正下界。
+\end{keypoint}
+
+\begin{example}{解题模板：定长编码求 $M,R,\eta$}
+（1） 求 $H(X)$；（2） 写约束 $\frac{M}{N}\lb J\ge H(X)$（或按给定 $\delta$）；
+（3） 最小码长 $M_{\min}=\bigl\lceil NH(X)/\lb J\bigr\rceil$；（4） $R=\frac{M}{N}\lb J$，$\eta=H(X)/R$；
+（5） 问“能否”则比较 $R$ 与 $H(X)$（等价于 $K^{N}\le J^{M}$）。
+例：$K$ 个等概率符号、$J=2$，则 $M\ge N\lb K$，$R=H(X)$，$\eta=1$。
+注意定长编码要有效必须 $N$ 很大（译码表指数爆炸），故实际要用变长编码。
+\end{example}
+
+% ---------------------------------------------------------------
+\subsection{离散无记忆信源的变长编码}
+
+变长编码：大概率消息配短码字、小概率配长码字，使\textbf{平均码长}
+$\bar L=\sum_i p(s_i)\mathrm{len}\!\left(f(s_i)\right)$ 最小；代价是同步与译码延时，
+故要求唯一可译（最好即时码）。
+
+\subsubsection{Kraft 不等式：前缀码存在的充要条件}
+\begin{thmbox}{定理 4.3.1（Kraft 定理，1949）}
+（1）若存在 $r$ 元\textbf{即时码}其码字长恰为 $l_1,\cdots,l_n$，则
+\begin{equation}
+\sum_{i=1}^{n}r^{-l_i}\ \le\ 1 ;
+\tag{4.3.2}
+\end{equation}
+（2）反之若自然数 $l_1,\cdots,l_n$ 与 $r$ 满足 (4.3.2)，则必存在 $r$ 元即时码，
+其码字长恰为 $l_1,\cdots,l_n$。
+\end{thmbox}
+\textbf{证明要点}：\emph{必要性（计数）}记 $L=\max l_i$，以 $c_i$ 为前缀的长为 $L$ 的串共
+$r^{L-l_i}$ 个，前缀性质使其互不重叠，故 $\sum_ir^{L-l_i}\le r^{L}$，除以 $r^{L}$ 即得 (4.3.2)。
+\emph{充分性（逐步构造）}设 $a_j$ 为长 $j$ 的码字个数，依次取
+$a_1\le r$，$a_1r+a_2\le r^{2}$，$\cdots$，$a_1r^{L-1}+\cdots+a_L\le r^{L}$（后式成立蕴含前式），
+末式两边除以 $r^{L}$ 即 (4.3.2)；构造时“已作前缀的分支整枝剪掉”：
+长 $j$ 的可选码字数 $=r^{j}-\sum_{i<j}a_ir^{j-l_i}$。
+
+\begin{warning}{Kraft 只判“长度可行”，不判“给定码是否即时”}
+例 4.3.3：$C=\{0,11,100,1100\}$，$r=2$，
+$\sum2^{-l_i}=\frac12+\frac14+\frac18+\frac1{16}<1$ 成立，但“11”是“1100”的前缀，故非即时码。
+构造实例（例 4.3.4，$r=3$）：$l=(1,1,2,4,4,5)$ 时
+$3^{-1}+3^{-1}+3^{-2}+2\cdot3^{-4}+3^{-5}=\frac{196}{243}<1$，得
+$C=\{0,1,20,2100,2101,21100\}$。
+\end{warning}
+
+\begin{thmbox}{定理 4.3.2（McMillan 定理）与推论}
+\textbf{唯一可译码的码长也必满足 Kraft 不等式}，故“唯一可译”与“即时码”的可达长度集合相同。
+\emph{证明}：令 $N_k$ 为“恰由 $k$ 个码字拼成”的长为 $k$ 的串数，唯一可译性给出 $N_k\le r^{k}$，
+而 $\left(\sum_ir^{-l_i}\right)^{n}=\sum_kN_k^{(n)}r^{-k}\le n(l_{\max}-l_{\min})+1$，
+开 $n$ 次方令 $n\to\infty$ 即得 (4.3.2)。\\
+\textbf{推论 4.3.1}：存在唯一可译码（码长 $l_i$）$\Rightarrow$ 存在\textbf{同长度}的即时码。
+\textbf{推论 4.3.2}：所有唯一可译码的最小平均码长 $=$ 所有即时码的最小平均码长
+$\Rightarrow$ 求最优码只需在即时码中找。
+\end{thmbox}
+
+\subsubsection{平均码长的界：无噪声编码定理}
+\begin{thmbox}{定理 4.3.4（下界）与定理 4.3.5（上界）}
+设 $r$ 元码、分布 $P=(p_1,\cdots,p_n)$，$r$ 元熵 $H_r(P)=\sum_ip_i\log_r\frac{1}{p_i}$。
+对任一 $r$ 元即时码
+\begin{equation}
+H_r(P)\ \le\ \bar L=\sum_{i=1}^{n}p_il_i ,
+\qquad\text{等号}\iff l_i=\log_r\frac{1}{p_i}\ (\forall i);
+\tag{4.3.5}
+\end{equation}
+且存在即时码使
+$\bar L<\sum_ip_i\left(\log_r\frac1{p_i}+1\right)=H_r(P)+1$，即
+\begin{equation}
+\boxed{\ H_r(P)\ \le\ \bar L^{*}\ <\ H_r(P)+1\ }
+\qquad\text{（}r=2\text{ 时 }H(X)\le\bar L<H(X)+1\text{）}.
+\tag{4.3.6}
+\end{equation}
+\end{thmbox}
+\textbf{下界证明}：令 $q_i=r^{-l_i}$，Kraft 给 $\sum q_i\le1$；由 Gibbs 不等式
+$\sum_ip_i\log_r\frac{q_i}{p_i}\le0$ 得 $-\sum_ip_il_i-H_r(P)\le0$，即 $\bar L\ge H_r(P)$，
+等号需 $q_i=p_i$（此时 $l_i=\log_r\frac1{p_i}$ 为整数）。
+\textbf{上界证明}：取 $l_i=\bigl\lceil\log_r\frac1{p_i}\bigr\rceil$，则 $r^{-l_i}\le p_i\Rightarrow$Kraft 成立，
+且 $l_i<\log_r\frac1{p_i}+1$。
+
+\begin{keypoint}{推广到 $N$ 次扩展（“提高编码效率”的考法）}
+对 $X^{N}$ 编码，平均码字长 $\bar L_N$，则
+$H_r(X)\le\frac{\bar L_N}{N}<H_r(X)+\frac1N$，
+故 $\lim_{N\to\infty}\frac{\bar L_N}{N}=H_r(X)$：长序列一起编码可任意逼近 $H_r(X)$，
+逐符号编码则至多损失 $1$ bit/符号。
+\end{keypoint}
+
+\subsubsection{Huffman 编码与最优性}
+\begin{keypoint}{$r$ 元 Huffman 编码步骤}
+（1） 概率\textbf{降序}排列；（2） 算 $s=1+[(n-1)\bmod(r-1)]$（$2\le s\le r$；二元恒 $s=2$），
+先把\textbf{最小 $s$ 个}概率相加；（3） 以后每步合并\textbf{最小 $r$ 个}，得 $q$、标星号、重排，
+直到只剩 $r$ 个概率；（4） 反向“解压缩”：最后 $r$ 个概率依次配 $0,1,\cdots,r-1$，
+遇星号概率展开为它的子概率（子码字 $=$ 父码字追加 $0,1,\cdots$）；（5） 算
+$\bar L=\sum_ip_il_i$ 与 $\eta=H_r(P)/\bar L$。
+\end{keypoint}
+
+\begin{thmbox}{定理 4.3.3（Huffman 码最优性）}
+设 $p_1\ge\cdots\ge p_n$，$s\equiv n\pmod{r-1}$（$2\le s\le r$），$q=p_{n-s+1}+\cdots+p_n$，
+则存在 $P$ 的 $r$ 元最优码，其恰有 $s$ 个最长码字 $d0,d1,\cdots,d(s-1)$，且
+\begin{equation}
+\min\bar L_r(p_1,\cdots,p_n)=\min\bar L_r\left(p_1,\cdots,p_{n-s},q\right)+q .
+\tag{4.3.4}
+\end{equation}
+\end{thmbox}
+\textbf{证明思路（压缩—解压缩）}：把最优码 $C$ 的 $s$ 个最长码字截去末位、概率合成 $q$ 得 $D$，
+得 $\bar L(C)=\bar L(D)+q\Rightarrow\min\bar L_r(P)\ge\min\bar L_r(P',q)+q$；
+反向把 $D$ 的码字 $d$ 扩展成 $d0,\cdots,d(s-1)$ 得 $\le$；两向合并即等号，
+故“压缩到 $r$ 个再展开”必产生最优码（关键引理：可改造最优码使大概率配短码字、最长码字恰为
+$d0,\cdots,d(s-1)$ 形式，用 Kraft 不等式与模 $r-1$ 论证其个数 $k\ge s$）。
+
+\begin{example}{例：二元 Huffman 编码}
+$P=(0.20,0.19,0.18,0.17,0.15,0.10,0.01)$，$B=\{0,1\}$：
+\begin{center}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+$p_i$ & 0.20 & 0.19 & 0.18 & 0.17 & 0.15 & 0.10 & 0.01\\
+\midrule
+码字 & 10 & 11 & 000 & 001 & 010 & 0110 & 0111\\
+$l_i$ & 2 & 2 & 3 & 3 & 3 & 4 & 4\\
+\bottomrule
+\end{tabular}
+\end{center}
+$\bar L=2.72\ \bit$，$H(X)=2.6087\ \bit$，$\eta=95.9\%$，
+满足 $2.6087\le2.72<3.6087$。
+\end{example}
+
+\begin{example}{例 4.3.5（四元 Huffman，“首步合并 $s$ 个”）与例 4.3.6（S-F-E 算例）}
+\textbf{四元}：$P=(0.24,0.20,0.18,0.13,0.10,0.06,0.05,0.03,0.01)$，$r=4$，$s=1+[(9-1)\bmod3]=3$，
+首步合并 $0.05+0.03+0.01=0.09^{*}$；再合并 $0.13+0.10+0.09^{*}+0.06=0.38$，
+剩 $0.38,0.24,0.20,0.18$ 配 $0,1,2,3$；码字 $1,2,3,00,01,03,020,021,022$（长 $1,1,1,2,2,2,3,3,3$），
+$\bar L=1.47$，$H_4=H/\lb4=2.7965/2=1.398$，满足 $1.398\le1.47<2.398$。\\
+\textbf{S-F-E}：$p=(0.25,0.5,0.125,0.125)$（\textbf{不必排序}），$F=(0.25,0.75,0.875,1)$，
+$\bar F$ 的二进制给出码字 $001,10,1101,1111$；
+$\bar L=0.25\times3+0.5\times2+0.125\times4\times2=2.75\ \bit$，$H(P)=1.75\ \bit$，
+满足 $H\le\bar L<H+2$。
+\end{example}
+
+\subsubsection{常用变长编码（教材 4.3.3 节）}
+\begin{keypoint}{五种方法要点}
+（1） \textbf{Shannon 编码法}：$p_1\ge\cdots\ge p_n$，令 $g_k=\sum_{i<k}p_i$，
+取 $l_k=\left\lceil-\lb p_k\right\rceil$，把 $g_k$ 按二进制小数展开\textbf{截断到 $l_k$ 位}即码字；
+是即时码但\textbf{非最有效}（$p=(0.9999,0.0001)$ 得码长 $1$ 与 $14$，浪费）。\\
+（2） \textbf{Fano 编码}：把消息分两组使\textbf{两组概率和尽量接近}（选 $k$ 使
+$\bigl|\sum_{i\le k}p_i-\sum_{i>k}p_i\bigr|$ 最小），一组配“0”、一组配“1”，各组递归二分；
+非最优，但保证 $\bar L\le H(P)+2$。\\
+（3） \textbf{S-F-E 编码}：累积概率 $F(k)=\sum_{i\le k}p_i$、$\bar F(k)=F(k)-\frac{p_k}{2}$，
+取 $l_k=\bigl\lceil\lb\frac{1}{p_k}\bigr\rceil+1$，把 $\bar F(k)$ 写成 $l_k$ 位二进制即码字
+（因 $0\le\bar F(k)-b_k<2^{-l_k}\le p_k/2$ 可唯一区分），有 $H(P)\le\bar L<H(P)+2$；
+是\textbf{算术编码}的基础（算术编码对 $N$ 长序列按字典序算累积概率，$\bar L$ 随 $N$ 增大逼近 $H$）。\\
+（4） \textbf{游程（RLE）编码}：二元序列与游程长度序列一一对应
+（$00101110010001\cdots\to3,1,1,3,2,1,3,\cdots$），再对游程做 Huffman；
+只适用二元序列，多元序列要加标志、收益不大。\textbf{MH 编码}（三类传真）$=$ 游程 $+$ Huffman：
+游程 $<64$ 用\textbf{结尾码}，$\ge64$ 用\textbf{构造码$+$结尾码}，码表由 $2\times1728$ 减至 $182$ 个。\\
+（5） \textbf{非二元（$r$ 元）编码}三点不同：熵用 $H_r=H/\lb r$，界为 $H_r\le\bar L<H_r+1$；
+Kraft 改 $\sum r^{-l_i}\le1$、树为 $r$ 叉树；Huffman 首步合并 $s=1+[(n-1)\bmod(r-1)]$ 个。
+\end{keypoint}
+
+% ---------------------------------------------------------------
+\subsection{离散平稳信源及其编码定理}
+
+\subsubsection{平稳性与熵率}
+信源输出为序列 $\cdots,X_{-1},X_0,X_1,\cdots$（$X_i\in A=\{a_1,\cdots,a_K\}$）。
+若对任意 $N$，$N$ 维联合分布与\textbf{起点无关}，即
+$\p{X_1=x_{i_1},\cdots,X_N=x_{i_N}}=\p{X_{1+m}=x_{i_1},\cdots,X_{N+m}=x_{i_N}}$，
+则称信源\textbf{平稳}。$X_i$ 独立同分布时称\textbf{简单（无记忆）信源}；
+$X_i$ 只与前有限个变量有关时为\textbf{有记忆信源}（关联长度 $m=1$ 即马氏信源）。
+平稳性使条件概率只与关联长度、与时间起点无关。
+
+\begin{defbox}{熵率（极限熵，式 4.4.11）}
+$H_N(X)=\frac1N H(X_1,\cdots,X_N)$，
+\begin{equation}
+H_\infty(X)=\lim_{N\to\infty}\frac1NH(X_1,\cdots,X_N)
+=\lim_{N\to\infty}H\left(X_N\mid X_1\cdots X_{N-1}\right).
+\tag{4.4.11}
+\end{equation}
+对一般离散平稳信源该极限\textbf{一定存在}。
+\end{defbox}
+
+\begin{thmbox}{定理 4.4.1（熵率四性质）}
+（1） $H(X_N\mid X_1\cdots X_{N-1})$ 关于 $N$ 单调不增；
+（2） $H_N(X)\ge H(X_N\mid X_1\cdots X_{N-1})$；
+（3） $H_N(X)$ 单调不增（即 $H_N\ge H_{N+1}$）；
+（4） 两极限相等。
+\end{thmbox}
+\textbf{证明要点}：由平稳性及“无条件熵 $\ge$ 条件熵”得 （1）；
+由 $H(X_1\cdots X_N)=\sum_{j=1}^{N}H(X_j\mid X_1\cdots X_{j-1})$ 与 （1） 得 （2）（3）；
+（4） 把 $H_{N+M}(X)$ 拆成前 $N$ 项与后 $M$ 项（Cesàro 型平均）夹逼。
+无记忆时 $H_N(X)=H(X_1)=H(X)$，故 $H_\infty(X)=H(X)$。
+
+\begin{keypoint}{冗余度与相对冗余度}
+字母表大小 $K$，$H_0=\lb K$：\quad
+冗余度 $=\lb K-H_\infty(X)$，
+相对冗余度 $=1-\dfrac{H_\infty(X)}{\lb K}$，
+相对熵率 $=\dfrac{H_\infty(X)}{\lb K}$。\\
+\textbf{英文例}：$H_0=\lb27=4.766$，$H_1=4.036$，$H_2=3.326$，$H_3=3.31$，
+常取 $H_\infty\approx1.4\ \bit/$字母 $\Rightarrow$ 相对熵率 $0.29$、\textbf{冗余度 $71\%$}：
+英文约 $71\%$ 由语言结构决定，仅 $29\%$ 是作者自由选择。
+\end{keypoint}
+
+\begin{thmbox}{定理 4.4.2（平稳信源编码定理）}
+对离散平稳信源做 $D$ 元变长编码，$\forall\varepsilon>0$ 存在 $L(\varepsilon)$，
+当 $L>L(\varepsilon)$ 时存在\textbf{唯一可译码}使平均每符号码长 $\bar l=\bar n_L/L$ 满足
+\begin{equation}
+\frac{H_\infty(X)}{\lb D}\ \le\ \bar l\ <\ \frac{H_\infty(X)}{\lb D}+\varepsilon .
+\tag{4.4.18}
+\end{equation}
+\end{thmbox}
+\textbf{证明思路}：$\frac1LH(X_1\cdots X_L)\to H_\infty(X)$；单组编码有
+$\frac{H(X_1\cdots X_L)}{\lb D}\le\bar n_L<\frac{H(X_1\cdots X_L)}{\lb D}+1$，两边除以 $L$，
+下界用 $H(X_1\cdots X_L)\ge L H_\infty(X)$，上界把 $\frac{1}{L\lb D}$ 与 $\varepsilon$ 配好。
+\textbf{结论}：$H_\infty(X)$ 是平稳信源无错编码的\textbf{渐近极限速率}，长分组可从上方任意逼近；
+本定理对即时码也成立。
+
+% ---------------------------------------------------------------
+\subsection{马尔可夫信源及其编码}
+
+\subsubsection{马尔可夫信源与平稳分布}
+若 $\p{X_{n+1}=a\mid X_n=b,X_{n-1}=c,\cdots}=\p{X_{n+1}=a\mid X_n=b}$ 称
+\textbf{马尔可夫序列}；条件转移概率与时间起点无关称\textbf{齐次（时齐）}，
+全部转移概率构成\textbf{转移概率矩阵} $P=(p_{ij})$（行和 $=1$）。
+马氏信源另引入\textbf{状态集} $S=\{s_1,\cdots,s_J\}$，且满足：
+（1） 某时刻输出符号只与\textbf{当前状态}有关；（2） 下一状态由\textbf{当前符号$+$当前状态}唯一确定。
+于是符号序列被变换成\textbf{状态序列}，可按马氏链处理。从任一状态经有限步可正概率到达任一状态
+（\textbf{既约/不可约}）。
+
+\begin{defbox}{平稳（稳态）分布求法（必考计算）}
+$p_{n+1}(a_j)=\sum_ip_n(a_i)P_{ij}$，即 $\boldsymbol p_{n+1}=\boldsymbol p_nP$；
+$\boldsymbol p_{n+1}=\boldsymbol p_n$ 时为\textbf{稳态}，稳态时齐马氏源即平稳源。稳态分布由
+\begin{equation}
+\boldsymbol p=\boldsymbol pP,\qquad\sum_{j=1}^{J}p(s_j)=1
+\tag{4.5.5}
+\end{equation}
+唯一确定；既约时与初始状态无关（$p(s_j)=\lim_{n\to\infty}p_{ij}^{(n)}$）。
+\textbf{三步}：写 $P$ $\to$ 解 $\boldsymbol p=\boldsymbol pP$ 并用 $\sum p_j=1$ 替换一个冗余方程
+$\to$ 字母概率 $p(a_k)=\sum_jp(s_j)p_j(a_k)$。
+\end{defbox}
+
+\subsubsection{马尔可夫信源的熵与熵率}
+状态 $s_j$ 下的条件熵 $H(X\mid S=s_j)=-\sum_{k=1}^{K}p_j(a_k)\lb p_j(a_k)$（式 4.5.7），
+信源熵 $H=\sum_jp(s_j)H(X\mid S=s_j)$。平稳马氏源是平稳源，故
+\begin{equation}
+H_\infty(X)=\lim_{N\to\infty}\frac1NH(X_1\cdots X_N)
+=H(X_2\mid X_1)=H(X\mid S)=\sum_{j=1}^{J}p(s_j)H(X\mid s_j).
+\tag{4.5.10}
+\end{equation}
+注意区分\textbf{状态熵} $H(p(s_1),\cdots,p(s_J))=-\sum_jp(s_j)\lb p(s_j)$（一般 $\ne H_\infty$）。
+输出字母只与前 $m$ 个字母有关时称 \textbf{$m$ 阶}马氏信源，状态数至多 $K^{m}$；
+一般认为英文是 5 阶马氏信源。
+
+\begin{example}{例 4.5.2 全流程（也是 4.12 的标准套路）}
+三状态、三字母 $a,b,c$：
+\[
+P=\begin{pmatrix}
+\frac13&\frac13&\frac13\\[2pt]
+\frac14&\frac12&\frac14\\[2pt]
+\frac14&\frac14&\frac12
+\end{pmatrix},
+\qquad
+p_1=\left(\tfrac13,\tfrac13,\tfrac13\right),\ \
+p_2=\left(\tfrac14,\tfrac12,\tfrac14\right),\ \
+p_3=\left(\tfrac14,\tfrac14,\tfrac12\right).
+\]
+解 $\boldsymbol p=\boldsymbol pP,\ \sum p_j=1$ 得
+$p(s_1)=\frac{3}{11}$，$p(s_2)=p(s_3)=\frac{4}{11}$；稳态字母概率
+$p(a)=\frac{3}{11}$，$p(b)=p(c)=\frac{4}{11}$。又
+$H(X\mid s_1)=\lb3=1.585$，$H(X\mid s_2)=H(X\mid s_3)=H\!\left(\frac14,\frac12,\frac14\right)=1.5$，
+\[
+H_\infty(X)=\sum_jp(s_j)H(X\mid s_j)
+=\frac{3}{11}\lb3+\frac{4}{11}\times1.5+\frac{4}{11}\times1.5
+=\frac{16.755}{11}=1.523\ \bit/\text{字母}.
+\]
+\textbf{两种编码}：（1） 当作无记忆源，按 $\left(\frac3{11},\frac4{11},\frac4{11}\right)$ 做二元 Huffman
+（$a\to10,b\to11,c\to0$），$\bar L=\frac{18}{11}=1.636$；（2） 按马氏源\textbf{分状态}编码：
+$s_1:a\to1,b\to00,c\to01$（$\bar l_1=\frac53$），
+$s_2:a\to10,b\to0,c\to11$（$\bar l_2=\frac32$），
+$s_3:a\to10,b\to11,c\to0$（$\bar l_3=\frac32$），
+$\bar l=\sum_jp(s_j)\bar l_j=\frac{17}{11}=1.545$，更接近 $H_\infty=1.523$。
+\end{example}
+
+\begin{thmbox}{定理 4.5.1（马尔可夫信源的变长编码定理）}
+用 $J$ 个字母的码字母表对熵率 $H_\infty(X)$ 的离散马氏信源做变长编码，平均每符号码长
+\begin{equation*}
+\frac{H_\infty(X)}{\lb J}\ \le\ \bar l\ <\ \frac{H_\infty(X)}{\lb J}+\frac1N ,
+\end{equation*}
+$N$ 为信源字母分组长度；$N\to\infty$ 时 $\bar l\to H_\infty(X)/\lb J$，达到理想压缩。
+\end{thmbox}
+\textbf{证明思路}：给定初始状态 $S_1=i$，由 Kraft 得
+$\frac{H(X_1\cdots X_N\mid S_1=i)}{N\lb J}\le l_i<\frac{H(\cdot)}{N\lb J}+\frac1N$，
+再对全部状态按 $p_i$ 平均，并用 $\frac1NH(X_1\cdots X_N\mid S_1)\to H_\infty(X)$。
+
+\begin{keypoint}{马氏信源题的七步模板（严格按此书写）}
+（1） 由状态图写\textbf{转移矩阵} $P$（逐行检查行和 $=1$，最易错）；
+（2） 解 $q(j)=p(s_j)$；（3） $p(a_k)=\sum_jq(j)p_j(a_k)$；（4） $H(X\mid s_j)$；
+（5） $H_\infty(X)=\sum_jq(j)H(X\mid s_j)$；（6） \textbf{各状态分别}做 Huffman 得 $\bar l_j$；
+（7） $\bar l=\sum_jq(j)\bar l_j$，与 $H_\infty(X)$（及“当作无记忆”的 $\bar L$）比较说明压缩改善。
+\end{keypoint}
+
+% ---------------------------------------------------------------
+\subsection{本章作业与讲评}
+
+\textbf{作业（教材 P93--P94）：4.1、4.2(1)、4.4、4.12。}
+课件讲评：4.1 考 \textbf{AEP 性质}；4.2 \textbf{计算有错误}（$\pm\varepsilon$ 区间端点要算准）；
+4.4 \textbf{编码要画树}，少数同学三元编码出错；4.12 (1) 转移矩阵写错、(2)(3) 基本都对、
+(4) 要 3 个状态\textbf{分别}编码、(5) 按状态概率求\textbf{平均码长}。
+
+\begin{example}{4.1（AEP 性质）}
+\textbf{原题要点}：设 $X_1,X_2,\cdots$ 为取自分布
+$\begin{pmatrix}a_1&a_2&\cdots&a_K\\p_1&p_2&\cdots&p_K\end{pmatrix}$ 的独立同分布离散随机序列，
+试求 $\displaystyle\lim_{N\to\infty}\left[p(X_1X_2\cdots X_N)\right]^{1/N}$。\\
+\textbf{思路}：$\p{x}=2^{-I_N(x)}\Rightarrow\left[\p{x}\right]^{1/N}=2^{-\frac1NI_N(x)}$，
+由 AEP（式 4.2.1）$\frac1NI_N(x)\to H(X)$（以概率 1），故极限 $=2^{-H(X)}$，
+即“典型序列概率 $\approx2^{-NH(X)}$”的直接推论。
+\end{example}
+
+\begin{example}{4.2(1)（典型序列概率的计算）}
+\textbf{原题要点}：设 $X_1,X_2,\cdots$ 为取自分布 $(0.25,\ 0.75)$ 的独立同分布离散随机序列，
+试求下列情况下序列取典型序列的概率：(1) 定理 4.2.1 中 $\varepsilon=0.05,\ N=10$；
+(2) 定理 4.2.1 中 $\varepsilon=0.10,\ N=100$。\\
+\textbf{思路}：$H(X)=0.25\lb4+0.75\lb\frac43=0.8113\ \bit$。设 $N$ 长序列中“$0.25$ 符号”出现 $k$ 次，
+则 $\frac1NI_N(x)=0.4150+1.5850\,\frac kN$，代入 $H-\varepsilon\le\frac1NI_N(x)\le H+\varepsilon$
+解出 $k$ 的范围，再算 $P=\sum_k\mathrm{C}_N^{k}(0.25)^k(0.75)^{N-k}$。
+(1) $k/N\in[0.2185,0.2816]$，$N=10$ 时\textbf{无整数解}，$P=0$（$N$ 太小时典型集可为空）；
+(2) $k=19,\cdots,31$，$P=\sum_{k=19}^{31}\mathrm{C}_{100}^{k}(0.25)^k(0.75)^{100-k}\approx0.868$。
+\end{example}
+
+\begin{example}{4.4（二元/三元 Huffman）}
+\textbf{原题要点}：离散无记忆信源
+$\begin{pmatrix}a_1&a_2&a_3&a_4&a_5&a_6&a_7&a_8&a_9&a_{10}\\
+0.16&0.14&0.13&0.12&0.10&0.09&0.08&0.07&0.06&0.05\end{pmatrix}$，
+(a) 求二元 Huffman 码并算 $\bar n$；(b) 求三元 Huffman 码并算 $\bar n_3$。\\
+\textbf{思路}：$H(X)=3.2344\ \bit$。(a) 二元：码长 $3,3,3,3,3,3,4,4,4,4$，
+$\bar n=3.26$，$\eta=99.2\%$（$3.234\le3.26<4.234$）；
+(b) 三元：$n=10$，$s=1+[(10-1)\bmod2]=2$，首步合并最小\textbf{两个}，
+码长 $2\times8$ 个、$3\times2$ 个，$\bar n_3=2.11$，与 $H_3=H/\lb3=2.041$ 比较
+（$2.041\le2.11<3.041$）。务必\textbf{画 Huffman 树}并验 Kraft 不等式与 $\eta$。
+\end{example}
+
+\begin{example}{4.12（马氏信源：平稳分布、熵率、分状态编码）}
+\textbf{原题要点}：设有一马尔可夫信源，其状态图（习题 4.12 图）含三个状态 $s_1,s_2,s_3$ 与三个
+字母 $a_1,a_2,a_3$，各分支标注“字母：转移概率”（概率为 $\frac12,\frac14$ 一类分数）。试求：
+(1) 平稳状态下各状态概率 $q(i)$ 及各字母 $a_i$ 出现概率，$i=1,2,3$；
+(2) $H(X\mid s_i)$，$i=1,2,3$；(3) $H_\infty(X)$；(4) 对各状态 $s_i$ 求最佳二元码；
+(5) 计算平均码长。\\
+\textbf{思路}：按上一节七步模板：先由状态图写出 $P=(p_{ij})$ 并检每行和为 1（讲评指出此处最易错）；
+解 $\boldsymbol q=\boldsymbol qP$、$\sum_iq(i)=1$；$p(a_i)=\sum_jq(j)p_j(a_i)$；
+$H(X\mid s_j)=H\left(p_j(a_1),p_j(a_2),p_j(a_3)\right)$；
+$H_\infty(X)=\sum_jq(j)H(X\mid s_j)$；对\textbf{每个状态分别}按 $p_j(a_i)$ 做二元 Huffman 得
+$\bar l_j$，最后 $\bar l=\sum_jq(j)\bar l_j$，并与 $H_\infty(X)$ 比较说明压缩效果。
+\end{example}
+
+\begin{warning}{本章最容易丢分的 5 处}
+（1） 混淆非奇异/唯一可译/前缀码的层次；（2） 以为满足 Kraft 不等式的码就是即时码；
+（3） $r$ 元码忘记 $H_r=H/\lb r$ 而直接写 $H\le\bar L<H+1$；
+（4） 三元及以上 Huffman 忘记首步合并 $s$ 个（$s\equiv n\bmod(r-1)$）；
+（5） 马氏信源把\textbf{状态熵}当作\textbf{熵率}，或转移矩阵行和不为 1。
+\end{warning}

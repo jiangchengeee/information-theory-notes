@@ -1,0 +1,83 @@
+% 附录：速查表（本文件由主文档直接 \input）
+\section{附录：考试速查表}
+
+\subsection*{A.1\quad 常用数值（对数底为 2）}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|cccccccccc}
+\toprule
+$n$ & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 36\\
+\midrule
+$\lb n$ & 1 & 1.585 & 2 & 2.322 & 2.585 & 2.807 & 3 & 3.170 & 3.322 & 5.170\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{c|cccccccc}
+\toprule
+$p$ & 0.5 & 1/3 & 0.25 & 0.2 & 0.15 & 0.1 & 0.05 & 0.01\\
+\midrule
+$H(p)$ & 1.000 & 0.918 & 0.811 & 0.722 & 0.610 & 0.469 & 0.286 & 0.081\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+另需牢记：$\lb e=1.4427$，$\ln 2=0.6931$，$\lb 3=1.585$（Huffman 题的高频常数）。
+
+\subsection*{A.2\quad 常用分布的熵}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{l|l|l}
+\toprule
+分布 & 熵（bit） & 备注\\
+\midrule
+等概 $n$ 元信源 & $\lb n$ & 离散最大熵\\
+二元信源 $H(p)$ & $-p\lb p-(1-p)\lb(1-p)$ & $p=1/2$ 时取最大 1 bit\\
+均匀分布 $U(a,b)$ & $\lb(b-a)$ & 峰值功率受限时的最大微分熵\\
+正态分布 $N(m,\sigma^2)$ & $\tfrac12\lb(2\pi e\sigma^2)$ & 平均功率受限时的最大微分熵\\
+指数分布（参数 $\lambda$） & $\lb\dfrac{e}{\lambda}$ & 均值受限时的最大微分熵\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{A.3\quad 编码界限与信道容量速查}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\small
+\begin{tabular}{l|l}
+\toprule
+名称 & 公式\\
+\midrule
+定长编码速率 & $R=\lb M/n$（$M$ 个码字，码长 $n$）\\
+定长编码定理 & $R>\Hx{X}$ 可行；$R<\Hx{X}$ 不可行\\
+Kraft 不等式 & $\sum_i r^{-l_i}\le 1$（$r$ 元前缀码）\\
+变长编码均值界 & $\Hx{X}\le \bar L\lb r<\Hx{X}+\lb r$\\
+编码效率 / 冗余度 & $\eta=\Hx{X}/(\bar L\lb r)$，$\rho=1-\eta$\\
+信道容量 & $C=\max_{p(x)}\I{X;Y}$\\
+强对称信道 & $C=\lb|X|-H(\text{行分布})$\\
+无噪信道 & $C=\lb|X|$\\
+级联信道 & $C_{\text{级联}}\le\min\{C_1,C_2\}$\\
+高斯信道 & $C=\tfrac12\lb(1+P/N)$ bit/符号\\
+Fano 不等式 & $\Hx{X|Y}\le 1+P_e\lb(|X|-1)$\\
+汉明码参数 & $n=2^r-1$，$k=n-r$，$d_{\min}=3$，纠 $1$ 位\\
+\bottomrule
+\end{tabular}
+\end{center}
+注：二元码取 $r=2$ 时，均值界化为经典的 $\Hx{X}\le\bar L<\Hx{X}+1$；$r=3$ 时上界改为 $+1.585$。
+
+\begin{keypoint}{最后 24 小时的背记清单}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 熵关系图（链式法则、互信息三种写法、条件熵公式）——\textbf{必背，几乎所有题都要用}。
+  \item 三条不等式：$\Hx{X|Y}\le\Hx{X}$，$\Hx{X,Y}\le\Hx{X}+\Hx{Y}$，$\I{X;Y}\ge 0$，以及各自的等号条件。
+  \item 连续熵三件套：$U(a,b)\to\lb(b-a)$；$N(m,\sigma^2)\to\tfrac12\lb(2\pi e\sigma^2)$；$\int_0^1 y^{a-1}\ln y\,dy=-\tfrac{1}{a^2}$。
+  \item 编码两定理的方向与常数：Kraft（$\le 1$）、均值界（$H\le\bar L<H+1$）。
+  \item 信道容量：$C=\max_{p(x)}\I{X;Y}$、强对称 $C=\lb|X|-H(\text{行})$、高斯 $\tfrac12\lb(1+P/N)$。
+  \item 汉明码流程与 $2^r\ge n+1$。
+  \item 最大熵三结论：无约束→均匀，均值约束→指数，均值+方差→正态；鉴别信息 $D(P_1,P_2)$ 非负且不对称。
+\end{enumerate}
+\end{keypoint}
