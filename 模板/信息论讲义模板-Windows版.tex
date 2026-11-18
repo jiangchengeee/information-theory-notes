@@ -1,0 +1,292 @@
+% !TEX program = xelatex
+% =====================================================================
+%   信息论讲义 / 作业详解  LaTeX 模板  ——  Windows 版
+%   =====================================================================
+%   【这份文件怎么用】
+%   1) 全文搜索「★」，把示例内容换成你自己的；
+%   2) 编译（必须是 XeLaTeX，不能用 pdfLaTeX）：
+%        命令行： xelatex 文件名.tex     （连跑两遍，第二遍目录页码才对）
+%        编辑器： TeXstudio → 选项→构建→默认编译器 选 XeLaTeX
+%        Overleaf：Menu → Compiler 选 XeLaTeX
+%   3) 想换配色：只改下面「配色」那 7 行 \definecolor。
+%
+%   【字体说明（重要）】
+%   本文件已设为 Windows 字体：宋体(SimSun) + 黑体(SimHei) + 楷体(KaiTi) + 仿宋(FangSong)。
+%   在 Mac / Linux / Overleaf 上编译时，把第 34 行的 \UseFallbackFonts{0} 改成 {1}，
+%   就会自动换成 TeX Live 自带的 fandol 字体（任何系统都有），照样能编译。
+%
+%   如果 Windows 上编译报错「The font "SimSun" cannot be found」，
+%   说明这台机器装的是英文版 Windows、没自带中文字体，
+%   同样把第 34 行改成 {1} 即可（或者去「设置→时间和语言→语言」装中文语言包）。
+%
+%   【需要什么】
+%   TeX Live 2020 或更新的完整版（含 ctex、tcolorbox、booktabs、fontspec）。
+%   精简版（basic-miktex 等）可能缺 tcolorbox，装一下即可：
+%        tlmgr install tcolorbox pgf booktabs enumitem titlesec fancyhdr
+%
+%   【提供了什么】
+%   五种彩色提示框：defbox(定义/题目) idea(直觉类比) qa(自问自答)
+%                   calc(手把手算)   exam(考试怎么考)
+%   数学宏：\Hx{H(X)} \I{I(X;Y)} \Hc{连续熵} \lb{log2} \p{p(x|y)} \E \bit
+% =====================================================================
+\documentclass[11pt,a4paper,fontset=none]{ctexart}
+
+% ===================== 字体（Windows：宋体/黑体/楷体/仿宋）=====================
+% ★ 唯一的开关：\UseFallbackFonts
+%   0 = 用 Windows 字体（默认，Windows 上编译就保持 0）
+%   1 = 用 TeX Live 自带的 fandol 字体（在 Mac / Linux / Overleaf 上编译时改成 1）
+\def\UseFallbackFonts{0}
+
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\ifnum\UseFallbackFonts=1
+  % ---------- 兜底方案：fandol（TeX Live 自带，任何系统都有）----------
+  \setCJKmainfont{FandolSong-Regular}[Extension=.otf, BoldFont=FandolSong-Bold, ItalicFont=FandolKai-Regular]
+  \setCJKsansfont{FandolHei-Regular}[Extension=.otf, BoldFont=FandolHei-Bold]
+  \setCJKmonofont{FandolFang-Regular}[Extension=.otf]
+  \setCJKfamilyfont{zhsong}{FandolSong-Regular}[Extension=.otf, BoldFont=FandolSong-Bold]
+  \setCJKfamilyfont{zhhei}{FandolHei-Regular}[Extension=.otf, BoldFont=FandolHei-Bold]
+  \setCJKfamilyfont{zhkai}{FandolKai-Regular}[Extension=.otf]
+  \setCJKfamilyfont{zhfs}{FandolFang-Regular}[Extension=.otf]
+  \typeout{== Template fontset: FANDOL (fallback) ==}
+\else
+  % ---------- Windows：中文名与英文名两种写法都认，无需额外设置 ----------
+  \setCJKmainfont{SimSun}[BoldFont=SimHei, ItalicFont=KaiTi]
+  \setCJKsansfont{SimHei}
+  \setCJKmonofont{FangSong}
+  \setCJKfamilyfont{zhsong}{SimSun}[BoldFont=SimHei]
+  \setCJKfamilyfont{zhhei}{SimHei}
+  \setCJKfamilyfont{zhkai}{KaiTi}
+  \setCJKfamilyfont{zhfs}{FangSong}
+  \typeout{== Template fontset: WINDOWS (SimSun/SimHei/KaiTi/FangSong) ==}
+\fi
+\providecommand{\songti}{\CJKfamily{zhsong}}   % \songti   宋体
+\providecommand{\heiti}{\CJKfamily{zhhei}}     % \heiti    黑体
+\providecommand{\kaishu}{\CJKfamily{zhkai}}    % \kaishu   楷体
+\providecommand{\fangsong}{\CJKfamily{zhfs}}   % \fangsong 仿宋
+
+% ===================== 页面与宏包 =====================
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry}
+\geometry{left=2.0cm,right=2.0cm,top=2.2cm,bottom=2.0cm}
+\usepackage{booktabs}          % 三线表 \toprule \midrule \bottomrule
+\usepackage{array}
+\usepackage{enumitem}          % 紧凑列表 [leftmargin=1.6em,itemsep=1pt]
+\usepackage{tcolorbox}         % 彩色提示框
+\tcbuselibrary{skins,breakable}
+\usepackage{xcolor}
+\usepackage{fancyhdr}          % 页眉页脚
+\usepackage{titlesec}          % 标题样式
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{newunicodechar}    % 让 ✓ ⊕ ≤ 等符号不会报缺字
+
+% ===================== 配色（★ 想换风格只改这里）=====================
+\definecolor{mainblue}{RGB}{25,70,130}   % 小节标题、页眉
+\definecolor{acc1}{RGB}{176,58,46}       % defbox  定义（红）
+\definecolor{acc2}{RGB}{20,105,85}       % idea    直觉（绿）
+\definecolor{acc3}{RGB}{120,80,150}      % qa      疑问（紫）
+\definecolor{acc4}{RGB}{160,110,20}      % calc    手算（黄）
+\definecolor{acc5}{RGB}{40,90,160}       % exam    考点（蓝）
+\definecolor{soft}{RGB}{246,247,250}     % 定义框底色
+
+% ===================== 数学宏 =====================
+\newcommand{\Hx}[1]{H\!\left(#1\right)}       % \Hx{X,Y}  → H(X,Y)
+\newcommand{\Hc}[1]{H_{c}\!\left(#1\right)}   % 连续熵（微分熵）
+\newcommand{\I}[1]{I\!\left(#1\right)}        % \I{X;Y}   → I(X;Y)
+\newcommand{\lb}{\log_{2}}                    % \lb n     → log₂ n
+\newcommand{\p}[1]{p\!\left(#1\right)}        % \p{x|y}   → p(x|y)
+\DeclareMathOperator{\E}{\mathbb{E}}          % \E[X]     → E[X]
+\newcommand{\bit}{\,\text{bit}}               % 3.26\bit
+
+% ===================== 五种提示框（★ 核心）=====================
+% 用法： \begin{defbox}{标题} …… \end{defbox}
+\newtcolorbox{defbox}[1]{enhanced,breakable,
+  colback=soft,colframe=acc1,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc1,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{idea}[1]{enhanced,breakable,
+  colback=white,colframe=acc2,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc2,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{qa}[1]{enhanced,breakable,
+  colback=white,colframe=acc3,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc3,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{calc}[1]{enhanced,breakable,
+  colback=white,colframe=acc4,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc4,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+\newtcolorbox{exam}[1]{enhanced,breakable,
+  colback=white,colframe=acc5,boxrule=0.7pt,arc=2pt,
+  left=6pt,right=6pt,top=5pt,bottom=5pt,
+  title={\bfseries #1},fonttitle=\color{white},colbacktitle=acc5,
+  attach boxed title to top left={xshift=6pt,yshift=-2.6pt},
+  boxed title style={arc=1pt,boxrule=0pt}}
+
+% ===================== 标题与页眉 =====================
+\titleformat{\section}{\Large\bfseries\color{acc1}}{第\,\thesection\,讲}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{mainblue}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{acc2}}{\thesubsubsection}{0.4em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 课程名\ \textbar\ 讲义标题}   % ★ 改页眉左边
+\fancyhead[R]{\small\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\allowdisplaybreaks            % 允许长公式跨页
+\setlength{\parskip}{2.5pt}
+\linespread{1.08}
+
+% ===================== 特殊符号兜底 =====================
+\newunicodechar{✓}{\ensuremath{\checkmark}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{≥}{\ensuremath{\ge}}
+\newunicodechar{≤}{\ensuremath{\le}}
+\newunicodechar{≠}{\ensuremath{\ne}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{∈}{\ensuremath{\in}}
+\newunicodechar{⊕}{\ensuremath{\oplus}}
+\newunicodechar{∑}{\ensuremath{\sum}}
+\newunicodechar{∫}{\ensuremath{\int}}
+
+% =====================================================================
+\begin{document}
+
+% ===================== 标题区（★ 改成你的）=====================
+\begin{center}
+  {\LARGE\bfseries 课程名\ \ 第 X 章 讲义 / 作业详解}\\[6pt]
+  {\large 副标题：一句话说清这份文档讲什么}\\[8pt]
+  {\small 教材：作者《书名》（版本），出版社\qquad 对数底为 2，单位 bit}\\[4pt]
+  {\small 姓名：\underline{\hspace{3cm}}\quad 学号：\underline{\hspace{3cm}}}
+\end{center}
+
+\tableofcontents        % ★ 作业详解不需要目录就删掉这行和下面的 \newpage
+\newpage
+
+% ===================== 正文示例：五种框 =====================
+\section{示例：五种提示框怎么用}
+
+正文行内公式写成 $\Hx{X}=-\sum_i p(x_i)\lb p(x_i)$，
+互信息写成 $\I{X;Y}=\Hx{X}-\Hx{X|Y}$，连续熵写成 $\Hc{X}$，单位写成 $3.26\bit$。
+
+\begin{defbox}{定义（自信息）}
+设事件 $x$ 发生的概率为 $p(x)$，则它的\textbf{自信息}定义为
+\[
+I(x)=-\lb p(x)=\lb\frac{1}{p(x)},
+\]
+单位是 bit。\\
+\textbf{人话}：越不可能发生的事，一旦发生，告诉你的信息就越多。
+\end{defbox}
+
+\begin{idea}{直觉 / 类比}
+把可能性砍掉一半，就记 1 个信息量；砍 3 刀（因为 $8=2^3$）就是 3 bit。
+所以"从 8 种可能里告诉你答案"正好值 $\lb 8=3$ bit。
+\end{idea}
+
+\begin{qa}{你可能想问：为什么一定要用 log？}
+因为这样才能满足\textbf{可加性}：两条互相独立的消息，总信息量等于各自信息量之和。
+只有对数能把"概率相乘"变成"信息量相加"。
+\end{qa}
+
+\begin{calc}{手把手算：公平硬币的信息量}
+$p(\text{正面})=\tfrac12$，于是
+\begin{align*}
+I(\text{正面})&=-\lb\frac12\\
+&=\lb 2=1\bit .
+\end{align*}
+这就是"1 bit"这个词的由来。
+\end{calc}
+
+\begin{exam}{考试怎么考}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 给概率求信息量：直接套 $I=-\lb p$，别忘了写单位 bit。
+  \item 常见易错：把 $\lb$ 当成自然对数（那样算出的结果要再除以 $\ln2\approx0.693$）。
+\end{enumerate}
+\end{exam}
+
+\subsection{表格、矩阵、多行公式}
+
+三线表用 \texttt{booktabs}（\verb|\toprule|、\verb|\midrule|、\verb|\bottomrule|）：
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|c|c}
+\toprule
+符号 & 读作 & 含义\\
+\midrule
+$p(x)$ & "$x$ 的概率" & 取到 $x$ 的可能性\\
+$\Hx{X}$ & "$X$ 的熵" & 平均信息量\\
+$\I{X;Y}$ & "$X,Y$ 的互信息" & 知道 $Y$ 帮你在 $X$ 上省下的不确定性\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+矩阵用 \texttt{pmatrix}：
+\[
+P=\begin{pmatrix}1/2 & 1/3 & 1/6\\[2pt] 1/6 & 1/2 & 1/3\\[2pt] 1/3 & 1/6 & 1/2\end{pmatrix}
+\]
+
+多行公式用 \texttt{align*} 对齐：
+\begin{align*}
+\Hx{X,Y}&=\Hx{X}+\Hx{Y|X}\\
+&=\Hx{Y}+\Hx{X|Y}.
+\end{align*}
+
+\subsection{字体切换（可选）}
+
+本模板正文默认宋体。想在某段用其他字体，直接加命令即可：
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+命令 & 效果\\
+\midrule
+\verb|\heiti 文字| & \heiti 黑体文字（适合标题、强调）\\
+\verb|\kaishu 文字| & \kaishu 楷体文字（适合引用、批注）\\
+\verb|\fangsong 文字| & \fangsong 仿宋文字\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{常见问题}
+
+\begin{qa}{编译报错「Overfull hbox」怎么办？}
+说明某一行超出了页面宽度。最省事的修法是把长公式拆行：
+\begin{align*}
+\Hx{X,Y}-\Hx{X}-\Hx{Y}
+&=-\sum_{x,y}p(x,y)\lb p(x,y)+\sum_{x,y}p(x,y)\lb p(x)+\sum_{x,y}p(x,y)\lb p(y)\\
+&=\sum_{x,y}p(x,y)\lb\frac{p(x)p(y)}{p(x,y)}\ \le\ 0 .
+\end{align*}
+表格太宽就先缩小字号：在 \verb|tabular| 前加一行 \verb|\small|。
+\end{qa}
+
+\begin{qa}{能不能用 pdfLaTeX 编译？}
+不能。中文 + 这套字体方案必须用 \textbf{XeLaTeX}（或 LuaLaTeX）。
+pdfLaTeX 会直接报字体错误。
+\end{qa}
+
+\begin{exam}{交作业前的最后检查}
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 编译跑两遍（否则目录页码是问号）；
+  \item 页眉里的"课程名 / 讲义标题"改了吗；
+  \item 公式里的单位 bit 写了吗；
+  \item 表格有没有超出右边距（看编译日志有没有 Overfull）。
+\end{enumerate}
+\end{exam}
+
+\end{document}

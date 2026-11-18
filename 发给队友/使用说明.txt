@@ -1,0 +1,45 @@
+信息论讲义模板（Windows 版）
+==============================
+
+一、这是什么
+    一套 LaTeX 讲义/作业排版模板，用 XeLaTeX + ctex 编译。
+    特点是五种彩色提示框：
+        红框 = 定义、定理、题目原文
+        绿框 = 直觉、类比、"为什么是这样"
+        紫框 = 自问自答、常见疑问、易错点
+        黄框 = 手把手数值计算
+        蓝框 = "考试怎么考"、答题格式
+
+二、怎么用
+    1. 打开 信息论讲义模板-Windows版.tex
+    2. 全文搜索「★」，把示例内容换成你的
+    3. 用 XeLaTeX 编译两遍：
+            xelatex 文件名.tex        （第一遍）
+            xelatex 文件名.tex        （第二遍，目录页码才对）
+       TeXstudio：选项 → 构建 → 默认编译器选 XeLaTeX
+       Overleaf ：Menu → Compiler 选 XeLaTeX
+    注意：不能用 pdfLaTeX，会直接报字体错误。
+
+三、字体（唯一要注意的地方）
+    第 34 行有个开关：  \def\UseFallbackFonts{0}
+        0 = 用 Windows 宋体/黑体/楷体/仿宋（默认，Windows 上就保持 0）
+        1 = 用 TeX Live 自带的 fandol 字体（Mac / Linux / Overleaf，
+            或者英文版 Windows 没装中文字体时，改成 1）
+
+    附带的那份「-预览.pdf」就是用开关=1（fandol）编出来的，
+    所以字形和你在 Windows 上编出来的会略有差别，排版结构是一样的。
+
+四、需要什么
+    完整版 TeX Live（2020 或更新）。如果缺宏包，命令行装一下：
+        tlmgr install tcolorbox pgf booktabs enumitem titlesec fancyhdr
+
+五、常用写法速查
+    行内公式        $H(X)=-\sum_i p(x_i)\log_2 p(x_i)$  或  $\Hx{X}$
+    提示框          \begin{idea}{标题} …… \end{idea}
+    多行公式        \begin{align*} ... \end{align*}（\\ 换行，& 对齐）
+    三线表          \begin{tabular}{c|c} \toprule ... \midrule ... \bottomrule
+    矩阵            \begin{pmatrix} a & b \\ c & d \end{pmatrix}
+    换页            \clearpage
+    字体切换        \heiti 黑体字   \kaishu 楷体字   \fangsong 仿宋字
+
+有问题随时问我。
