@@ -1,0 +1,190 @@
+% !TEX program = xelatex
+\documentclass[11pt,a4paper]{ctexart}
+\input{notes2/_preamble}
+\linespread{1.05}
+\setlength{\parskip}{2pt}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 第 3 章 保命速查（互信息）}\\[6pt]
+{\large 只看这一份，就能看懂第二次作业的四道题}\\[6pt]
+{\small 全章你只需要记住：\textbf{一条定义} + \textbf{三个工具}。其他全是它们的变形。}
+\end{center}
+
+\vspace{-2pt}
+\begin{idea}{先给你吃颗定心丸：第 3 章其实只有一句话}
+\[
+\boxed{\ \I{X;Y}=\Hx{X}-\Hx{X|Y}\ }
+\qquad\text{人话：知道 $Y$ 之后，我对 $X$ 的不确定性减少了多少。}
+\]
+减少的那部分，就是 $Y$ 里关于 $X$ 的“信息量”，所以叫\textbf{互}信息。
+
+\textbf{为什么这一章看起来吓人}：因为同一个数被写成了 3 种样子，书上不停换着用，你以为有 3 个新概念——其实是一个东西的三个马甲。
+\end{idea}
+
+\section{一个数，三个马甲（背这三行就够）}
+
+\begin{defbox}{互信息的三种等价写法}
+\begin{align*}
+\I{X;Y}&=\Hx{X}-\Hx{X|Y} &&\text{（原来的不确定性 减 知道 $Y$ 后剩下的）}\\
+&=\Hx{Y}-\Hx{Y|X} &&\text{（换个方向算，结果一样，这叫对称性）}\\
+&=\Hx{X}+\Hx{Y}-\Hx{X,Y} &&\text{（分别算再加，减去重复算的）}
+\end{align*}
+\textbf{考试 90\% 的题就是在这三条里挑一条代入。}看到“求 $\I{X;Y}$”，先看哪个量已知，就用对应的那条。
+\end{defbox}
+
+\begin{qa}{三条为什么相等？只需两步}
+第一步（链式法则，第 2 章学的）：
+\[
+\Hx{X,Y}=\Hx{X}+\Hx{Y|X}.
+\]
+第二步（移项）：
+\[
+\Hx{Y|X}=\Hx{X,Y}-\Hx{X}\ \Longrightarrow\ \Hx{X}-\Hx{X|Y}=\Hx{Y}-\Hx{Y|X}.
+\]
+把左边的 $\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}$ 代进第一条定义，就得到第三条：
+$\I{X;Y}=\Hx{X}-(\Hx{X,Y}-\Hx{Y})=\Hx{X}+\Hx{Y}-\Hx{X,Y}$。\quad 就这么简单，没有更多东西了。
+\end{qa}
+
+\section{手算一遍（作业 2.7 那张表，6 步出结果）}
+
+\begin{calc}{把数字代进去，你就彻底懂了}
+联合分布表：
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{c|cc|c}
+\toprule
+ & $Y=0$ & $Y=1$ & 行和\\
+\midrule
+$X=0$ & $1/3$ & $1/3$ & $2/3$\\
+$X=1$ & $1/3$ & $0$ & $1/3$\\
+\midrule
+列和 & $2/3$ & $1/3$ & $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{第 1 步}：算两个单变量熵（第 2 章的老活）
+\[
+\Hx{X}=-\tfrac23\lb\tfrac23-\tfrac13\lb\tfrac13=0.667\times0.585+0.333\times1.585=0.918\bit,\qquad \Hx{Y}=0.918\bit .
+\]
+
+\textbf{第 2 步}：算联合熵（表里 3 个非零格子且都等于 $\frac13$，直接 $\lb3$）
+\[
+\Hx{X,Y}=\lb 3=1.585\bit .
+\]
+
+\textbf{第 3 步}：用链式法则拿条件熵（不用重新算！）
+\[
+\Hx{X|Y}=\Hx{X,Y}-\Hx{Y}=1.585-0.918=0.667\bit .
+\]
+
+\textbf{第 4 步}：套第一条马甲
+\[
+\I{X;Y}=\Hx{X}-\Hx{X|Y}=0.918-0.667=0.251\bit .
+\]
+
+\textbf{第 5 步}：换第二条马甲验算
+$\Hx{Y|X}=1.585-0.918=0.667$，于是 $\I{X;Y}=0.918-0.667=0.251\bit$ ✓ 一样。
+
+\textbf{第 6 步}：换第三条马甲再验算
+$\Hx{X}+\Hx{Y}-\Hx{X,Y}=0.918+0.918-1.585=0.251\bit$ ✓ 还是一样。
+
+\textbf{体会}：三条马甲算出同一个数，所以考试时\textbf{随便挑最省事的那条}，其他两条拿来验算。这就是第 3 章全部的计算题。
+\end{calc}
+
+\section{证明题只用这三个工具（背下来就够用）}
+
+\begin{defbox}{工具 1：链式法则（拆开的唯一办法）}
+\[
+\Hx{X,Y}=\Hx{X}+\Hx{Y|X},\qquad
+\I{X;YZ}=\I{X;Y}+\I{X;Z|Y}.
+\]
+人话：想一起处理两个东西，就“先处理一个，再处理另一个”。
+\end{defbox}
+
+\begin{defbox}{工具 2：条件不增熵（把“条件”摘掉）}
+\[
+\Hx{X|Y}\le\Hx{X},\qquad \Hx{X|Y,Z}\le\Hx{X|Y}.
+\]
+人话：知道得越多，不确定性只会更小。等号成立当且仅当独立。
+\end{defbox}
+
+\begin{defbox}{工具 3：互信息非负（把“互信息”扔掉）}
+\[
+\I{X;Y}\ge 0,\qquad \I{X;Y|Z}\ge0 .
+\]
+人话：知道点东西总比不知道强，最差也是白知道。
+\end{defbox}
+
+\begin{calc}{综合演示：证明 $\I{X;Y}\le\Hx{X}$（书上的“性质”，也是作业 3.7 第(1)问的双胞胎）}
+一行就完：
+\[
+\I{X;Y}\overset{\text{马甲1}}{=}\Hx{X}-\underbrace{\Hx{X|Y}}_{\ge0}\ \le\ \Hx{X}.
+\]
+（因为条件熵一定 $\ge 0$。）\\
+\textbf{看出来了吗}：所谓“证明题”，就是\textbf{选一个马甲 + 用一次工具}。全书第 3 章的证明题都是这个套路。
+\end{calc}
+
+\section{四道作业题，各只需要哪两行}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\small
+\begin{tabular}{p{1.5cm}|p{5.2cm}|p{6.4cm}}
+\toprule
+题号 & 它要你干什么 & 你只需要用到 \\
+\midrule
+3.2 & 证 $\I{X;Y}\ge\I{X;Y|Z}$ & 关键恒等式 $\I{X;Y}-\I{X;Y|Z}=\I{X;Z}-\I{X;Z|Y}$\\
+    & （教材漏了条件，实际要 $X\to Y\to Z$） & 然后：若 $\I{X;Z|Y}=0$，则差 $=\I{X;Z}\ge0$ \\
+\midrule
+3.3 & 证 $\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X}-\I{Y;Z|X}$ & 工具 1 拆一次 + 把 $\I{Y;Z|X}$ 的定义挪项 \\
+\midrule
+3.7 & 给 $Z=X+Y$、$X\perp Y$，证八个式子 & 只用到两件事：\\
+    & & ① $Z$ 是 $X,Y$ 的函数 $\Rightarrow\Hx{Z|X,Y}=0$\\
+    & & ② $X\perp Y\Rightarrow\Hx{X|Y}=\Hx{X}$\\
+\midrule
+3.10 & 数据处理：$X\to Y\to Z$，证 $\I{X;Z}\le\I{X;Y}$ & 工具 3：$\I{X;Z}=\I{X;Y}-\underbrace{\I{X;Y|Z}}_{\ge0}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{exam}{如果你只想“把作业交上去”，最低限度写这些}
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=2pt]
+  \item \textbf{3.2}：先写“教材原题缺条件”，再写恒等式那两行，再补一句“当 $\I{X;Z|Y}=0$（即 $X\to Y\to Z$）时成立”，并给出反例 $X,Y$ 独立、$Z=X\oplus Y$ 时 $\I{X;Y}=0<1=\I{X;Y|Z}$。
+  \item \textbf{3.3}：写 $\Hx{X,Y,Z}=\Hx{X,Z}+\Hx{Y|X,Z}$（工具 1），再把 $\Hx{Y|X,Z}=\Hx{Y|X}-\I{Y;Z|X}$ 代入即得。
+  \item \textbf{3.7}：八问里至少会做 (5)(6)：$\I{X,Y;Z}=\Hx{Z}-\Hx{Z|X,Y}=\Hx{Z}-0=\Hx{Z}$，
+        $\I{X;Y,Z}=\Hx{X}-\Hx{X|Y,Z}=\Hx{X}-0=\Hx{X}$（因为 $Z$ 由 $X,Y$ 决定，故 $\Hx{Z|X,Y}=0$）。
+        剩下每问都是同两个工具。
+  \item \textbf{3.10}：$\I{X;Z}=\I{X;Y,Z}-\I{X;Y|Z}=\I{X;Y}+\I{X;Z|Y}-\I{X;Y|Z}$，而 $X\to Y\to Z$ 使 $\I{X;Z|Y}=0$，故 $\I{X;Z}=\I{X;Y}-\I{X;Y|Z}\le\I{X;Y}$。
+\end{enumerate}
+这些都能在 `作业2-第3章.pdf` 里找到逐步展开的版本，照着抄思路即可。
+\end{exam}
+
+\section{能不能跳过？给你一句实话}
+
+\begin{qa}{问题：第 3 章能不能不学？}
+\textbf{作业可以少做，概念不能跳过——但也真的不需要全懂。}
+
+\textbf{不学它会付出什么代价（按考试权重排）}：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item \textbf{第 5 章的信道容量全部建立在这一章上}：$C=\max_{p(x)}\I{X;Y}$。不会 $\I{X;Y}$，第 5 章的容量题（很可能有大题）直接归零；
+  \item \textbf{第 4 章的编码定理}里 $\bar L\ge\Hx{X}$ 的论证也要用到互信息；
+  \item 但——\textbf{只要求你会算 $\I{X;Y}$ 和会用那三个工具}，也就是这一份速查的全部内容。
+\end{enumerate}
+
+\textbf{最小补救方案（按性价比排序，1 小时能搞定）}：
+\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
+  \item 先把第 2 节那个 2×2 表的手算，自己动笔算一遍（20 分钟，必须动手）；
+  \item 把“三个马甲”背下来，能默写（10 分钟）；
+  \item 把“三个工具”背下来（10 分钟）；
+  \item 拿 `作业2-第3章.pdf` 当答案册，对着看 3.10 和 3.7(5)(6) 怎么用工具（20 分钟）。
+\end{enumerate}
+\end{qa}
+
+\begin{idea}{一句话总结这份文档}
+\textbf{互信息 = $\Hx{X}-\Hx{X|Y}$；证明题 = 换个马甲 + 用一次“条件不增熵/非负性”；计算题 = 先算三个熵，再套马甲。}就这些。
+\end{idea}
+
+\end{document}
